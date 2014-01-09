@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "clear.js",
+  "sourceRoot": "../../../src/components/canvas/",
+  "sources": [
+    "clear.coffee"
+  ],
+  "names": [],
+  "mappings": "AACA;CAAA,KAAA,eAAA;KAAA;oSAAA;;CAAA,CAAA,CAAW,IAAA,CAAX,QAAW;;CAAX,CAGM;CAEJ;;;;;CAAA;;CAAA,CAAkB,CAAV,EAAA,CAAR,CAAQ,EAAC;CACC,GAAR,GAAO,KAAP,CAAA;CADF,IAAQ;;CAAR;;CAFkB;;CAHpB,CASA,CAAgB,EAAhB,EAAO;CATP"
+}

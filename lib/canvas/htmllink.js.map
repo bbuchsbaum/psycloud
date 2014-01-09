@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "htmllink.js",
+  "sourceRoot": "../../src/html/",
+  "sources": [
+    "htmllink.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAA;CAAA,KAAA,QAAA;KAAA;oSAAA;;CAAA,CAAA,CAAO,CAAP,GAAO,CAAA;;CAAP,CAEM;CACJ;;CAAA,EACE,KADF;CACE,CAAO,GAAP,CAAA;CADF,KAAA;;CAGa,EAAA,CAAA,cAAC;;GAAO,KAAP;QACZ;CAAA,GAAA,EAAA,oCAAM;CAAN,EACQ,CAAP,CAAY,CAAb,QAAa;CADb,CAEG,EAAF,EAAD;CAFA,CAGA,EAAC,EAAD,SAAA;CAPF,IAGa;;CAHb;;CADqB,GAAI;;CAF3B,CAaA,CAAmB,IAAZ,CAAP;CAbA"
+}
