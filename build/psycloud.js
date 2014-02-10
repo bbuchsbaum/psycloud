@@ -15325,7 +15325,7 @@ require.define('73', function(module, exports, __dirname, __filename, undefined)
     _ = require('2', module);
     lay = require('74', module);
     exports.Stimulus = Stimulus = function () {
-        Stimulus.prototype.__standardDefaults = {
+        Stimulus.standardDefaults = {
             x: 0,
             y: 0,
             origin: 'top-left'
@@ -15355,7 +15355,7 @@ require.define('73', function(module, exports, __dirname, __filename, undefined)
                 spec = {};
             }
             this.spec = _.defaults(spec, this.defaults);
-            this.spec = _.defaults(spec, this.__standardDefaults);
+            this.spec = _.defaults(spec, Stimulus.standardDefaults);
             this.spec = _.omit(this.spec, function (value, key) {
                 return value == null;
             });
@@ -17616,17 +17616,10 @@ require.define('88', function(module, exports, __dirname, __filename, undefined)
                 '1',
                 '2'
             ],
-            correct: ['1']
+            correct: ['1'],
+            timeout: null
         };
-        return KeyResponse;
-    }(Response);
-    KeyPress = function (_super) {
-        __extends(KeyPress, _super);
-        function KeyPress() {
-            _ref1 = KeyPress.__super__.constructor.apply(this, arguments);
-            return _ref1;
-        }
-        KeyPress.prototype.createResponseData = function (timeStamp, startTime, Acc, char) {
+        KeyResponse.prototype.createResponseData = function (timeStamp, startTime, Acc, char) {
             var resp;
             resp = {
                 name: this.name,
@@ -17638,11 +17631,34 @@ require.define('88', function(module, exports, __dirname, __filename, undefined)
             };
             return resp;
         };
+        KeyResponse.prototype.resolveOnTimeout = function (deferred, timeout) {
+            var _this = this;
+            return utils.doTimer(timeout, function (diff) {
+                var Acc, resp, timeStamp;
+                if (!deferred.isResolved) {
+                    timeStamp = utils.getTimestamp();
+                    Acc = false;
+                    resp = _this.createResponseData(timeStamp, _this.startTime, Acc, '');
+                    return deferred.resolve(new ResponseData(resp));
+                }
+            });
+        };
+        return KeyResponse;
+    }(Response);
+    KeyPress = function (_super) {
+        __extends(KeyPress, _super);
+        function KeyPress() {
+            _ref1 = KeyPress.__super__.constructor.apply(this, arguments);
+            return _ref1;
+        }
         KeyPress.prototype.activate = function (context) {
             var deferred, keyStream, _this = this;
             this.startTime = utils.getTimestamp();
             deferred = Q.defer();
             keyStream = context.keypressStream();
+            if (this.spec.timeout != null) {
+                resolveOnTimeout(deferred, this.spec.timeout);
+            }
             keyStream.filter(function (event) {
                 var char;
                 char = String.fromCharCode(event.keyCode);
@@ -18694,8 +18710,8 @@ require.define('110', function(module, exports, __dirname, __filename, undefined
             y: 0,
             width: 100,
             height: 100,
-            fill: 'red',
-            opacity: 1
+            opacity: 1,
+            fill: 'black'
         };
         function Rectangle(spec) {
             if (spec == null) {
@@ -19075,7 +19091,7 @@ require.define('103', function(module, exports, __dirname, __filename, undefined
 });
 require.define('102', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Arrow, Kinetic, Stimulus, _ref, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var Arrow, Kinetic, Stimulus, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -19092,20 +19108,22 @@ require.define('102', function(module, exports, __dirname, __filename, undefined
     Kinetic = require('27', module).Kinetic;
     Arrow = function (_super) {
         __extends(Arrow, _super);
-        function Arrow() {
-            _ref = Arrow.__super__.constructor.apply(this, arguments);
-            return _ref;
-        }
         Arrow.prototype.defaults = {
             x: 100,
             y: 100,
             length: 100,
             direction: 'right',
             thickness: 40,
-            fill: 'red',
+            fill: 'black',
             arrowSize: 25,
             angle: null
         };
+        function Arrow(spec) {
+            if (spec == null) {
+                spec = {};
+            }
+            Arrow.__super__.constructor.call(this, spec);
+        }
         Arrow.prototype.initialize = function () {
             var computedHeight, computedLength, coords, shaftLength, _this;
             if (this.spec.angle != null) {
@@ -19154,10 +19172,6 @@ require.define('102', function(module, exports, __dirname, __filename, undefined
                 width: _this.spec.arrowSize,
                 height: _this.spec.arrowSize + _this.spec.thickness
             });
-            console.log('arrowhead width', this.arrowHead.getWidth());
-            console.log('arrowhead height', this.arrowHead.getHeight());
-            console.log('shaft width', this.arrowShaft.getWidth());
-            console.log('shaft height', this.arrowShaft.getHeight());
             computedLength = shaftLength + this.spec.arrowSize;
             computedHeight = this.spec.thickness;
             this.group = new Kinetic.Group({
@@ -19171,9 +19185,7 @@ require.define('102', function(module, exports, __dirname, __filename, undefined
             });
             this.group.add(this.arrowShaft);
             this.group.add(this.arrowHead);
-            console.log('computed height', computedHeight);
             coords = this.computeCoordinates(context, this.spec.position, computedLength, computedHeight);
-            console.log('coords', coords);
             return this.group.setPosition({
                 x: coords[0] + computedLength / 2,
                 y: coords[1] + this.spec.thickness / 2
