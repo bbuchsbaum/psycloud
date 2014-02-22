@@ -31,10 +31,16 @@
         <tr>
           <td>Inherits:</td>
           <td>
-            <a href='../class/Stimulus.html'>Stimulus</a>
+            KStimulus
           </td>
         </tr>
       </table>
+      <h2>Overview</h2>
+      <div class='docstring'>
+  <p>A rectangle graphical element</p>
+</div>
+<div class='tags'>
+</div>
       <h2>Variables Summary</h2>
       <dl class='constants'>
   <dt id='defaults-variable'>
@@ -53,14 +59,6 @@
     
   </dd>
 </dl>
-      <h3 class='inherited'>
-        Variable inherited from
-        <a href='../class/Stimulus.html'>Stimulus</a>
-      </h3>
-      <p class='inherited'>
-        <a href='../class/Stimulus.html#standardDefaults-variable'>standardDefaults</a>
-        <a href='../class/Stimulus.html#defaults-variable'>defaults</a>
-      </p>
       <h2>Instance Method Summary</h2>
       <ul class='summary'>
   <li>
@@ -68,29 +66,13 @@
       <a href='#render-dynamic'>
         #
 (void)
-<b>render</b><span>(context, layer)</span>
+<b>render</b><span>(context)</span>
       </a>
     </span>
     <span class='desc'>
     </span>
   </li>
 </ul>
-      <h2>
-        <small>Inherited Method Summary</small>
-        <h3 class='inherited'>
-          Methods inherited from
-          <a href='../class/Stimulus.html'>Stimulus</a>
-        </h3>
-        <p class='inherited'>
-          <a href='../class/Stimulus.html#groupSize-dynamic'>#groupSize</a>
-          <a href='../class/Stimulus.html#initialize-dynamic'>#initialize</a>
-          <a href='../class/Stimulus.html#xyoffset-dynamic'>#xyoffset</a>
-          <a href='../class/Stimulus.html#computeCoordinates-dynamic'>#computeCoordinates</a>
-          <a href='../class/Stimulus.html#reset-dynamic'>#reset</a>
-          <a href='../class/Stimulus.html#render-dynamic'>#render</a>
-          <a href='../class/Stimulus.html#stop-dynamic'>#stop</a>
-        </p>
-      </h2>
       <h2>Constructor Details</h2>
       <div class='methods'>
   <div class='method_details'>
@@ -153,6 +135,14 @@
       <span class='desc'>the height of the rectangle </span>
     </li>
     <li>
+      <span class='name'>opacity</span>
+      <span class='type'>
+        (<tt>Number</tt>)
+      </span>
+      &mdash;
+      <span class='desc'>the opacity of the Rectangle (0 is transparent, 1 opaque) </span>
+    </li>
+    <li>
       <span class='name'>fill</span>
       <span class='type'>
         (<tt>String</tt>)
@@ -178,7 +168,7 @@
     <p class='signature' id='render-dynamic'>
       #
 (void)
-<b>render</b><span>(context, layer)</span>
+<b>render</b><span>(context)</span>
       <br>
     </p>
     
@@ -186,7 +176,7 @@
 </div>
     </div>
     <div id='footer'>
-  February 09, 14 22:26:00 by
+  February 21, 14 08:09:52 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

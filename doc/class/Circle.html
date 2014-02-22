@@ -31,10 +31,16 @@
         <tr>
           <td>Inherits:</td>
           <td>
-            <a href='../class/Stimulus.html'>Stimulus</a>
+            KStimulus
           </td>
         </tr>
       </table>
+      <h2>Overview</h2>
+      <div class='docstring'>
+  <p>A circle graphical element</p>
+</div>
+<div class='tags'>
+</div>
       <h2>Variables Summary</h2>
       <dl class='constants'>
   <dt id='defaults-variable'>
@@ -43,8 +49,8 @@
   </dt>
   <dd>
     <pre><code class='coffeescript'>{
-  x: 0,
-  y: 0,
+  x: 50,
+  y: 50,
   radius: 50,
   fill: &#39;red&#39;,
   opacity: 1,
@@ -53,51 +59,128 @@
     
   </dd>
 </dl>
-      <h3 class='inherited'>
-        Variable inherited from
-        <a href='../class/Stimulus.html'>Stimulus</a>
-      </h3>
-      <p class='inherited'>
-        <a href='../class/Stimulus.html#standardDefaults-variable'>standardDefaults</a>
-        <a href='../class/Stimulus.html#defaults-variable'>defaults</a>
-      </p>
       <h2>Instance Method Summary</h2>
       <ul class='summary'>
+  <li>
+    <span class='signature'>
+      <a href='#initialize-dynamic'>
+        #
+(void)
+<b>initialize</b><span>()</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
   <li>
     <span class='signature'>
       <a href='#render-dynamic'>
         #
 (void)
-<b>render</b><span>(context, layer)</span>
+<b>render</b><span>(context)</span>
       </a>
     </span>
     <span class='desc'>
     </span>
   </li>
 </ul>
-      <h2>
-        <small>Inherited Method Summary</small>
-        <h3 class='inherited'>
-          Methods inherited from
-          <a href='../class/Stimulus.html'>Stimulus</a>
-        </h3>
-        <p class='inherited'>
-          <a href='../class/Stimulus.html#groupSize-dynamic'>#groupSize</a>
-          <a href='../class/Stimulus.html#initialize-dynamic'>#initialize</a>
-          <a href='../class/Stimulus.html#xyoffset-dynamic'>#xyoffset</a>
-          <a href='../class/Stimulus.html#computeCoordinates-dynamic'>#computeCoordinates</a>
-          <a href='../class/Stimulus.html#reset-dynamic'>#reset</a>
-          <a href='../class/Stimulus.html#render-dynamic'>#render</a>
-          <a href='../class/Stimulus.html#stop-dynamic'>#stop</a>
-        </p>
-      </h2>
+      <h2>Constructor Details</h2>
+      <div class='methods'>
+  <div class='method_details'>
+    <p class='signature' id='constructor-dynamic'>
+      #
+(void)
+<b>constructor</b><span>(spec = {})</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Construct a new Circle.</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>spec</span>
+      <span class='type'>
+        (<tt>Object</tt>)
+      </span>
+      &mdash;
+      <span class='desc'>component parameters </span>
+    </li>
+  </ul>
+  <h3>
+    Options Hash:
+    (options):
+  </h3>
+  <ul class='options'>
+    <li>
+      <span class='name'>x</span>
+      <span class='type'>
+        (<tt>Int</tt>)
+      </span>
+      &mdash;
+      <span class='desc'>the x coordinate </span>
+    </li>
+    <li>
+      <span class='name'>y</span>
+      <span class='type'>
+        (<tt>Int</tt>)
+      </span>
+      &mdash;
+      <span class='desc'>the y coordinate </span>
+    </li>
+    <li>
+      <span class='name'>radius</span>
+      <span class='type'>
+        (<tt>Int</tt>)
+      </span>
+      &mdash;
+      <span class='desc'>the radius of the circle </span>
+    </li>
+    <li>
+      <span class='name'>opacity</span>
+      <span class='type'>
+        (<tt>Number</tt>)
+      </span>
+      &mdash;
+      <span class='desc'>the opacity of the Rectangle (0 is transparent, 1 opaque) </span>
+    </li>
+    <li>
+      <span class='name'>fill</span>
+      <span class='type'>
+        (<tt>String</tt>)
+      </span>
+      &mdash;
+      <span class='desc'>the color of the rectangle </span>
+    </li>
+    <li>
+      <span class='name'>stroke</span>
+      <span class='type'>
+        (<tt>String</tt>)
+      </span>
+      &mdash;
+      <span class='desc'>the color of the outline </span>
+    </li>
+  </ul>
+</div>
+  </div>
+</div>
       <h2>Instance Method Details</h2>
       <div class='methods'>
+  <div class='method_details'>
+    <p class='signature' id='initialize-dynamic'>
+      #
+(void)
+<b>initialize</b><span>()</span>
+      <br>
+    </p>
+    
+  </div>
   <div class='method_details'>
     <p class='signature' id='render-dynamic'>
       #
 (void)
-<b>render</b><span>(context, layer)</span>
+<b>render</b><span>(context)</span>
       <br>
     </p>
     
@@ -105,7 +188,7 @@
 </div>
     </div>
     <div id='footer'>
-  February 09, 14 22:26:00 by
+  February 21, 14 08:09:52 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

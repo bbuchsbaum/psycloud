@@ -15309,7 +15309,7 @@ if (!exports.setImmediate) {
 });
 require.define('73', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Response, ResponseData, Stimulus, lay, _, _ref, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var ActionPresentable, ContainerDrawable, Drawable, GraphicalStimulus, Kinetic, KineticDrawable, KineticStimulus, Presentable, Response, ResponseData, Stimulus, lay, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -15324,38 +15324,17 @@ require.define('73', function(module, exports, __dirname, __filename, undefined)
         };
     _ = require('2', module);
     lay = require('74', module);
+    Kinetic = require('27', module);
     exports.Stimulus = Stimulus = function () {
-        Stimulus.standardDefaults = {
-            x: 0,
-            y: 0,
-            origin: 'top-left'
-        };
+        Stimulus.prototype.standardDefaults = {};
         Stimulus.prototype.defaults = {};
-        Stimulus.prototype.groupSize = function (group) {
-            var children, height, i, width, _i, _ref;
-            children = group.getChildren();
-            width = 0;
-            height = 0;
-            for (i = _i = 0, _ref = children.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
-                if (children[i].getWidth() > width) {
-                    width = children[i].getWidth();
-                }
-                if (children[i].getHeight() > height) {
-                    height = children[i].getHeight();
-                }
-            }
-            return {
-                width: width,
-                height: height
-            };
-        };
         function Stimulus(spec) {
             var _ref;
             if (spec == null) {
                 spec = {};
             }
             this.spec = _.defaults(spec, this.defaults);
-            this.spec = _.defaults(spec, Stimulus.standardDefaults);
+            this.spec = _.defaults(spec, this.standardDefaults);
             this.spec = _.omit(this.spec, function (value, key) {
                 return value == null;
             });
@@ -15366,19 +15345,52 @@ require.define('73', function(module, exports, __dirname, __filename, undefined)
                 this.id = _.uniqueId('stim_');
             }
             this.stopped = false;
-            if (this.spec.layout != null) {
-                this.layout = this.spec.layout;
-            } else {
-                this.layout = new lay.AbsoluteLayout();
-            }
-            this.overlay = false;
             this.name = this.constructor.name;
             this.initialize();
         }
         Stimulus.prototype.initialize = function () {
         };
-        Stimulus.prototype.xyoffset = function (origin, nodeWidth, nodeHeight) {
-            console.log('origin is', origin);
+        Stimulus.prototype.get = function (name) {
+            return this.spec[name];
+        };
+        Stimulus.prototype.set = function (name, value) {
+            return this.spec[name] = value;
+        };
+        Stimulus.prototype.reset = function () {
+            return this.stopped = false;
+        };
+        Stimulus.prototype.render = function (context, layer) {
+        };
+        Stimulus.prototype.stop = function (context) {
+            return this.stopped = true;
+        };
+        return Stimulus;
+    }();
+    exports.GraphicalStimulus = GraphicalStimulus = function (_super) {
+        __extends(GraphicalStimulus, _super);
+        GraphicalStimulus.prototype.standardDefaults = {
+            x: 0,
+            y: 0,
+            origin: 'top-left'
+        };
+        function GraphicalStimulus(spec) {
+            if (spec == null) {
+                spec = {};
+            }
+            if (spec.layout != null) {
+                this.layout = spec.layout;
+            } else {
+                this.layout = new lay.AbsoluteLayout();
+            }
+            this.overlay = false;
+            GraphicalStimulus.__super__.constructor.call(this, spec);
+        }
+        GraphicalStimulus.prototype.drawable = function (knode) {
+            return function (context) {
+                return console.log('GraphicalStimulus: drawable, no op');
+            };
+        };
+        GraphicalStimulus.prototype.xyoffset = function (origin, nodeWidth, nodeHeight) {
             switch (origin) {
             case 'center':
                 return [
@@ -15429,7 +15441,7 @@ require.define('73', function(module, exports, __dirname, __filename, undefined)
                 throw new Error('failed to match \'origin\' argument:', origin);
             }
         };
-        Stimulus.prototype.computeCoordinates = function (context, position, nodeWidth, nodeHeight) {
+        GraphicalStimulus.prototype.computeCoordinates = function (context, position, nodeWidth, nodeHeight) {
             var xy, xyoff;
             if (nodeWidth == null) {
                 nodeWidth = 0;
@@ -15437,17 +15449,21 @@ require.define('73', function(module, exports, __dirname, __filename, undefined)
             if (nodeHeight == null) {
                 nodeHeight = 0;
             }
-            xy = position != null ? this.layout.computePosition([
-                context.width(),
-                context.height()
-            ], position) : this.spec.x != null && this.spec.y != null ? [
-                this.layout.convertToCoordinate(this.spec.x, context.width()),
-                this.layout.convertToCoordinate(this.spec.y, context.height())
-            ] : [
-                0,
-                0
-            ];
-            console.log('origin', this.spec.origin);
+            xy = function () {
+                if (position != null) {
+                    return this.layout.computePosition([
+                        context.width(),
+                        context.height()
+                    ], position);
+                } else if (this.spec.x != null && this.spec.y != null) {
+                    return [
+                        this.layout.convertToCoordinate(this.spec.x, context.width()),
+                        this.layout.convertToCoordinate(this.spec.y, context.height())
+                    ];
+                } else {
+                    throw new Error('computeCoordinates: either position or x,y coordinates must be defined');
+                }
+            }.call(this);
             if (this.spec.origin != null) {
                 xyoff = this.xyoffset(this.spec.origin, nodeWidth, nodeHeight);
                 xy[0] = xy[0] + xyoff[0];
@@ -15455,21 +15471,273 @@ require.define('73', function(module, exports, __dirname, __filename, undefined)
             }
             return xy;
         };
-        Stimulus.prototype.reset = function () {
-            return this.stopped = false;
+        GraphicalStimulus.prototype.width = function () {
+            return 0;
         };
-        Stimulus.prototype.render = function (context, layer) {
+        GraphicalStimulus.prototype.height = function () {
+            return 0;
         };
-        Stimulus.prototype.stop = function (context) {
-            return this.stopped = true;
+        GraphicalStimulus.prototype.bounds = function () {
+            return {
+                x: 0,
+                y: 0,
+                width: 0,
+                height: 0
+            };
         };
-        return Stimulus;
+        return GraphicalStimulus;
+    }(exports.Stimulus);
+    exports.KineticStimulus = KineticStimulus = function (_super) {
+        __extends(KineticStimulus, _super);
+        function KineticStimulus() {
+            return KineticStimulus.__super__.constructor.apply(this, arguments);
+        }
+        KineticStimulus.prototype.presentable = function (nodes) {
+            console.log('creating presentable of', nodes);
+            return new KineticDrawable(nodes);
+        };
+        KineticStimulus.nodeSize = function (node) {
+            if (node.getClassName() === 'Group') {
+                console.log('class is group!');
+                return KineticStimulus.groupSize(node);
+            } else {
+                return {
+                    width: node.getWidth(),
+                    height: node.getHeight()
+                };
+            }
+        };
+        KineticStimulus.nodePosition = function (node) {
+            var xb, yb;
+            if (node.getClassName() === 'Group') {
+                console.log('class is group!');
+                xb = KineticStimulus.groupXBounds(node);
+                yb = KineticStimulus.groupYBounds(node);
+                console.log('xb is', xb);
+                console.log('yb is', yb);
+                return {
+                    x: xb[0],
+                    y: yb[0]
+                };
+            } else {
+                return {
+                    x: node.getX(),
+                    y: node.getY()
+                };
+            }
+        };
+        KineticStimulus.groupSize = function (group) {
+            var xb, yb;
+            xb = this.groupXBounds(group);
+            yb = this.groupYBounds(group);
+            return {
+                width: xb[1] - xb[0],
+                height: yb[1] - yb[0]
+            };
+        };
+        KineticStimulus.groupXBounds = function (group) {
+            var children, i, pos, xmax, xmin, _i, _ref;
+            children = group.getChildren();
+            xmin = Number.MAX_VALUE;
+            xmax = -1;
+            for (i = _i = 0, _ref = children.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+                pos = children[i].getAbsolutePosition();
+                if (pos.x < xmin) {
+                    xmin = pos.x;
+                }
+                if (pos.x + children[i].getWidth() > xmax) {
+                    xmax = pos.x + children[i].getWidth();
+                }
+            }
+            return [
+                xmin,
+                xmax
+            ];
+        };
+        KineticStimulus.groupYBounds = function (group) {
+            var children, i, pos, ymax, ymin, _i, _ref;
+            children = group.getChildren();
+            ymin = Number.MAX_VALUE;
+            ymax = -1;
+            for (i = _i = 0, _ref = children.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+                pos = children[i].getAbsolutePosition();
+                if (pos.y < ymin) {
+                    ymin = children[i].getY();
+                }
+                if (pos.y + children[i].getHeight() > ymax) {
+                    ymax = pos.y + children[i].getHeight();
+                }
+            }
+            return [
+                ymin,
+                ymax
+            ];
+        };
+        KineticStimulus.groupPosition = function (group) {
+            var children, i, pos, x, y, _i, _ref;
+            children = group.getChildren();
+            if (children.length === 0) {
+                return {
+                    x: 0,
+                    y: 0
+                };
+            } else {
+                x = Number.MAX_VALUE;
+                y = -1;
+                pos = children[i].getAbsolutePosition();
+                for (i = _i = 0, _ref = children.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+                    if (pos.x < x) {
+                        x = pos.x;
+                    }
+                    if (pos.y < y) {
+                        y = pos.y;
+                    }
+                }
+                return {
+                    x: x + group.getX(),
+                    y: y + group.getY()
+                };
+            }
+        };
+        return KineticStimulus;
+    }(exports.GraphicalStimulus);
+    exports.Presentable = Presentable = function () {
+        function Presentable() {
+        }
+        Presentable.prototype.present = function (context) {
+        };
+        return Presentable;
     }();
+    exports.ActionPresentable = ActionPresentable = function (_super) {
+        var _class;
+        __extends(ActionPresentable, _super);
+        function ActionPresentable() {
+            return _class.apply(this, arguments);
+        }
+        _class = ActionPresentable.action;
+        ActionPresentable.prototype.present = function (context) {
+            return this.action.apply(context);
+        };
+        return ActionPresentable;
+    }(exports.Presentable);
+    exports.Drawable = Drawable = function (_super) {
+        __extends(Drawable, _super);
+        function Drawable() {
+            return Drawable.__super__.constructor.apply(this, arguments);
+        }
+        Drawable.prototype.present = function (context) {
+        };
+        Drawable.prototype.x = function () {
+            return 0;
+        };
+        Drawable.prototype.y = function () {
+            return 0;
+        };
+        Drawable.prototype.width = function () {
+            return 0;
+        };
+        Drawable.prototype.height = function () {
+            return 0;
+        };
+        Drawable.prototype.bounds = function () {
+            return {
+                x: this.x(),
+                y: this.y(),
+                width: this.width(),
+                height: this.height()
+            };
+        };
+        return Drawable;
+    }(exports.Presentable);
+    exports.KineticDrawable = KineticDrawable = function (_super) {
+        __extends(KineticDrawable, _super);
+        function KineticDrawable(nodes) {
+            this.nodes = nodes;
+            if (!_.isArray(this.nodes)) {
+                this.nodes = [this.nodes];
+            }
+        }
+        KineticDrawable.prototype.present = function (context, layer) {
+            var node, _i, _len, _ref, _results;
+            console.log('presenting ', this.nodes);
+            _ref = this.nodes;
+            _results = [];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                node = _ref[_i];
+                if (!layer) {
+                    _results.push(context.contentLayer.add(node));
+                } else {
+                    console.log('drawing in layer supplied as arg');
+                    _results.push(layer.add(node));
+                }
+            }
+            return _results;
+        };
+        KineticDrawable.prototype.x = function () {
+            var xs;
+            xs = _.map(this.nodes, function (node) {
+                return exports.KineticStimulus.nodePosition(node).x;
+            });
+            return _.min(xs);
+        };
+        KineticDrawable.prototype.y = function () {
+            var ys;
+            ys = _.map(this.nodes, function (node) {
+                return exports.KineticStimulus.nodePosition(node).y;
+            });
+            return _.min(ys);
+        };
+        KineticDrawable.prototype.xmax = function () {
+            var xs;
+            xs = _.map(this.nodes, function (node) {
+                return exports.KineticStimulus.nodePosition(node).x + exports.KineticStimulus.nodeSize(node).width;
+            });
+            return _.max(xs);
+        };
+        KineticDrawable.prototype.ymax = function () {
+            var xs;
+            xs = _.map(this.nodes, function (node) {
+                return exports.KineticStimulus.nodePosition(node).y + exports.KineticStimulus.nodeSize(node).height;
+            });
+            return _.max(xs);
+        };
+        KineticDrawable.prototype.width = function () {
+            return this.xmax() - this.x();
+        };
+        KineticDrawable.prototype.height = function () {
+            return this.ymax() - this.y();
+        };
+        return KineticDrawable;
+    }(exports.Drawable);
+    exports.ContainerDrawable = ContainerDrawable = function (_super) {
+        __extends(ContainerDrawable, _super);
+        function ContainerDrawable(nodes) {
+            this.nodes = nodes;
+            console.log('creating container drawable');
+        }
+        ContainerDrawable.prototype.present = function (context, layer) {
+            var node, _i, _len, _ref, _results;
+            console.log('presenting container drawables');
+            _ref = this.nodes;
+            _results = [];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                node = _ref[_i];
+                if (!layer) {
+                    console.log('SUPPLIED LAYER!');
+                    _results.push(node.present(context));
+                } else {
+                    console.log('default layer');
+                    _results.push(node.present(context, layer));
+                }
+            }
+            return _results;
+        };
+        return ContainerDrawable;
+    }(exports.Drawable);
     exports.Response = Response = function (_super) {
         __extends(Response, _super);
         function Response() {
-            _ref = Response.__super__.constructor.apply(this, arguments);
-            return _ref;
+            return Response.__super__.constructor.apply(this, arguments);
         }
         Response.prototype.start = function (context) {
             return this.activate(context);
@@ -15488,7 +15756,7 @@ require.define('73', function(module, exports, __dirname, __filename, undefined)
 });
 require.define('74', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var AbsoluteLayout, GridLayout, Layout, computeGridCells, convertPercentageToFraction, convertToCoordinate, isPercentage, isPositionLabel, positionToCoord, _, _ref, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var AbsoluteLayout, GridLayout, Layout, computeGridCells, convertPercentageToFraction, convertToCoordinate, isPercentage, isPositionLabel, positionToCoord, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -15643,8 +15911,7 @@ require.define('74', function(module, exports, __dirname, __filename, undefined)
     exports.AbsoluteLayout = AbsoluteLayout = function (_super) {
         __extends(AbsoluteLayout, _super);
         function AbsoluteLayout() {
-            _ref = AbsoluteLayout.__super__.constructor.apply(this, arguments);
-            return _ref;
+            return AbsoluteLayout.__super__.constructor.apply(this, arguments);
         }
         AbsoluteLayout.prototype.computePosition = function (dim, constraints) {
             var x, y;
@@ -15675,10 +15942,11 @@ require.define('74', function(module, exports, __dirname, __filename, undefined)
         };
         GridLayout.prototype.computePosition = function (dim, constraints) {
             var cell;
-            if (dim[0] !== this.bounds.width && dim[1] !== this.bounds.height) {
-                this.bounds.width = dim[0];
-                this.bounds.height = dim[1];
-                this.cells = this.computeCells();
+            if (constraints[0] > this.rows - 1) {
+                throw new Error('GridLayout.computePosition: illegal row position ' + constraints[0] + ' for grid with dimensions (' + this.rows + ', ' + this.cols + ')');
+            }
+            if (constraints[1] > this.cols - 1) {
+                throw new Error('GridLayout.computePosition: illegal column position ' + constraints[0] + ' for grid with dimensions (' + this.rows + ', ' + this.cols + ')');
             }
             cell = this.cells[constraints[0]][constraints[1]];
             return [
@@ -15693,7 +15961,7 @@ require.define('74', function(module, exports, __dirname, __filename, undefined)
 });
 require.define('79', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Background, Kinetic, Stimulus, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var Background, ContainerDrawable, GStimulus, Kinetic, KineticDrawable, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -15707,16 +15975,22 @@ require.define('79', function(module, exports, __dirname, __filename, undefined)
             return child;
         };
     Kinetic = require('27', module).Kinetic;
-    Stimulus = require('73', module).Stimulus;
+    GStimulus = require('73', module).GraphicalStimulus;
+    KineticDrawable = require('73', module).KineticDrawable;
+    ContainerDrawable = require('73', module).ContainerDrawable;
+    _ = require('2', module);
     Background = function (_super) {
         __extends(Background, _super);
         function Background(stims, fill) {
             this.stims = stims != null ? stims : [];
             this.fill = fill != null ? fill : 'white';
             Background.__super__.constructor.call(this, {}, {});
+            if (!_.isArray(this.stims)) {
+                this.stims = [this.stims];
+            }
         }
-        Background.prototype.render = function (context, layer) {
-            var background, stim, _i, _len, _ref, _results;
+        Background.prototype.render = function (context) {
+            var background, drawables, stim, _i, _len, _ref;
             background = new Kinetic.Rect({
                 x: 0,
                 y: 0,
@@ -15725,23 +15999,23 @@ require.define('79', function(module, exports, __dirname, __filename, undefined)
                 name: 'background',
                 fill: this.fill
             });
-            layer.add(background);
+            drawables = [];
+            drawables.push(new KineticDrawable(background));
             _ref = this.stims;
-            _results = [];
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
                 stim = _ref[_i];
-                _results.push(stim.render(context, layer));
+                drawables.push(stim.render(context));
             }
-            return _results;
+            return new ContainerDrawable(drawables);
         };
         return Background;
-    }(Stimulus);
+    }(GStimulus);
     exports.Background = Background;
 }.call(this));
 });
 require.define('83', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Background, Bacon, Block, BlockSeq, Coda, DataTable, DefaultComponentFactory, Event, EventData, EventDataLog, Experiment, ExperimentContext, ExperimentState, FeedbackNode, FunctionNode, Kinetic, KineticContext, MockStimFactory, Prelude, Presenter, Q, Response, ResponseData, RunnableNode, StimFactory, Stimulus, TAFFY, Trial, buildCoda, buildEvent, buildPrelude, buildResponse, buildStimulus, buildTrial, createContext, des, functionNode, makeEventSeq, utils, _, __dummySpec, _ref, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var Background, Bacon, Block, BlockSeq, Coda, DataTable, DefaultComponentFactory, Event, EventData, EventDataLog, Experiment, ExperimentContext, ExperimentState, FeedbackNode, FunctionNode, Kinetic, KineticContext, MockStimFactory, Prelude, Presenter, Q, Response, ResponseData, RunnableNode, StimFactory, Stimulus, TAFFY, Trial, buildCoda, buildEvent, buildPrelude, buildResponse, buildStimulus, buildTrial, createContext, des, functionNode, makeEventSeq, utils, _, __dummySpec, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -15843,8 +16117,7 @@ require.define('83', function(module, exports, __dirname, __filename, undefined)
     exports.MockStimFactory = MockStimFactory = function (_super) {
         __extends(MockStimFactory, _super);
         function MockStimFactory() {
-            _ref = MockStimFactory.__super__.constructor.apply(this, arguments);
-            return _ref;
+            return MockStimFactory.__super__.constructor.apply(this, arguments);
         }
         MockStimFactory.prototype.makeStimulus = function (name, params, context) {
             var ret;
@@ -15884,8 +16157,7 @@ require.define('83', function(module, exports, __dirname, __filename, undefined)
             for (_i = 0, _len = funArray.length; _i < _len; _i++) {
                 fun = funArray[_i];
                 result = result.then(fun, function (err) {
-                    console.log('error message: ', err);
-                    throw new Error('Error during execution: ', err);
+                    return console.log('error stack: ', err.stack);
                 });
             }
             return result;
@@ -15982,26 +16254,31 @@ require.define('83', function(module, exports, __dirname, __filename, undefined)
             return this.response.stop(context);
         };
         Event.prototype.before = function (context) {
-            var self, _this = this;
+            var self;
             self = this;
-            return functionNode(function () {
-                if (!context.exState.inPrelude) {
-                    context.updateState(function () {
-                        return context.exState.nextEvent(self);
-                    });
-                }
-                if (!_this.stimulus.overlay) {
-                    context.clearContent();
-                }
-                _this.stimulus.render(context, context.contentLayer);
-                return context.draw();
-            });
+            return functionNode(function (_this) {
+                return function () {
+                    var p;
+                    if (!context.exState.inPrelude) {
+                        context.updateState(function () {
+                            return context.exState.nextEvent(self);
+                        });
+                    }
+                    if (!_this.stimulus.overlay) {
+                        context.clearContent();
+                    }
+                    p = _this.stimulus.render(context);
+                    p.present(context);
+                    return context.draw();
+                };
+            }(this));
         };
         Event.prototype.after = function (context) {
-            var _this = this;
-            return functionNode(function () {
-                return _this.stimulus.stop(context);
-            });
+            return functionNode(function (_this) {
+                return function () {
+                    return _this.stimulus.stop(context);
+                };
+            }(this));
         };
         Event.prototype.start = function (context) {
             return Event.__super__.start.call(this, context);
@@ -16026,18 +16303,21 @@ require.define('83', function(module, exports, __dirname, __filename, undefined)
             return this.children.push(event);
         };
         Trial.prototype.before = function (context) {
-            var self, _this = this;
+            var self;
             self = this;
-            return functionNode(function () {
-                context.updateState(function () {
-                    return context.exState.nextTrial(self);
-                });
-                context.clearBackground();
-                if (_this.background != null) {
-                    context.setBackground(_this.background);
-                    return context.drawBackground();
-                }
-            });
+            return functionNode(function (_this) {
+                return function () {
+                    context.updateState(function () {
+                        return context.exState.nextTrial(self);
+                    });
+                    context.clearBackground();
+                    if (_this.background != null) {
+                        console.log('drawing background');
+                        context.setBackground(_this.background);
+                        return context.drawBackground();
+                    }
+                };
+            }(this));
         };
         Trial.prototype.after = function (context) {
             return new FeedbackNode(this.feedback);
@@ -16069,43 +16349,46 @@ require.define('83', function(module, exports, __dirname, __filename, undefined)
             return event.start(context);
         };
         Block.prototype.before = function (context) {
-            var self, _this = this;
+            var self;
             self = this;
-            return functionNode(function () {
-                var args, spec;
-                context.updateState(function () {
-                    return context.exState.nextBlock(self);
-                });
-                if (_this.blockSpec != null && _this.blockSpec.Start) {
-                    args = _.extend(context.exState.toRecord(), { context: context });
-                    spec = _this.blockSpec.Start.apply(args);
-                    return _this.showEvent(spec, context);
-                } else {
-                    return Q.fcall(0);
-                }
-            });
+            return functionNode(function (_this) {
+                return function () {
+                    var args, spec;
+                    context.updateState(function () {
+                        return context.exState.nextBlock(self);
+                    });
+                    if (_this.blockSpec != null && _this.blockSpec.Start) {
+                        args = _.extend(context.exState.toRecord(), { context: context });
+                        spec = _this.blockSpec.Start.apply(args);
+                        return _this.showEvent(spec, context);
+                    } else {
+                        return Q.fcall(0);
+                    }
+                };
+            }(this));
         };
         Block.prototype.after = function (context) {
-            var _this = this;
-            return functionNode(function () {
-                var args, blockData, curid, ids, out, spec, _i, _len;
-                if (_this.blockSpec != null && _this.blockSpec.End) {
-                    blockData = context.blockData();
-                    ids = _.unique(blockData.select('id'));
-                    console.log('END ids', ids);
-                    out = {};
-                    for (_i = 0, _len = ids.length; _i < _len; _i++) {
-                        curid = ids[_i];
-                        out[curid] = DataTable.fromRecords(blockData.filter({ id: curid }).get());
+            return functionNode(function (_this) {
+                return function () {
+                    var args, blockData, curid, ids, out, spec, _i, _len;
+                    if (_this.blockSpec != null && _this.blockSpec.End) {
+                        blockData = context.blockData();
+                        ids = _.unique(blockData.select('id'));
+                        console.log('END ids', ids);
+                        out = {};
+                        for (_i = 0, _len = ids.length; _i < _len; _i++) {
+                            curid = ids[_i];
+                            out[curid] = DataTable.fromRecords(blockData.filter({ id: curid }).get());
+                        }
+                        args = _.extend(context.exState.toRecord(), { context: context }, out);
+                        console.log('block end args');
+                        spec = _this.blockSpec.End.apply(args);
+                        return _this.showEvent(spec, context);
+                    } else {
+                        return Q.fcall(0);
                     }
-                    args = _.extend(context.exState.toRecord(), { context: context }, out);
-                    console.log('block end args');
-                    spec = _this.blockSpec.End.apply(args);
-                    return _this.showEvent(spec, context);
-                } else {
-                    return Q.fcall(0);
-                }
-            });
+                };
+            }(this));
         };
         return Block;
     }(RunnableNode);
@@ -16122,20 +16405,22 @@ require.define('83', function(module, exports, __dirname, __filename, undefined)
             Prelude.__super__.constructor.call(this, children);
         }
         Prelude.prototype.before = function (context) {
-            var _this = this;
-            return functionNode(function () {
-                return context.updateState(function () {
-                    return context.exState.insidePrelude();
-                });
-            });
+            return functionNode(function (_this) {
+                return function () {
+                    return context.updateState(function () {
+                        return context.exState.insidePrelude();
+                    });
+                };
+            }(this));
         };
         Prelude.prototype.after = function (context) {
-            var _this = this;
-            return functionNode(function () {
-                return context.updateState(function () {
-                    return context.exState.outsidePrelude();
-                });
-            });
+            return functionNode(function (_this) {
+                return function () {
+                    return context.updateState(function () {
+                        return context.exState.outsidePrelude();
+                    });
+                };
+            }(this));
         };
         return Prelude;
     }(RunnableNode);
@@ -16192,20 +16477,20 @@ require.define('83', function(module, exports, __dirname, __filename, undefined)
             return ret;
         };
         ExperimentState.prototype.toRecord = function () {
-            var key, ret, value, _ref1, _ref10, _ref11, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
+            var key, ret, value, _ref, _ref1, _ref10, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
             ret = {
                 blockNumber: this.blockNumber,
                 trialNumber: this.trialNumber,
                 eventNumber: this.eventNumber,
-                stimulus: (_ref1 = this.event) != null ? (_ref2 = _ref1.stimulus) != null ? (_ref3 = _ref2.constructor) != null ? _ref3.name : void 0 : void 0 : void 0,
-                response: (_ref4 = this.event) != null ? (_ref5 = _ref4.response) != null ? (_ref6 = _ref5.constructor) != null ? _ref6.name : void 0 : void 0 : void 0,
-                stimulusID: (_ref7 = this.event) != null ? (_ref8 = _ref7.stimulus) != null ? _ref8.id : void 0 : void 0,
-                responseID: (_ref9 = this.event) != null ? (_ref10 = _ref9.response) != null ? _ref10.id : void 0 : void 0
+                stimulus: (_ref = this.event) != null ? (_ref1 = _ref.stimulus) != null ? (_ref2 = _ref1.constructor) != null ? _ref2.name : void 0 : void 0 : void 0,
+                response: (_ref3 = this.event) != null ? (_ref4 = _ref3.response) != null ? (_ref5 = _ref4.constructor) != null ? _ref5.name : void 0 : void 0 : void 0,
+                stimulusID: (_ref6 = this.event) != null ? (_ref7 = _ref6.stimulus) != null ? _ref7.id : void 0 : void 0,
+                responseID: (_ref8 = this.event) != null ? (_ref9 = _ref8.response) != null ? _ref9.id : void 0 : void 0
             };
             if (!_.isEmpty(this.trial) && this.trial.record != null) {
-                _ref11 = this.trial.record;
-                for (key in _ref11) {
-                    value = _ref11[key];
+                _ref10 = this.trial.record;
+                for (key in _ref10) {
+                    value = _ref10[key];
                     ret[key] = value;
                 }
             }
@@ -16337,7 +16622,11 @@ require.define('83', function(module, exports, __dirname, __filename, undefined)
             return event.start(this);
         };
         ExperimentContext.prototype.showStimulus = function (stimulus) {
-            return stimulus.render(this);
+            var p;
+            p = stimulus.render(this);
+            p.present(this);
+            console.log('show Stimulus, drawing');
+            return this.draw();
         };
         ExperimentContext.prototype.start = function (blockList) {
             var error, farray;
@@ -16409,9 +16698,11 @@ require.define('83', function(module, exports, __dirname, __filename, undefined)
             return $('.kineticjs-content').css('position', 'absolute');
         };
         KineticContext.prototype.setBackground = function (newBackground) {
+            var p;
             this.background = newBackground;
             this.backgroundLayer.removeChildren();
-            return this.background.render(this, this.backgroundLayer);
+            p = this.background.render(this);
+            return p.present(this, this.backgroundLayer);
         };
         KineticContext.prototype.drawBackground = function () {
             return this.backgroundLayer.draw();
@@ -16447,7 +16738,11 @@ require.define('83', function(module, exports, __dirname, __filename, undefined)
             return this.stage.getOffsetY();
         };
         KineticContext.prototype.showStimulus = function (stimulus) {
-            return stimulus.render(this, this.contentLayer);
+            var p;
+            p = stimulus.render(this);
+            p.present(this);
+            console.log('show Stimulus, drawing');
+            return this.draw();
         };
         KineticContext.prototype.keydownStream = function () {
             return Bacon.fromEventTarget(window, 'keydown');
@@ -16459,11 +16754,12 @@ require.define('83', function(module, exports, __dirname, __filename, undefined)
             var MouseBus;
             MouseBus = function () {
                 function MouseBus() {
-                    var _this = this;
                     this.stream = new Bacon.Bus();
-                    this.handler = function (x) {
-                        return _this.stream.push(x);
-                    };
+                    this.handler = function (_this) {
+                        return function (x) {
+                            return _this.stream.push(x);
+                        };
+                    }(this);
                     this.stage.on('mousedown', this.handler);
                 }
                 MouseBus.prototype.stop = function () {
@@ -16567,17 +16863,17 @@ require.define('83', function(module, exports, __dirname, __filename, undefined)
             this.coda = this.display.Coda != null ? buildCoda(this.display.Coda.Events, this.context) : (console.log('building dummy coda'), buildCoda(__dummySpec.Events, this.context));
         }
         Presenter.prototype.start = function () {
-            var args, block, record, trialNum, trialSpec, trials, _this = this;
+            var args, block, record, trialNum, trialSpec, trials;
             this.blockList = new BlockSeq(function () {
-                var _i, _len, _ref1, _results;
-                _ref1 = this.trialList.blocks;
+                var _i, _len, _ref, _results;
+                _ref = this.trialList.blocks;
                 _results = [];
-                for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-                    block = _ref1[_i];
+                for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                    block = _ref[_i];
                     trials = function () {
-                        var _j, _ref2, _results1;
+                        var _j, _ref1, _results1;
                         _results1 = [];
-                        for (trialNum = _j = 0, _ref2 = block.length; 0 <= _ref2 ? _j < _ref2 : _j > _ref2; trialNum = 0 <= _ref2 ? ++_j : --_j) {
+                        for (trialNum = _j = 0, _ref1 = block.length; 0 <= _ref1 ? _j < _ref1 : _j > _ref1; trialNum = 0 <= _ref1 ? ++_j : --_j) {
                             record = _.clone(block[trialNum]);
                             args = {};
                             args.trial = record;
@@ -16591,12 +16887,16 @@ require.define('83', function(module, exports, __dirname, __filename, undefined)
                 }
                 return _results;
             }.call(this));
-            return this.prelude.start(this.context).then(function () {
-                return _this.blockList.start(_this.context);
-            }).then(function () {
-                console.log('inside coda');
-                return _this.coda.start(_this.context);
-            });
+            return this.prelude.start(this.context).then(function (_this) {
+                return function () {
+                    return _this.blockList.start(_this.context);
+                };
+            }(this)).then(function (_this) {
+                return function () {
+                    console.log('inside coda');
+                    return _this.coda.start(_this.context);
+                };
+            }(this));
         };
         return Presenter;
     }();
@@ -16642,9 +16942,9 @@ require.define('83', function(module, exports, __dirname, __filename, undefined)
             trials = this.design.fullDesign;
             console.log(trials.nrow());
             trialList = function () {
-                var _i, _ref1, _results;
+                var _i, _ref, _results;
                 _results = [];
-                for (i = _i = 0, _ref1 = trials.nrow(); 0 <= _ref1 ? _i < _ref1 : _i > _ref1; i = 0 <= _ref1 ? ++_i : --_i) {
+                for (i = _i = 0, _ref = trials.nrow(); 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
                     record = trials.record(i);
                     record.$trialNumber = i;
                     trialSpec = this.trialGenerator(record);
@@ -17252,6 +17552,7 @@ require.define('82', function(module, exports, __dirname, __filename, undefined)
     exports.Confirm = require('85', module).Confirm;
     exports.First = require('86', module).First;
     exports.Group = require('87', module).Group;
+    exports.Grid = require('87', module).Grid;
     KP = require('88', module);
     exports.KeyPress = KP.KeyPress;
     exports.SpaceKey = KP.SpaceKey;
@@ -17542,7 +17843,7 @@ require.define('89', function(module, exports, __dirname, __filename, undefined)
 });
 require.define('88', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var AnyKey, KeyPress, KeyResponse, Q, Response, ResponseData, SpaceKey, i, keyTable, utils, _, _i, _j, _ref, _ref1, _ref2, _ref3, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var AnyKey, KeyPress, KeyResponse, Q, Response, ResponseData, SpaceKey, i, keyTable, utils, _, _i, _j, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -17608,8 +17909,7 @@ require.define('88', function(module, exports, __dirname, __filename, undefined)
     KeyResponse = function (_super) {
         __extends(KeyResponse, _super);
         function KeyResponse() {
-            _ref = KeyResponse.__super__.constructor.apply(this, arguments);
-            return _ref;
+            return KeyResponse.__super__.constructor.apply(this, arguments);
         }
         KeyResponse.prototype.defaults = {
             keys: [
@@ -17632,44 +17932,48 @@ require.define('88', function(module, exports, __dirname, __filename, undefined)
             return resp;
         };
         KeyResponse.prototype.resolveOnTimeout = function (deferred, timeout) {
-            var _this = this;
-            return utils.doTimer(timeout, function (diff) {
-                var Acc, resp, timeStamp;
-                if (!deferred.isResolved) {
-                    timeStamp = utils.getTimestamp();
-                    Acc = false;
-                    resp = _this.createResponseData(timeStamp, _this.startTime, Acc, '');
-                    return deferred.resolve(new ResponseData(resp));
-                }
-            });
+            return utils.doTimer(timeout, function (_this) {
+                return function (diff) {
+                    var Acc, resp, timeStamp;
+                    if (!deferred.isResolved) {
+                        timeStamp = utils.getTimestamp();
+                        Acc = false;
+                        resp = _this.createResponseData(timeStamp, _this.startTime, Acc, '');
+                        return deferred.resolve(new ResponseData(resp));
+                    }
+                };
+            }(this));
         };
         return KeyResponse;
     }(Response);
     KeyPress = function (_super) {
         __extends(KeyPress, _super);
         function KeyPress() {
-            _ref1 = KeyPress.__super__.constructor.apply(this, arguments);
-            return _ref1;
+            return KeyPress.__super__.constructor.apply(this, arguments);
         }
         KeyPress.prototype.activate = function (context) {
-            var deferred, keyStream, _this = this;
+            var deferred, keyStream;
             this.startTime = utils.getTimestamp();
             deferred = Q.defer();
             keyStream = context.keypressStream();
             if (this.spec.timeout != null) {
-                resolveOnTimeout(deferred, this.spec.timeout);
+                this.resolveOnTimeout(deferred, this.spec.timeout);
             }
-            keyStream.filter(function (event) {
-                var char;
-                char = String.fromCharCode(event.keyCode);
-                return _.contains(_this.spec.keys, char);
-            }).take(1).onValue(function (filtered) {
-                var Acc, resp, timeStamp;
-                timeStamp = utils.getTimestamp();
-                Acc = _.contains(_this.spec.correct, String.fromCharCode(filtered.keyCode));
-                resp = _this.createResponseData(timeStamp, _this.startTime, Acc, String.fromCharCode(filtered.keyCode));
-                return deferred.resolve(new ResponseData(resp));
-            });
+            keyStream.filter(function (_this) {
+                return function (event) {
+                    var char;
+                    char = String.fromCharCode(event.keyCode);
+                    return _.contains(_this.spec.keys, char);
+                };
+            }(this)).take(1).onValue(function (_this) {
+                return function (filtered) {
+                    var Acc, resp, timeStamp;
+                    timeStamp = utils.getTimestamp();
+                    Acc = _.contains(_this.spec.correct, String.fromCharCode(filtered.keyCode));
+                    resp = _this.createResponseData(timeStamp, _this.startTime, Acc, String.fromCharCode(filtered.keyCode));
+                    return deferred.resolve(new ResponseData(resp));
+                };
+            }(this));
             return deferred.promise;
         };
         return KeyPress;
@@ -17678,28 +17982,31 @@ require.define('88', function(module, exports, __dirname, __filename, undefined)
     SpaceKey = function (_super) {
         __extends(SpaceKey, _super);
         function SpaceKey() {
-            _ref2 = SpaceKey.__super__.constructor.apply(this, arguments);
-            return _ref2;
+            return SpaceKey.__super__.constructor.apply(this, arguments);
         }
         SpaceKey.prototype.activate = function (context) {
-            var deferred, keyStream, _this = this;
+            var deferred, keyStream;
             this.startTime = utils.getTimestamp();
             deferred = Q.defer();
             keyStream = context.keypressStream();
-            keyStream.filter(function (event) {
-                return event.keyCode === 32;
-            }).take(1).onValue(function (event) {
-                var resp, timeStamp;
-                timeStamp = utils.getTimestamp();
-                resp = {
-                    name: 'SpaceKey',
-                    id: _this.id,
-                    KeyTime: timeStamp,
-                    RT: timeStamp - _this.startTime,
-                    KeyChar: 'space'
+            keyStream.filter(function (_this) {
+                return function (event) {
+                    return event.keyCode === 32;
                 };
-                return deferred.resolve(new ResponseData(resp));
-            });
+            }(this)).take(1).onValue(function (_this) {
+                return function (event) {
+                    var resp, timeStamp;
+                    timeStamp = utils.getTimestamp();
+                    resp = {
+                        name: 'SpaceKey',
+                        id: _this.id,
+                        KeyTime: timeStamp,
+                        RT: timeStamp - _this.startTime,
+                        KeyChar: 'space'
+                    };
+                    return deferred.resolve(new ResponseData(resp));
+                };
+            }(this));
             return deferred.promise;
         };
         return SpaceKey;
@@ -17707,26 +18014,27 @@ require.define('88', function(module, exports, __dirname, __filename, undefined)
     AnyKey = function (_super) {
         __extends(AnyKey, _super);
         function AnyKey() {
-            _ref3 = AnyKey.__super__.constructor.apply(this, arguments);
-            return _ref3;
+            return AnyKey.__super__.constructor.apply(this, arguments);
         }
         AnyKey.prototype.activate = function (context) {
-            var deferred, keyStream, _this = this;
+            var deferred, keyStream;
             this.startTime = utils.getTimestamp();
             deferred = Q.defer();
             keyStream = context.keypressStream();
-            keyStream.take(1).onValue(function (event) {
-                var resp, timeStamp;
-                timeStamp = utils.getTimestamp();
-                resp = {
-                    name: 'AnyKey',
-                    id: _this.id,
-                    KeyTime: timeStamp,
-                    RT: timeStamp - _this.startTime,
-                    KeyChar: String.fromCharCode(event.keyCode)
+            keyStream.take(1).onValue(function (_this) {
+                return function (event) {
+                    var resp, timeStamp;
+                    timeStamp = utils.getTimestamp();
+                    resp = {
+                        name: 'AnyKey',
+                        id: _this.id,
+                        KeyTime: timeStamp,
+                        RT: timeStamp - _this.startTime,
+                        KeyChar: String.fromCharCode(event.keyCode)
+                    };
+                    return deferred.resolve(new ResponseData(resp));
                 };
-                return deferred.resolve(new ResponseData(resp));
-            });
+            }(this));
             return deferred.promise;
         };
         return AnyKey;
@@ -17737,7 +18045,7 @@ require.define('88', function(module, exports, __dirname, __filename, undefined)
 });
 require.define('87', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Group, Stimulus, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var ContainerDrawable, Grid, Group, Stimulus, layout, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -17751,6 +18059,8 @@ require.define('87', function(module, exports, __dirname, __filename, undefined)
             return child;
         };
     Stimulus = require('73', module).Stimulus;
+    ContainerDrawable = require('73', module).ContainerDrawable;
+    layout = require('74', module);
     Group = function (_super) {
         __extends(Group, _super);
         function Group(stims, layout) {
@@ -17766,19 +18076,46 @@ require.define('87', function(module, exports, __dirname, __filename, undefined)
                 }
             }
         }
-        Group.prototype.render = function (context, layer) {
-            var stim, _i, _len, _ref, _results;
-            _ref = this.stims;
-            _results = [];
-            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-                stim = _ref[_i];
-                _results.push(stim.render(context, layer));
-            }
-            return _results;
+        Group.prototype.render = function (context) {
+            var nodes, stim;
+            console.log('rendering group stim');
+            nodes = function () {
+                var _i, _len, _ref, _results;
+                _ref = this.stims;
+                _results = [];
+                for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                    stim = _ref[_i];
+                    _results.push(stim.render(context));
+                }
+                return _results;
+            }.call(this);
+            return new ContainerDrawable(nodes);
         };
         return Group;
     }(Stimulus);
     exports.Group = Group;
+    Grid = function (_super) {
+        __extends(Grid, _super);
+        function Grid(stims, rows, columns, bounds) {
+            var stim, _i, _len, _ref;
+            this.stims = stims;
+            this.rows = rows;
+            this.columns = columns;
+            this.bounds = bounds;
+            console.log('Grid bounds', this.bounds);
+            console.log('rows', this.rows);
+            console.log('cols', this.cols);
+            this.layout = new layout.GridLayout(this.rows, this.columns, this.bounds);
+            console.log('layout:', this.layout);
+            _ref = this.stims;
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                stim = _ref[_i];
+                stim.layout = this.layout;
+            }
+        }
+        return Grid;
+    }(Group);
+    exports.Grid = Grid;
 }.call(this));
 });
 require.define('86', function(module, exports, __dirname, __filename, undefined){
@@ -17916,7 +18253,7 @@ require.define('84', function(module, exports, __dirname, __filename, undefined)
 });
 require.define('81', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var HMixResp, HMixStim, Html, HtmlMixin, HtmlResponse, HtmlStimulus, Mixen, Response, Stimulus, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var Drawable, GStimulus, HMixResp, HMixStim, Html, HtmlMixin, HtmlResponse, HtmlStimulus, Mixen, Response, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -17929,7 +18266,8 @@ require.define('81', function(module, exports, __dirname, __filename, undefined)
             child.__super__ = parent.prototype;
             return child;
         };
-    Stimulus = require('73', module).Stimulus;
+    GStimulus = require('73', module).GraphicalStimulus;
+    Drawable = require('73', module).Drawable;
     Response = require('73', module).Response;
     Mixen = require('31', module);
     HtmlMixin = function () {
@@ -17942,7 +18280,6 @@ require.define('81', function(module, exports, __dirname, __filename, undefined)
             this.el = $(this.el);
         }
         HtmlMixin.prototype.positionElement = function (el, x, y) {
-            console.log('placing element at', x, y);
             return el.css({
                 position: 'absolute',
                 left: x,
@@ -17959,27 +18296,51 @@ require.define('81', function(module, exports, __dirname, __filename, undefined)
         };
         return HtmlMixin;
     }();
-    HMixStim = Mixen(HtmlMixin, Stimulus);
+    HMixStim = Mixen(HtmlMixin, GStimulus);
     HMixResp = Mixen(HtmlMixin, Response);
     HtmlStimulus = function (_super) {
         __extends(HtmlStimulus, _super);
-        function HtmlStimulus() {
-            HtmlStimulus.__super__.constructor.apply(this, arguments);
+        function HtmlStimulus(spec) {
+            HtmlStimulus.__super__.constructor.call(this, spec);
         }
-        HtmlStimulus.prototype.render = function (context, layer) {
+        HtmlStimulus.prototype.presentable = function (element) {
+            return new (function (_super1) {
+                __extends(_Class, _super1);
+                function _Class(element) {
+                    this.element = element;
+                }
+                _Class.prototype.x = function () {
+                    return this.element.position().left;
+                };
+                _Class.prototype.y = function () {
+                    return this.element.position().top;
+                };
+                _Class.prototype.width = function () {
+                    return this.element.width();
+                };
+                _Class.prototype.height = function () {
+                    return this.element.height();
+                };
+                _Class.prototype.present = function (context) {
+                    return this.element.show();
+                };
+                return _Class;
+            }(Drawable))(element);
+        };
+        HtmlStimulus.prototype.render = function (context) {
             var coords;
+            console.log('rendering html stimulus', this.name);
             this.el.hide();
             context.appendHtml(this.el);
+            console.log('@spec.position', this.spec.position);
+            console.log('@spec.x', this.spec.x);
+            console.log('@spec.y', this.spec.y);
+            console.log('@el width', this.el.width());
+            console.log('@el height', this.el.height());
             coords = this.computeCoordinates(context, this.spec.position, this.el.width(), this.el.height());
             console.log('coords', coords);
             this.positionElement(this.el, coords[0], coords[1]);
-            this.el.show();
-            console.log('element width is', this.el.width());
-            console.log('element height is', this.el.height());
-            console.log('spec.position', this.spec.position);
-            console.log('spec.x', this.spec.x);
-            console.log('spec.y', this.spec.y);
-            return HtmlStimulus.__super__.render.call(this, context, layer);
+            return this.presentable(this.el);
         };
         return HtmlStimulus;
     }(HMixStim);
@@ -18032,7 +18393,7 @@ require.define('101', function(module, exports, __dirname, __filename, undefined
             Page.__super__.constructor.call(this, spec);
             this.el.append(this.spec.html);
         }
-        Page.prototype.render = function (context, layer) {
+        Page.prototype.render = function (context) {
             return context.appendHtml(this.el);
         };
         return Page;
@@ -18341,7 +18702,6 @@ require.define('95', function(module, exports, __dirname, __filename, undefined)
             HtmlLink.__super__.constructor.call(this, spec);
             this.html = $('<a href=\'#\'>' + this.spec.label + '</a>');
             this.el.append(this.html);
-            this.positionElement(this.el);
         }
         return HtmlLink;
     }(html.HtmlStimulus);
@@ -18378,7 +18738,6 @@ require.define('94', function(module, exports, __dirname, __filename, undefined)
             this.el.addClass('ui button');
             this.el.addClass(this.spec['class']);
             this.el.append(this.spec.label);
-            this.positionElement(this.el);
         }
         return HtmlButton;
     }(html.HtmlStimulus);
@@ -18402,12 +18761,13 @@ require.define('80', function(module, exports, __dirname, __filename, undefined)
     Canvas.StartButton = require('111', module).StartButton;
     Canvas.Text = require('112', module).Text;
     Canvas.TextInput = require('113', module).TextInput;
+    Canvas.LabeledElement = require('126', module).LabeledElement;
     exports.Canvas = Canvas;
 }.call(this));
 });
 require.define('113', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Kinetic, Stimulus, TextInput, utils, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var KStimulus, Kinetic, TextInput, utils, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -18420,9 +18780,9 @@ require.define('113', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    Stimulus = require('73', module).Stimulus;
     utils = require('76', module);
     Kinetic = require('27', module).Kinetic;
+    KStimulus = require('73', module).KineticStimulus;
     TextInput = function (_super) {
         __extends(TextInput, _super);
         TextInput.prototype.defaults = {
@@ -18472,22 +18832,24 @@ require.define('113', function(module, exports, __dirname, __filename, undefined
             }
         };
         TextInput.prototype.animateCursor = function (layer, cursor) {
-            var flashTime, _this = this;
+            var flashTime;
             flashTime = 0;
-            return new Kinetic.Animation(function (frame) {
-                if (frame.time > flashTime + 500) {
-                    flashTime = frame.time;
-                    if (cursor.getOpacity() === 1) {
-                        cursor.setOpacity(0);
-                    } else {
-                        cursor.setOpacity(1);
+            return new Kinetic.Animation(function (_this) {
+                return function (frame) {
+                    if (frame.time > flashTime + 500) {
+                        flashTime = frame.time;
+                        if (cursor.getOpacity() === 1) {
+                            cursor.setOpacity(0);
+                        } else {
+                            cursor.setOpacity(1);
+                        }
+                        return layer.draw();
                     }
-                    return layer.draw();
-                }
-            }, layer);
+                };
+            }(this), layer);
         };
         TextInput.prototype.render = function (context, layer) {
-            var cursor, cursorBlink, enterPressed, fsize, group, keyStream, text, textContent, textRect, _this = this;
+            var cursor, cursorBlink, enterPressed, fsize, group, keyStream, text, textContent, textRect;
             textRect = new Kinetic.Rect({
                 x: this.spec.x,
                 y: this.spec.y,
@@ -18520,26 +18882,30 @@ require.define('113', function(module, exports, __dirname, __filename, undefined
             });
             enterPressed = false;
             keyStream = context.keydownStream();
-            keyStream.takeWhile(function (x) {
-                return enterPressed === false && !_this.stopped;
-            }).onValue(function (event) {
-                var char;
-                if (event.keyCode === 13) {
-                    return enterPressed = true;
-                } else if (event.keyCode === 8) {
-                    textContent = textContent.slice(0, -1);
-                    text.setText(textContent);
-                    cursor.setX(text.getX() + text.getWidth() - 7);
-                    return layer.draw();
-                } else if (text.getWidth() > textRect.getWidth()) {
-                } else {
-                    char = _this.getChar(event);
-                    textContent += char;
-                    text.setText(textContent);
-                    cursor.setX(text.getX() + text.getWidth() - 7);
-                    return layer.draw();
-                }
-            });
+            keyStream.takeWhile(function (_this) {
+                return function (x) {
+                    return enterPressed === false && !_this.stopped;
+                };
+            }(this)).onValue(function (_this) {
+                return function (event) {
+                    var char;
+                    if (event.keyCode === 13) {
+                        return enterPressed = true;
+                    } else if (event.keyCode === 8) {
+                        textContent = textContent.slice(0, -1);
+                        text.setText(textContent);
+                        cursor.setX(text.getX() + text.getWidth() - 7);
+                        return layer.draw();
+                    } else if (text.getWidth() > textRect.getWidth()) {
+                    } else {
+                        char = _this.getChar(event);
+                        textContent += char;
+                        text.setText(textContent);
+                        cursor.setX(text.getX() + text.getWidth() - 7);
+                        return layer.draw();
+                    }
+                };
+            }(this));
             cursorBlink = this.animateCursor(layer, cursor);
             cursorBlink.start();
             group = new Kinetic.Group({});
@@ -18549,13 +18915,13 @@ require.define('113', function(module, exports, __dirname, __filename, undefined
             return layer.add(group);
         };
         return TextInput;
-    }(Stimulus);
+    }(KStimulus);
     exports.TextInput = TextInput;
 }.call(this));
 });
 require.define('112', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Kinetic, Stimulus, Text, layout, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var KStimulus, Kinetic, Text, layout, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -18568,10 +18934,10 @@ require.define('112', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    Stimulus = require('73', module).Stimulus;
     layout = require('74', module);
     Kinetic = require('27', module).Kinetic;
     _ = require('2', module);
+    KStimulus = require('73', module).KineticStimulus;
     Text = function (_super) {
         __extends(Text, _super);
         Text.prototype.defaults = {
@@ -18582,24 +18948,23 @@ require.define('112', function(module, exports, __dirname, __filename, undefined
             fill: 'black',
             fontSize: 40,
             fontFamily: 'Arial',
-            textAlign: 'center',
+            align: 'center',
             position: null
         };
         function Text(spec) {
             if (spec == null) {
                 spec = {};
             }
-            Text.__super__.constructor.call(this, spec);
-            if (_.isArray(this.spec.content)) {
-                this.spec.content = this.spec.content.join('\n');
+            if (spec.content != null && _.isArray(spec.content)) {
+                spec.content = spec.content.join(' \n ');
                 if (spec.lineHeight == null) {
-                    this.spec.lineHeight = 2;
+                    spec.lineHeight = 2;
                 }
             }
+            Text.__super__.constructor.call(this, spec);
         }
-        Text.prototype.render = function (context, layer) {
-            var coords, text;
-            text = new Kinetic.Text({
+        Text.prototype.initialize = function () {
+            return this.text = new Kinetic.Text({
                 x: 0,
                 y: 0,
                 text: this.spec.content,
@@ -18609,23 +18974,26 @@ require.define('112', function(module, exports, __dirname, __filename, undefined
                 lineHeight: this.spec.lineHeight || 1,
                 width: this.spec.width,
                 listening: false,
-                align: this.spec.textAlign
+                align: this.spec.align
             });
-            coords = this.computeCoordinates(context, this.spec.position, text.getWidth(), text.getHeight());
-            text.setPosition({
+        };
+        Text.prototype.render = function (context, layer) {
+            var coords;
+            coords = this.computeCoordinates(context, this.spec.position, this.text.getWidth(), this.text.getHeight());
+            this.text.setPosition({
                 x: coords[0],
                 y: coords[1]
             });
-            return layer.add(text);
+            return this.presentable(this.text);
         };
         return Text;
-    }(Stimulus);
+    }(KStimulus);
     exports.Text = Text;
 }.call(this));
 });
 require.define('111', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Kinetic, StartButton, Stimulus, _ref, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var KStimulus, Kinetic, StartButton, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -18638,19 +19006,18 @@ require.define('111', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    Stimulus = require('73', module).Stimulus;
     Kinetic = require('27', module).Kinetic;
+    KStimulus = require('73', module).KineticStimulus;
     StartButton = function (_super) {
         __extends(StartButton, _super);
         function StartButton() {
-            _ref = StartButton.__super__.constructor.apply(this, arguments);
-            return _ref;
+            return StartButton.__super__.constructor.apply(this, arguments);
         }
         StartButton.prototype.defaults = {
             width: 150,
             height: 75
         };
-        StartButton.prototype.render = function (context, layer) {
+        StartButton.prototype.render = function (context) {
             var button, group, text, xcenter, ycenter;
             xcenter = context.width() / 2;
             ycenter = context.height() / 2;
@@ -18679,16 +19046,16 @@ require.define('111', function(module, exports, __dirname, __filename, undefined
             });
             group.add(button);
             group.add(text);
-            return layer.add(group);
+            return this.presentable(group);
         };
         return StartButton;
-    }(Stimulus);
+    }(KStimulus);
     exports.StartButton = StartButton;
 }.call(this));
 });
 require.define('110', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Kinetic, Rectangle, Stimulus, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var KStimulus, Kinetic, Rectangle, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -18701,8 +19068,8 @@ require.define('110', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    Stimulus = require('73', module).Stimulus;
     Kinetic = require('27', module).Kinetic;
+    KStimulus = require('73', module).KineticStimulus;
     Rectangle = function (_super) {
         __extends(Rectangle, _super);
         Rectangle.prototype.defaults = {
@@ -18719,8 +19086,9 @@ require.define('110', function(module, exports, __dirname, __filename, undefined
             }
             Rectangle.__super__.constructor.call(this, spec);
         }
-        Rectangle.prototype.render = function (context, layer) {
+        Rectangle.prototype.render = function (context) {
             var coords, rect;
+            console.log('rendering rectangle');
             coords = this.computeCoordinates(context, this.spec.position, this.spec.width, this.spec.height);
             rect = new Kinetic.Rect({
                 x: coords[0],
@@ -18732,16 +19100,16 @@ require.define('110', function(module, exports, __dirname, __filename, undefined
                 strokeWidth: this.spec.strokeWidth,
                 opacity: this.spec.opacity
             });
-            return layer.add(rect);
+            return this.presentable(rect);
         };
         return Rectangle;
-    }(Stimulus);
+    }(KStimulus);
     exports.Rectangle = Rectangle;
 }.call(this));
 });
 require.define('109', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Kinetic, Picture, Stimulus, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var KStimulus, Kinetic, Picture, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -18754,8 +19122,8 @@ require.define('109', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    Stimulus = require('73', module).Stimulus;
     Kinetic = require('27', module).Kinetic;
+    KStimulus = require('73', module).KineticStimulus;
     Picture = function (_super) {
         __extends(Picture, _super);
         Picture.prototype.defaults = {
@@ -18764,35 +19132,36 @@ require.define('109', function(module, exports, __dirname, __filename, undefined
             y: 0
         };
         function Picture(spec) {
-            var _this = this;
             if (spec == null) {
                 spec = {};
             }
             Picture.__super__.constructor.call(this, spec);
             this.imageObj = new Image();
             this.image = null;
-            this.imageObj.onload = function () {
-                return _this.image = new Kinetic.Image({
-                    x: _this.spec.x,
-                    y: _this.spec.y,
-                    image: _this.imageObj,
-                    width: _this.spec.width || _this.imageObj.width,
-                    height: _this.spec.height || _this.imageObj.height
-                });
-            };
+            this.imageObj.onload = function (_this) {
+                return function () {
+                    return _this.image = new Kinetic.Image({
+                        x: _this.spec.x,
+                        y: _this.spec.y,
+                        image: _this.imageObj,
+                        width: _this.spec.width || _this.imageObj.width,
+                        height: _this.spec.height || _this.imageObj.height
+                    });
+                };
+            }(this);
             this.imageObj.src = this.spec.url;
         }
-        Picture.prototype.render = function (context, layer) {
-            return layer.add(this.image);
+        Picture.prototype.render = function (context) {
+            return this.presentable(this.image);
         };
         return Picture;
-    }(Stimulus);
+    }(KStimulus);
     exports.Picture = Picture;
 }.call(this));
 });
 require.define('108', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var GridLines, Kinetic, Stimulus, _ref, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var GridLines, KStimulus, Kinetic, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -18805,65 +19174,80 @@ require.define('108', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    Stimulus = require('73', module).Stimulus;
     Kinetic = require('27', module).Kinetic;
+    KStimulus = require('73', module).KineticStimulus;
     GridLines = function (_super) {
         __extends(GridLines, _super);
-        function GridLines() {
-            _ref = GridLines.__super__.constructor.apply(this, arguments);
-            return _ref;
-        }
         GridLines.prototype.defaults = {
             x: 0,
             y: 0,
+            width: null,
+            height: null,
             rows: 3,
             cols: 3,
             stroke: 'black',
-            strokeWidth: 2
+            strokeWidth: 2,
+            dashArray: null
         };
-        GridLines.prototype.render = function (context, layer) {
-            var i, line, x, y, _i, _j, _ref1, _ref2, _results;
-            for (i = _i = 0, _ref1 = this.spec.rows; 0 <= _ref1 ? _i <= _ref1 : _i >= _ref1; i = 0 <= _ref1 ? ++_i : --_i) {
-                y = this.spec.y + i * context.height() / this.spec.rows;
+        function GridLines(spec) {
+            if (spec == null) {
+                spec = {};
+            }
+            GridLines.__super__.constructor.call(this, spec);
+        }
+        GridLines.prototype.render = function (context) {
+            var group, height, i, line, width, x, y, _i, _j, _ref, _ref1;
+            if (this.spec.height == null) {
+                height = context.height();
+            } else {
+                height = this.spec.height;
+            }
+            if (this.spec.width == null) {
+                width = context.width();
+            } else {
+                width = this.spec.width;
+            }
+            group = new Kinetic.Group();
+            for (i = _i = 0, _ref = this.spec.rows; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+                y = this.spec.y + i * height / this.spec.rows;
                 line = new Kinetic.Line({
                     points: [
                         this.spec.x,
                         y,
-                        this.spec.x + context.width(),
+                        this.spec.x + width,
                         y
                     ],
                     stroke: this.spec.stroke,
                     strokeWidth: this.spec.strokeWidth,
                     dashArray: this.spec.dashArray
                 });
-                layer.add(line);
+                group.add(line);
             }
-            _results = [];
-            for (i = _j = 0, _ref2 = this.spec.cols; 0 <= _ref2 ? _j <= _ref2 : _j >= _ref2; i = 0 <= _ref2 ? ++_j : --_j) {
-                x = this.spec.x + i * context.width() / this.spec.cols;
+            for (i = _j = 0, _ref1 = this.spec.cols; 0 <= _ref1 ? _j <= _ref1 : _j >= _ref1; i = 0 <= _ref1 ? ++_j : --_j) {
+                x = this.spec.x + i * width / this.spec.cols;
                 line = new Kinetic.Line({
                     points: [
                         x,
                         this.spec.y,
                         x,
-                        this.spec.y + context.height()
+                        this.spec.y + height
                     ],
                     stroke: this.spec.stroke,
                     strokeWidth: this.spec.strokeWidth,
                     dashArray: this.spec.dashArray
                 });
-                _results.push(layer.add(line));
+                group.add(line);
             }
-            return _results;
+            return this.presentable(group);
         };
         return GridLines;
-    }(Stimulus);
+    }(KStimulus);
     exports.GridLines = GridLines;
 }.call(this));
 });
 require.define('107', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var CanvasBorder, Kinetic, Stimulus, _ref, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var CanvasBorder, KStimulus, Kinetic, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -18876,19 +19260,21 @@ require.define('107', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    Stimulus = require('73', module).Stimulus;
     Kinetic = require('27', module).Kinetic;
+    KStimulus = require('73', module).KineticStimulus;
     CanvasBorder = function (_super) {
         __extends(CanvasBorder, _super);
-        function CanvasBorder() {
-            _ref = CanvasBorder.__super__.constructor.apply(this, arguments);
-            return _ref;
-        }
         CanvasBorder.prototype.defaults = {
             strokeWidth: 5,
             stroke: 'black'
         };
-        CanvasBorder.prototype.render = function (context, layer) {
+        function CanvasBorder(spec) {
+            if (spec == null) {
+                spec = {};
+            }
+            CanvasBorder.__super__.constructor.call(this, spec);
+        }
+        CanvasBorder.prototype.render = function (context) {
             var border;
             border = new Kinetic.Rect({
                 x: 0,
@@ -18898,16 +19284,16 @@ require.define('107', function(module, exports, __dirname, __filename, undefined
                 strokeWidth: this.spec.strokeWidth,
                 stroke: this.spec.stroke
             });
-            return layer.add(border);
+            return this.presentable(border);
         };
         return CanvasBorder;
-    }(Stimulus);
+    }(KStimulus);
     exports.CanvasBorder = CanvasBorder;
 }.call(this));
 });
 require.define('106', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var FixationCross, Kinetic, Stimulus, _ref, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var FixationCross, KStimulus, Kinetic, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -18920,20 +19306,22 @@ require.define('106', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    Stimulus = require('73', module).Stimulus;
     Kinetic = require('27', module).Kinetic;
+    KStimulus = require('73', module).KineticStimulus;
     FixationCross = function (_super) {
         __extends(FixationCross, _super);
-        function FixationCross() {
-            _ref = FixationCross.__super__.constructor.apply(this, arguments);
-            return _ref;
-        }
         FixationCross.prototype.defaults = {
             strokeWidth: 8,
             length: 150,
             fill: 'black'
         };
-        FixationCross.prototype.render = function (context, layer) {
+        function FixationCross(spec) {
+            if (spec == null) {
+                spec = {};
+            }
+            FixationCross.__super__.constructor.call(this, spec);
+        }
+        FixationCross.prototype.render = function (context) {
             var group, horz, vert, x, y;
             x = context.width() / 2;
             y = context.height() / 2;
@@ -18954,16 +19342,16 @@ require.define('106', function(module, exports, __dirname, __filename, undefined
             group = new Kinetic.Group();
             group.add(horz);
             group.add(vert);
-            return layer.add(group);
+            return this.presentable(group);
         };
         return FixationCross;
-    }(Stimulus);
+    }(KStimulus);
     exports.FixationCross = FixationCross;
 }.call(this));
 });
 require.define('105', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Clear, Stimulus, _ref, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var ActionPresentable, Clear, GStimulus, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -18976,24 +19364,26 @@ require.define('105', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    Stimulus = require('73', module).Stimulus;
+    GStimulus = require('73', module).GraphicalStimulus;
+    ActionPresentable = require('73', module).ActionPresentable;
     Clear = function (_super) {
         __extends(Clear, _super);
         function Clear() {
-            _ref = Clear.__super__.constructor.apply(this, arguments);
-            return _ref;
+            return Clear.__super__.constructor.apply(this, arguments);
         }
-        Clear.prototype.render = function (context, layer) {
-            return context.clearContent(true);
+        Clear.prototype.render = function (context) {
+            return new ActionPresentable(function (context) {
+                return context.clearContent(true);
+            });
         };
         return Clear;
-    }(Stimulus);
+    }(GStimulus);
     exports.Clear = Clear;
 }.call(this));
 });
 require.define('104', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Circle, Kinetic, Stimulus, _ref, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var Circle, KDrawable, KStimulus, Kinetic, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -19006,48 +19396,71 @@ require.define('104', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    Stimulus = require('73', module).Stimulus;
     Kinetic = require('27', module).Kinetic;
+    KStimulus = require('73', module).KineticStimulus;
+    KDrawable = require('73', module).KineticDrawable;
     Circle = function (_super) {
         __extends(Circle, _super);
-        function Circle() {
-            _ref = Circle.__super__.constructor.apply(this, arguments);
-            return _ref;
-        }
         Circle.prototype.defaults = {
-            x: 0,
-            y: 0,
+            x: 50,
+            y: 50,
             radius: 50,
             fill: 'red',
             opacity: 1,
             origin: 'center'
         };
-        Circle.prototype.render = function (context, layer) {
-            var circ, coords;
-            circ = new Kinetic.Circle({
-                x: 0,
-                y: 0,
+        function Circle(spec) {
+            if (spec == null) {
+                spec = {};
+            }
+            Circle.__super__.constructor.call(this, spec);
+        }
+        Circle.prototype.initialize = function () {
+            return this.circle = new Kinetic.Circle({
+                x: this.spec.x,
+                y: this.spec.y,
                 radius: this.spec.radius,
                 fill: this.spec.fill,
                 stroke: this.spec.stroke,
                 strokeWidth: this.spec.strokeWidth,
                 opacity: this.spec.opacity
             });
-            coords = this.computeCoordinates(context, this.spec.position, circ.getWidth(), circ.getHeight());
-            circ.setPosition({
-                x: coords[0] + circ.getWidth() / 2,
-                y: coords[1] + circ.getHeight() / 2
+        };
+        Circle.prototype.render = function (context) {
+            var coords;
+            coords = this.computeCoordinates(context, this.spec.position, this.circle.getWidth(), this.circle.getHeight());
+            this.circle.setPosition({
+                x: coords[0] + this.circle.getWidth() / 2,
+                y: coords[1] + this.circle.getHeight() / 2
             });
-            return layer.add(circ);
+            return new (function (_super1) {
+                __extends(_Class, _super1);
+                function _Class() {
+                    return _Class.__super__.constructor.apply(this, arguments);
+                }
+                _Class.prototype.x = function () {
+                    return this.nodes[0].getX() - this.nodes[0].getWidth() / 2;
+                };
+                _Class.prototype.y = function () {
+                    return this.nodes[0].getY() - this.nodes[0].getHeight() / 2;
+                };
+                _Class.prototype.width = function () {
+                    return this.nodes[0].getWidth();
+                };
+                _Class.prototype.height = function () {
+                    return this.nodes[0].getHeight();
+                };
+                return _Class;
+            }(KDrawable))(this.circle);
         };
         return Circle;
-    }(Stimulus);
+    }(KStimulus);
     exports.Circle = Circle;
 }.call(this));
 });
 require.define('103', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Blank, Kinetic, Stimulus, _ref, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var Blank, KStimulus, Kinetic, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -19061,18 +19474,17 @@ require.define('103', function(module, exports, __dirname, __filename, undefined
             return child;
         };
     Kinetic = require('27', module).Kinetic;
-    Stimulus = require('73', module).Stimulus;
+    KStimulus = require('73', module).KineticStimulus;
     Blank = function (_super) {
         __extends(Blank, _super);
         function Blank() {
-            _ref = Blank.__super__.constructor.apply(this, arguments);
-            return _ref;
+            return Blank.__super__.constructor.apply(this, arguments);
         }
         Blank.prototype.defaults = {
             fill: 'white',
             opacity: 1
         };
-        Blank.prototype.render = function (context, layer) {
+        Blank.prototype.render = function (context) {
             var blank;
             blank = new Kinetic.Rect({
                 x: 0,
@@ -19082,16 +19494,16 @@ require.define('103', function(module, exports, __dirname, __filename, undefined
                 fill: this.spec.fill,
                 opacity: this.spec.opacity
             });
-            return layer.add(blank);
+            return this.presentable(blank);
         };
         return Blank;
-    }(Stimulus);
+    }(KStimulus);
     exports.Blank = Blank;
 }.call(this));
 });
 require.define('102', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Arrow, Kinetic, Stimulus, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var Arrow, KStimulus, Kinetic, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -19104,7 +19516,7 @@ require.define('102', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    Stimulus = require('73', module).Stimulus;
+    KStimulus = require('73', module).KineticStimulus;
     Kinetic = require('27', module).Kinetic;
     Arrow = function (_super) {
         __extends(Arrow, _super);
@@ -19125,7 +19537,7 @@ require.define('102', function(module, exports, __dirname, __filename, undefined
             Arrow.__super__.constructor.call(this, spec);
         }
         Arrow.prototype.initialize = function () {
-            var computedHeight, computedLength, coords, shaftLength, _this;
+            var height, len, shaftLength, _this;
             if (this.spec.angle != null) {
                 this.angle = this.spec.angle;
             } else {
@@ -19172,30 +19584,31 @@ require.define('102', function(module, exports, __dirname, __filename, undefined
                 width: _this.spec.arrowSize,
                 height: _this.spec.arrowSize + _this.spec.thickness
             });
-            computedLength = shaftLength + this.spec.arrowSize;
-            computedHeight = this.spec.thickness;
-            this.group = new Kinetic.Group({
+            len = shaftLength + this.spec.arrowSize;
+            height = this.spec.thickness;
+            this.node = new Kinetic.Group({
                 x: 0,
                 y: 0,
                 rotationDeg: this.angle,
                 offset: [
-                    computedLength / 2,
-                    this.spec.thickness / 2
+                    len / 2,
+                    height / 2
                 ]
             });
-            this.group.add(this.arrowShaft);
-            this.group.add(this.arrowHead);
-            coords = this.computeCoordinates(context, this.spec.position, computedLength, computedHeight);
-            return this.group.setPosition({
-                x: coords[0] + computedLength / 2,
+            this.node.add(this.arrowShaft);
+            return this.node.add(this.arrowHead);
+        };
+        Arrow.prototype.render = function (context) {
+            var coords;
+            coords = this.computeCoordinates(context, this.spec.position, this.arrowShaft.getWidth(), this.arrowShaft.getHeight());
+            this.node.setPosition({
+                x: coords[0] + (this.arrowShaft.getWidth() + this.spec.arrowSize) / 2,
                 y: coords[1] + this.spec.thickness / 2
             });
-        };
-        Arrow.prototype.render = function (context, layer) {
-            return layer.add(this.group);
+            return this.presentable(this.node);
         };
         return Arrow;
-    }(Stimulus);
+    }(KStimulus);
     exports.Arrow = Arrow;
 }.call(this));
 });
@@ -20484,7 +20897,7 @@ require.define('114', function(module, exports, __dirname, __filename, undefined
 });
 require.define('119', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Background, Kinetic, Stimulus, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var Background, ContainerDrawable, GStimulus, Kinetic, KineticDrawable, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -20498,16 +20911,22 @@ require.define('119', function(module, exports, __dirname, __filename, undefined
             return child;
         };
     Kinetic = require('27', module).Kinetic;
-    Stimulus = require('73', module).Stimulus;
+    GStimulus = require('73', module).GraphicalStimulus;
+    KineticDrawable = require('73', module).KineticDrawable;
+    ContainerDrawable = require('73', module).ContainerDrawable;
+    _ = require('2', module);
     Background = function (_super) {
         __extends(Background, _super);
         function Background(stims, fill) {
             this.stims = stims != null ? stims : [];
             this.fill = fill != null ? fill : 'white';
             Background.__super__.constructor.call(this, {}, {});
+            if (!_.isArray(this.stims)) {
+                this.stims = [this.stims];
+            }
         }
-        Background.prototype.render = function (context, layer) {
-            var background, stim, _i, _len, _ref, _results;
+        Background.prototype.render = function (context) {
+            var background, drawables, stim, _i, _len, _ref;
             background = new Kinetic.Rect({
                 x: 0,
                 y: 0,
@@ -20516,17 +20935,17 @@ require.define('119', function(module, exports, __dirname, __filename, undefined
                 name: 'background',
                 fill: this.fill
             });
-            layer.add(background);
+            drawables = [];
+            drawables.push(new KineticDrawable(background));
             _ref = this.stims;
-            _results = [];
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
                 stim = _ref[_i];
-                _results.push(stim.render(context, layer));
+                drawables.push(stim.render(context));
             }
-            return _results;
+            return new ContainerDrawable(drawables);
         };
         return Background;
-    }(Stimulus);
+    }(GStimulus);
     exports.Background = Background;
 }.call(this));
 });
@@ -21204,7 +21623,7 @@ require.define('122', function(module, exports, __dirname, __filename, undefined
             this.registry = _.merge(Components, Canvas, Html);
         }
         DefaultComponentFactory.prototype.make = function (name, params, registry) {
-            var callee, layoutName, layoutParams, names, props, resps, stims, _i, _j, _k, _ref, _ref1, _ref2, _results, _results1, _results2, _this = this;
+            var callee, layoutName, layoutParams, names, props, resps, stims, _i, _j, _k, _l, _ref, _ref1, _ref2, _ref3, _results, _results1, _results2, _results3;
             callee = arguments.callee;
             console.log('making', name);
             switch (name) {
@@ -21222,9 +21641,11 @@ require.define('122', function(module, exports, __dirname, __filename, undefined
                         _results.push(_i);
                     }
                     return _results;
-                }.apply(this), function (i) {
-                    return callee(names[i], props[i], _this.registry);
-                });
+                }.apply(this), function (_this) {
+                    return function (i) {
+                        return callee(names[i], props[i], _this.registry);
+                    };
+                }(this));
                 if (params.layout != null) {
                     layoutName = _.keys(params.layout)[0];
                     layoutParams = _.values(params.layout)[0];
@@ -21233,6 +21654,25 @@ require.define('122', function(module, exports, __dirname, __filename, undefined
                     return new Components.Group(stims);
                 }
                 break;
+            case 'Grid':
+                names = _.map(params.stims, function (stim) {
+                    return _.keys(stim)[0];
+                });
+                props = _.map(params.stims, function (stim) {
+                    return _.values(stim)[0];
+                });
+                stims = _.map(function () {
+                    _results1 = [];
+                    for (var _j = 0, _ref1 = names.length; 0 <= _ref1 ? _j < _ref1 : _j > _ref1; 0 <= _ref1 ? _j++ : _j--) {
+                        _results1.push(_j);
+                    }
+                    return _results1;
+                }.apply(this), function (_this) {
+                    return function (i) {
+                        return callee(names[i], props[i], _this.registry);
+                    };
+                }(this));
+                return new Components.Grid(stims, params.rows || 3, params.columns || 3, params.bounds || null);
             case 'Background':
                 console.log('building background', params);
                 names = _.keys(params);
@@ -21240,27 +21680,31 @@ require.define('122', function(module, exports, __dirname, __filename, undefined
                 console.log('names', names);
                 console.log('props', props);
                 stims = _.map(function () {
-                    _results1 = [];
-                    for (var _j = 0, _ref1 = names.length; 0 <= _ref1 ? _j < _ref1 : _j > _ref1; 0 <= _ref1 ? _j++ : _j--) {
-                        _results1.push(_j);
-                    }
-                    return _results1;
-                }.apply(this), function (i) {
-                    return callee(names[i], props[i], _this.registry);
-                });
-                return new Canvas.Background(stims);
-            case 'First':
-                names = _.keys(params);
-                props = _.values(params);
-                resps = _.map(function () {
                     _results2 = [];
                     for (var _k = 0, _ref2 = names.length; 0 <= _ref2 ? _k < _ref2 : _k > _ref2; 0 <= _ref2 ? _k++ : _k--) {
                         _results2.push(_k);
                     }
                     return _results2;
-                }.apply(this), function (i) {
-                    return callee(names[i], props[i], _this.registry);
-                });
+                }.apply(this), function (_this) {
+                    return function (i) {
+                        return callee(names[i], props[i], _this.registry);
+                    };
+                }(this));
+                return new Canvas.Background(stims);
+            case 'First':
+                names = _.keys(params);
+                props = _.values(params);
+                resps = _.map(function () {
+                    _results3 = [];
+                    for (var _l = 0, _ref3 = names.length; 0 <= _ref3 ? _l < _ref3 : _l > _ref3; 0 <= _ref3 ? _l++ : _l--) {
+                        _results3.push(_l);
+                    }
+                    return _results3;
+                }.apply(this), function (_this) {
+                    return function (i) {
+                        return callee(names[i], props[i], _this.registry);
+                    };
+                }(this));
                 return new Components.First(resps);
             default:
                 if (registry[name] == null) {
@@ -21395,6 +21839,166 @@ require.define('124', function(module, exports, __dirname, __filename, undefined
         return Nothing;
     }(Stimulus);
     exports.Nothing = Nothing;
+}.call(this));
+});
+require.define('126', function(module, exports, __dirname, __filename, undefined){
+(function () {
+    var Kinetic, LabeledElement, StimResp, Text, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+            for (var key in parent) {
+                if (__hasProp.call(parent, key))
+                    child[key] = parent[key];
+            }
+            function ctor() {
+                this.constructor = child;
+            }
+            ctor.prototype = parent.prototype;
+            child.prototype = new ctor();
+            child.__super__ = parent.prototype;
+            return child;
+        };
+    Kinetic = require('27', module).Kinetic;
+    Text = require('127', module).Text;
+    StimResp = require('73', module);
+    LabeledElement = function (_super) {
+        __extends(LabeledElement, _super);
+        LabeledElement.prototype.defaults = {
+            position: 'below',
+            content: 'Label',
+            align: 'center',
+            gap: 10,
+            fontSize: 32,
+            fill: 'black',
+            fontFamily: 'Arial'
+        };
+        function LabeledElement(element, spec) {
+            this.element = element;
+            if (spec == null) {
+                spec = {};
+            }
+            LabeledElement.__super__.constructor.call(this, spec);
+        }
+        LabeledElement.prototype.render = function (context) {
+            var target;
+            target = this.element.render(context);
+            this.text = new Kinetic.Text({
+                x: 0,
+                y: 0,
+                text: this.spec.content,
+                fontSize: this.spec.fontSize,
+                fill: this.spec.fill,
+                align: this.spec.align,
+                width: target.width(),
+                fontFamily: this.spec.fontFamily,
+                padding: 2
+            });
+            console.log('labeled text', this.text.getPosition());
+            console.log('labeled target width:', target.width());
+            console.log('labeled target height:', target.height());
+            switch (this.spec.position) {
+            case 'below':
+                this.text.setPosition({
+                    x: target.x(),
+                    y: target.y() + target.height() + this.spec.gap
+                });
+                break;
+            case 'above':
+                this.text.setPosition({
+                    x: target.x(),
+                    y: target.y() - this.text.getTextHeight()
+                });
+                break;
+            case 'left':
+                this.text.setPosition({
+                    x: target.x() - this.text.getTextWidth() - this.spec.gap,
+                    y: target.y()
+                });
+                break;
+            case 'right':
+                this.text.setPosition({
+                    x: target.x() + target.width() + this.spec.gap,
+                    y: target.y()
+                });
+            }
+            return new StimResp.ContainerDrawable([
+                target,
+                new StimResp.KineticDrawable(this.text)
+            ]);
+        };
+        return LabeledElement;
+    }(StimResp.Stimulus);
+    exports.LabeledElement = LabeledElement;
+}.call(this));
+});
+require.define('127', function(module, exports, __dirname, __filename, undefined){
+(function () {
+    var KStimulus, Kinetic, Text, layout, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+            for (var key in parent) {
+                if (__hasProp.call(parent, key))
+                    child[key] = parent[key];
+            }
+            function ctor() {
+                this.constructor = child;
+            }
+            ctor.prototype = parent.prototype;
+            child.prototype = new ctor();
+            child.__super__ = parent.prototype;
+            return child;
+        };
+    layout = require('74', module);
+    Kinetic = require('27', module).Kinetic;
+    _ = require('2', module);
+    KStimulus = require('73', module).KineticStimulus;
+    Text = function (_super) {
+        __extends(Text, _super);
+        Text.prototype.defaults = {
+            content: 'Text',
+            x: 5,
+            y: 5,
+            width: null,
+            fill: 'black',
+            fontSize: 40,
+            fontFamily: 'Arial',
+            align: 'center',
+            position: null
+        };
+        function Text(spec) {
+            if (spec == null) {
+                spec = {};
+            }
+            if (spec.content != null && _.isArray(spec.content)) {
+                spec.content = spec.content.join(' \n ');
+                if (spec.lineHeight == null) {
+                    spec.lineHeight = 2;
+                }
+            }
+            Text.__super__.constructor.call(this, spec);
+        }
+        Text.prototype.initialize = function () {
+            return this.text = new Kinetic.Text({
+                x: 0,
+                y: 0,
+                text: this.spec.content,
+                fontSize: this.spec.fontSize,
+                fontFamily: this.spec.fontFamily,
+                fill: this.spec.fill,
+                lineHeight: this.spec.lineHeight || 1,
+                width: this.spec.width,
+                listening: false,
+                align: this.spec.align
+            });
+        };
+        Text.prototype.render = function (context, layer) {
+            var coords;
+            coords = this.computeCoordinates(context, this.spec.position, this.text.getWidth(), this.text.getHeight());
+            this.text.setPosition({
+                x: coords[0],
+                y: coords[1]
+            });
+            return this.presentable(this.text);
+        };
+        return Text;
+    }(KStimulus);
+    exports.Text = Text;
 }.call(this));
 });
 return require('55');

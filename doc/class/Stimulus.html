@@ -31,20 +31,6 @@
       </table>
       <h2>Direct Known Subclasses</h2>
       <p class='children'>
-        <a href='../class/Arrow.html'>Arrow</a>
-        <a href='../class/Background.html'>Background</a>
-        <a href='../class/Blank.html'>Blank</a>
-        <a href='../class/CanvasBorder.html'>CanvasBorder</a>
-        <a href='../class/Circle.html'>Circle</a>
-        <a href='../class/Clear.html'>Clear</a>
-        <a href='../class/FixationCross.html'>FixationCross</a>
-        <a href='../class/GridLines.html'>GridLines</a>
-        <a href='../class/MultipleChoice.html'>MultipleChoice</a>
-        <a href='../class/Picture.html'>Picture</a>
-        <a href='../class/Rectangle.html'>Rectangle</a>
-        <a href='../class/StartButton.html'>StartButton</a>
-        <a href='../class/Text.html'>Text</a>
-        <a href='../class/TextInput.html'>TextInput</a>
         <a href='../class/Group.html'>Group</a>
         <a href='../class/Nothing.html'>Nothing</a>
         <a href='../class/Sequence.html'>Sequence</a>
@@ -57,11 +43,7 @@
     =
   </dt>
   <dd>
-    <pre><code class='coffeescript'>{
-  x: 0,
-  y: 0,
-  origin: &quot;top-left&quot;
-}</code></pre>
+    <pre><code class='coffeescript'>{}</code></pre>
     
   </dd>
   <dt id='defaults-variable'>
@@ -77,17 +59,6 @@
       <ul class='summary'>
   <li>
     <span class='signature'>
-      <a href='#groupSize-dynamic'>
-        #
-(void)
-<b>groupSize</b><span>(group)</span>
-      </a>
-    </span>
-    <span class='desc'>
-    </span>
-  </li>
-  <li>
-    <span class='signature'>
       <a href='#initialize-dynamic'>
         #
 (void)
@@ -99,10 +70,10 @@
   </li>
   <li>
     <span class='signature'>
-      <a href='#xyoffset-dynamic'>
+      <a href='#get-dynamic'>
         #
 (void)
-<b>xyoffset</b><span>(origin, nodeWidth, nodeHeight)</span>
+<b>get</b><span>(name)</span>
       </a>
     </span>
     <span class='desc'>
@@ -110,10 +81,10 @@
   </li>
   <li>
     <span class='signature'>
-      <a href='#computeCoordinates-dynamic'>
+      <a href='#set-dynamic'>
         #
 (void)
-<b>computeCoordinates</b><span>(context, position, nodeWidth = 0, nodeHeight = 0)</span>
+<b>set</b><span>(name, value)</span>
       </a>
     </span>
     <span class='desc'>
@@ -168,15 +139,6 @@
       <h2>Instance Method Details</h2>
       <div class='methods'>
   <div class='method_details'>
-    <p class='signature' id='groupSize-dynamic'>
-      #
-(void)
-<b>groupSize</b><span>(group)</span>
-      <br>
-    </p>
-    
-  </div>
-  <div class='method_details'>
     <p class='signature' id='initialize-dynamic'>
       #
 (void)
@@ -186,19 +148,19 @@
     
   </div>
   <div class='method_details'>
-    <p class='signature' id='xyoffset-dynamic'>
+    <p class='signature' id='get-dynamic'>
       #
 (void)
-<b>xyoffset</b><span>(origin, nodeWidth, nodeHeight)</span>
+<b>get</b><span>(name)</span>
       <br>
     </p>
     
   </div>
   <div class='method_details'>
-    <p class='signature' id='computeCoordinates-dynamic'>
+    <p class='signature' id='set-dynamic'>
       #
 (void)
-<b>computeCoordinates</b><span>(context, position, nodeWidth = 0, nodeHeight = 0)</span>
+<b>set</b><span>(name, value)</span>
       <br>
     </p>
     
@@ -233,7 +195,7 @@
 </div>
     </div>
     <div id='footer'>
-  February 09, 14 22:26:00 by
+  February 21, 14 08:09:52 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>
