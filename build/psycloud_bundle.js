@@ -15390,6 +15390,9 @@ require.define('73', function(module, exports, __dirname, __filename, undefined)
                 return console.log('GraphicalStimulus: drawable, no op');
             };
         };
+        GraphicalStimulus.prototype.toPixels = function (arg, dim) {
+            return lay.toPixels(arg, dim);
+        };
         GraphicalStimulus.prototype.xyoffset = function (origin, nodeWidth, nodeHeight) {
             switch (origin) {
             case 'center':
@@ -15664,7 +15667,7 @@ require.define('73', function(module, exports, __dirname, __filename, undefined)
             _results = [];
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
                 node = _ref[_i];
-                if (!layer) {
+                if (layer == null) {
                     _results.push(context.contentLayer.add(node));
                 } else {
                     console.log('drawing in layer supplied as arg');
@@ -15717,16 +15720,13 @@ require.define('73', function(module, exports, __dirname, __filename, undefined)
         }
         ContainerDrawable.prototype.present = function (context, layer) {
             var node, _i, _len, _ref, _results;
-            console.log('presenting container drawables');
             _ref = this.nodes;
             _results = [];
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
                 node = _ref[_i];
                 if (!layer) {
-                    console.log('SUPPLIED LAYER!');
                     _results.push(node.present(context));
                 } else {
-                    console.log('default layer');
                     _results.push(node.present(context, layer));
                 }
             }
@@ -15756,7 +15756,7 @@ require.define('73', function(module, exports, __dirname, __filename, undefined)
 });
 require.define('74', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var AbsoluteLayout, GridLayout, Layout, computeGridCells, convertPercentageToFraction, convertToCoordinate, isPercentage, isPositionLabel, positionToCoord, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var AbsoluteLayout, GridLayout, Layout, computeGridCells, convertPercentageToFraction, convertToCoordinate, isPercentage, isPositionLabel, positionToCoord, toPixels, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -15843,6 +15843,15 @@ require.define('74', function(module, exports, __dirname, __filename, undefined)
             ];
         default:
             return xy;
+        }
+    };
+    toPixels = function (arg, dim) {
+        if (_.isNumber(arg)) {
+            return arg;
+        } else if (isPercentage(arg)) {
+            return convertPercentageToFraction(arg, dim);
+        } else {
+            throw new Error('toPixels: argument must either be a Number or a String-based Percentage value: ', arg);
         }
     };
     convertPercentageToFraction = function (perc, dim) {
@@ -15957,6 +15966,7 @@ require.define('74', function(module, exports, __dirname, __filename, undefined)
         return GridLayout;
     }(exports.Layout);
     exports.positionToCoord = positionToCoord;
+    exports.toPixels = toPixels;
 }.call(this));
 });
 require.define('79', function(module, exports, __dirname, __filename, undefined){
@@ -17311,6 +17321,14 @@ require.define('77', function(module, exports, __dirname, __filename, undefined)
         DataTable.prototype.colnames = function () {
             return Object.keys(this);
         };
+        DataTable.prototype.toRecordArray = function () {
+            var i, rec, _i, _ref;
+            rec = [];
+            for (i = _i = 0, _ref = this.nrow(); 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+                rec.push(this.record(i));
+            }
+            return rec;
+        };
         DataTable.prototype.record = function (index) {
             var name, rec, value;
             rec = {};
@@ -17323,15 +17341,17 @@ require.define('77', function(module, exports, __dirname, __filename, undefined)
             return rec;
         };
         DataTable.prototype.replicate = function (nreps) {
-            var name, out, value, _this = this;
+            var name, out, value;
             out = {};
             for (name in this) {
                 if (!__hasProp.call(this, name))
                     continue;
                 value = this[name];
-                out[name] = _.flatten(_.times(nreps, function (n) {
-                    return value;
-                }));
+                out[name] = _.flatten(_.times(nreps, function (_this) {
+                    return function (n) {
+                        return value;
+                    };
+                }(this)));
             }
             return new DataTable(out);
         };
@@ -17387,7 +17407,7 @@ require.define('77', function(module, exports, __dirname, __filename, undefined)
 });
 require.define('76', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var getTimestamp, record, _, _ref, _ref1;
+    var factorial, getTimestamp, swap, _, _ref, _ref1, __slice = [].slice;
     _ = require('2', module);
     if (typeof window !== 'undefined' && window !== null ? (_ref = window.performance) != null ? _ref.now : void 0 : void 0) {
         getTimestamp = function () {
@@ -17430,28 +17450,56 @@ require.define('76', function(module, exports, __dirname, __filename, undefined)
             return _.toArray(value);
         }
     };
-    exports.permute = function (input) {
-        var main, permArr, usedChars;
-        permArr = [];
-        usedChars = [];
-        exports.main = main = function (input) {
-            var ch, i, _i, _ref2;
-            for (i = _i = 0, _ref2 = input.length; 0 <= _ref2 ? _i < _ref2 : _i > _ref2; i = 0 <= _ref2 ? ++_i : --_i) {
-                ch = input.splice(i, 1)[0];
-                usedChars.push(ch);
-                if (input.length === 0) {
-                    permArr.push(usedChars.slice());
-                }
-                main(input);
-                input.splice(i, 0, ch);
-                usedChars.pop();
+    swap = function (arr, a, b) {
+        var temp;
+        temp = arr[a];
+        arr[a] = arr[b];
+        return arr[b] = temp;
+    };
+    factorial = function (n) {
+        var i, val;
+        val = 1;
+        i = 1;
+        while (i < n) {
+            val *= i;
+            i++;
+        }
+        return val;
+    };
+    exports.permute = function (perm, maxlen) {
+        var i, inc, j, out, total;
+        if (maxlen == null) {
+            maxlen = 1000;
+        }
+        console.log('maxlen', maxlen);
+        total = factorial(perm.length);
+        console.log('total', total);
+        j = 0;
+        i = 0;
+        inc = 1;
+        out = [];
+        maxlen = maxlen - 1;
+        while (j < total && out.length < maxlen) {
+            console.log('j', j);
+            while (i < perm.length - 1 && i >= 0 && out.length < maxlen) {
+                out.push(perm.slice(0));
+                swap(perm, i, i + 1);
+                i += inc;
             }
-            return permArr;
-        };
-        return main(input);
+            out.push(perm.slice(0));
+            if (inc === 1) {
+                swap(perm, 0, 1);
+            } else {
+                swap(perm, perm.length - 1, perm.length - 2);
+            }
+            j++;
+            inc *= -1;
+            i += inc;
+        }
+        return out;
     };
     exports.rep = function (vec, times) {
-        var el, i, j, out, _this = this;
+        var el, i, j, out;
         if (!(times instanceof Array)) {
             times = [times];
         }
@@ -17477,9 +17525,11 @@ require.define('76', function(module, exports, __dirname, __filename, undefined)
             }();
             return _.flatten(out);
         } else {
-            out = _.times(times[0], function (n) {
-                return vec;
-            });
+            out = _.times(times[0], function (_this) {
+                return function (n) {
+                    return vec;
+                };
+            }(this));
             return _.flatten(out);
         }
     };
@@ -17515,6 +17565,14 @@ require.define('76', function(module, exports, __dirname, __filename, undefined)
     exports.oneOf = function (elements) {
         return elements[Math.floor(Math.random() * elements.length)];
     };
+    exports.inSet = function () {
+        var set;
+        set = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        set = _.flatten(set);
+        return function (a) {
+            return _.contains(set, a);
+        };
+    };
     exports.doTimer = function (length, oncomplete) {
         var instance, start;
         start = getTimestamp();
@@ -17533,16 +17591,6 @@ require.define('76', function(module, exports, __dirname, __filename, undefined)
         };
         return setTimeout(instance, 1);
     };
-    exports.match = function (record, matcher) {
-        var mkeys, rkeys;
-        rkeys = _.keys(record);
-        mkeys = _.keys(matcher);
-        console.log('record keys', rkeys);
-        return console.log('matcher keys', mkeys);
-    };
-    record = {};
-    record.flanker = 'congruent';
-    record.centerColor = 'red';
 }.call(this));
 });
 require.define('82', function(module, exports, __dirname, __filename, undefined){
@@ -17653,7 +17701,7 @@ require.define('92', function(module, exports, __dirname, __filename, undefined)
 });
 require.define('91', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Q, Sequence, Stimulus, Timeout, utils, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var Presentable, Q, Sequence, Stimulus, Timeout, utils, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -17668,6 +17716,7 @@ require.define('91', function(module, exports, __dirname, __filename, undefined)
         };
     Stimulus = require('73', module).Stimulus;
     Timeout = require('92', module).Timeout;
+    Presentable = require('73', module).Presentable;
     Q = require('9', module);
     utils = require('76', module);
     _ = require('2', module);
@@ -17694,8 +17743,8 @@ require.define('91', function(module, exports, __dirname, __filename, undefined)
                 return _results;
             }.call(this);
         }
-        Sequence.prototype.genseq = function (context, layer) {
-            var deferred, _i, _ref, _results, _this = this;
+        Sequence.prototype.genseq = function (context) {
+            var deferred, _i, _ref, _results;
             deferred = Q.defer();
             _.forEach(function () {
                 _results = [];
@@ -17703,36 +17752,47 @@ require.define('91', function(module, exports, __dirname, __filename, undefined)
                     _results.push(_i);
                 }
                 return _results;
-            }.apply(this), function (i) {
-                var ev, stim;
-                ev = new Timeout({ duration: _this.onsets[i] });
-                stim = _this.stims[i];
-                return ev.activate(context).then(function () {
-                    if (!_this.stopped) {
-                        if (_this.clear) {
-                            context.clearContent();
+            }.apply(this), function (_this) {
+                return function (i) {
+                    var ev, stim;
+                    ev = new Timeout({ duration: _this.onsets[i] });
+                    stim = _this.stims[i];
+                    return ev.activate(context).then(function () {
+                        var p;
+                        if (!_this.stopped) {
+                            if (_this.clear) {
+                                context.clearContent();
+                            }
+                            p = stim.render(context);
+                            p.present(context);
+                            context.draw();
+                            if (i === _this.stims.length - 1) {
+                                return deferred.resolve(1);
+                            }
                         }
-                        stim.render(context, layer);
-                        context.draw();
-                    }
-                    if (i === _this.stims.length - 1) {
-                        return deferred.resolve(1);
-                    }
-                });
-            });
+                    });
+                };
+            }(this));
             return deferred.promise;
         };
-        Sequence.prototype.render = function (context, layer) {
-            var i, result, _i, _ref, _this = this;
-            result = Q.resolve(0);
-            for (i = _i = 0, _ref = this.times; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
-                result = result.then(function () {
-                    return _this.genseq(context, layer);
-                });
-            }
-            return result.then(function () {
-                return context.clearContent();
-            });
+        Sequence.prototype.render = function (context) {
+            return {
+                present: function (_this) {
+                    return function (context) {
+                        var i, result, _i, _ref;
+                        result = Q.resolve(0);
+                        for (i = _i = 0, _ref = _this.times; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+                            console.log('i ', i);
+                            result = result.then(function () {
+                                return _this.genseq(context);
+                            });
+                        }
+                        return result.then(function () {
+                            return context.clearContent();
+                        });
+                    };
+                }(this)
+            };
         };
         return Sequence;
     }(Stimulus);
@@ -18078,7 +18138,6 @@ require.define('87', function(module, exports, __dirname, __filename, undefined)
         }
         Group.prototype.render = function (context) {
             var nodes, stim;
-            console.log('rendering group stim');
             nodes = function () {
                 var _i, _len, _ref, _results;
                 _ref = this.stims;
@@ -18102,11 +18161,7 @@ require.define('87', function(module, exports, __dirname, __filename, undefined)
             this.rows = rows;
             this.columns = columns;
             this.bounds = bounds;
-            console.log('Grid bounds', this.bounds);
-            console.log('rows', this.rows);
-            console.log('cols', this.cols);
             this.layout = new layout.GridLayout(this.rows, this.columns, this.bounds);
-            console.log('layout:', this.layout);
             _ref = this.stims;
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
                 stim = _ref[_i];
@@ -19322,21 +19377,23 @@ require.define('106', function(module, exports, __dirname, __filename, undefined
             FixationCross.__super__.constructor.call(this, spec);
         }
         FixationCross.prototype.render = function (context) {
-            var group, horz, vert, x, y;
+            var group, horz, len, vert, x, y;
             x = context.width() / 2;
             y = context.height() / 2;
+            len = this.toPixels(this.spec.length, context.width());
+            console.log('FIX len is', len);
             horz = new Kinetic.Rect({
-                x: x - this.spec.length / 2,
+                x: x - len / 2,
                 y: y,
-                width: this.spec.length,
+                width: len,
                 height: this.spec.strokeWidth,
                 fill: this.spec.fill
             });
             vert = new Kinetic.Rect({
                 x: x - this.spec.strokeWidth / 2,
-                y: y - this.spec.length / 2 + this.spec.strokeWidth / 2,
+                y: y - len / 2 + this.spec.strokeWidth / 2,
                 width: this.spec.strokeWidth,
-                height: this.spec.length,
+                height: len,
                 fill: this.spec.fill
             });
             group = new Kinetic.Group();
@@ -19614,7 +19671,7 @@ require.define('102', function(module, exports, __dirname, __filename, undefined
 });
 require.define('117', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var ArrayIterator, BlockStructure, CellTable, ConditionSet, DataTable, ExpDesign, Factor, FactorNode, FactorSetNode, FactorSpec, ItemNode, ItemSetNode, Iterator, SamplerNode, TaskNode, TaskSchema, TrialList, VarSpec, csv, sampler, trimWhiteSpace, utils, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var ArrayIterator, BlockStructure, CellTable, ConditionSet, DataTable, DependentFactorNode, ExpDesign, Factor, FactorNode, FactorSetNode, FactorSpec, ItemNode, ItemSetNode, Iterator, SamplerNode, TaskNode, TaskSchema, TrialList, VarSpec, csv, sampler, trimWhiteSpace, utils, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -19710,7 +19767,7 @@ require.define('117', function(module, exports, __dirname, __filename, undefined
             return concatBlocks;
         };
         return FactorSpec;
-    }(VarSpec);
+    }(exports.VarSpec);
     exports.CellTable = CellTable = function (_super) {
         __extends(CellTable, _super);
         function CellTable(parents) {
@@ -19745,6 +19802,9 @@ require.define('117', function(module, exports, __dirname, __filename, undefined
         CellTable.prototype.names = function () {
             return this.parentNames;
         };
+        CellTable.prototype.cells = function () {
+            return this.table.toRecordArray();
+        };
         CellTable.prototype.conditions = function () {
             var i, rec, _i, _ref, _results;
             _results = [];
@@ -19768,7 +19828,7 @@ require.define('117', function(module, exports, __dirname, __filename, undefined
             }.call(this);
         };
         return CellTable;
-    }(VarSpec);
+    }(exports.VarSpec);
     exports.BlockStructure = BlockStructure = function () {
         function BlockStructure(nblocks, trialsPerBlock) {
             this.nblocks = nblocks;
@@ -19816,7 +19876,7 @@ require.define('117', function(module, exports, __dirname, __filename, undefined
         }
         return TaskNode;
     }();
-    exports.FactorNode = FactorNode = function () {
+    FactorNode = FactorNode = function () {
         FactorNode.build = function (name, spec) {
             return new FactorNode(name, spec.levels);
         };
@@ -19825,11 +19885,47 @@ require.define('117', function(module, exports, __dirname, __filename, undefined
             this.levels = levels;
             this.cellTable = new CellTable([this]);
         }
+        FactorNode.prototype.choose = function () {
+            return utils.oneOf(this.levels);
+        };
+        FactorNode.prototype.chooseK = function (k) {
+            return utils.permute(this.levels, k);
+        };
+        FactorNode.prototype.chooseDependent = function (recArray) {
+            return this.chooseK(recArray.length);
+        };
         FactorNode.prototype.expand = function (nblocks, nreps) {
             return this.cellTable.expand(nblocks, nreps);
         };
         return FactorNode;
     }();
+    exports.FactorNode = FactorNode;
+    DependentFactorNode = DependentFactorNode = function () {
+        DependentFactorNode.build = function (name, spec) {
+            return new DependentFactorNode(name, spec.levels, spec.choose);
+        };
+        function DependentFactorNode(name, levels, chooseFun) {
+            this.name = name;
+            this.levels = levels;
+            this.chooseFun = chooseFun;
+            this.cellTable = new CellTable([this]);
+        }
+        DependentFactorNode.prototype.choose = function (record) {
+            return this.chooseFun(record);
+        };
+        DependentFactorNode.prototype.chooseDependent = function (recArray) {
+            return _.map(recArray, function (_this) {
+                return function (rec) {
+                    return _this.choose(rec);
+                };
+            }(this));
+        };
+        DependentFactorNode.prototype.expand = function (nblocks, nreps) {
+            return this.cellTable.expand(nblocks, nreps);
+        };
+        return DependentFactorNode;
+    }();
+    exports.DependentFactorNode = DependentFactorNode;
     exports.FactorSetNode = FactorSetNode = function () {
         FactorSetNode.build = function (spec) {
             var fnodes, key, value;
@@ -19838,7 +19934,7 @@ require.define('117', function(module, exports, __dirname, __filename, undefined
                 _results = [];
                 for (key in spec) {
                     value = spec[key];
-                    _results.push(FactorNode.build(key, value));
+                    _results.push(exports.FactorNode.build(key, value));
                 }
                 return _results;
             }();
@@ -19862,6 +19958,9 @@ require.define('117', function(module, exports, __dirname, __filename, undefined
         };
         FactorSetNode.prototype.conditions = function () {
             return this.cellTable.conditions();
+        };
+        FactorSetNode.prototype.cells = function () {
+            return this.cellTable.cells();
         };
         FactorSetNode.prototype.expand = function (nblocks, nreps) {
             return this.cellTable.expand(nblocks, nreps);
@@ -19924,7 +20023,19 @@ require.define('117', function(module, exports, __dirname, __filename, undefined
         }
         return ArrayIterator;
     }(Iterator);
-    exports.TrialList = TrialList = function () {
+    TrialList = function () {
+        TrialList.fromBlockArray = function (blocks) {
+            var i, rec, tlist, _i, _j, _len, _ref, _ref1;
+            tlist = new TrialList(blocks.length);
+            for (i = _i = 0, _ref = blocks.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+                _ref1 = blocks[i].toRecordArray();
+                for (_j = 0, _len = _ref1.length; _j < _len; _j++) {
+                    rec = _ref1[_j];
+                    tlist.add(i, rec);
+                }
+            }
+            return tlist;
+        };
         function TrialList(nblocks) {
             var i, _i;
             this.blocks = [];
@@ -19933,6 +20044,11 @@ require.define('117', function(module, exports, __dirname, __filename, undefined
             }
         }
         TrialList.prototype.add = function (block, trial) {
+            var blen;
+            if (block >= this.blocks.length) {
+                blen = this.blocks.length;
+                throw new Error('block index ' + block + ' exceeds number of blocks in TrialList ' + blen);
+            }
             return this.blocks[block].push(trial);
         };
         TrialList.prototype.get = function (block, trialNum) {
@@ -19979,6 +20095,7 @@ require.define('117', function(module, exports, __dirname, __filename, undefined
         };
         return TrialList;
     }();
+    exports.TrialList = TrialList;
     trimWhiteSpace = function (records) {
         var i, key, out, record, trimmed, value, _i, _ref;
         trimmed = [];
@@ -19995,7 +20112,7 @@ require.define('117', function(module, exports, __dirname, __filename, undefined
     };
     exports.ItemNode = ItemNode = function () {
         ItemNode.build = function (name, spec) {
-            var attrs, dtable, inode, items, snode, _this = this;
+            var attrs, dtable, inode, items, snode;
             if (spec.type == null) {
                 spec.type = 'text';
             }
@@ -20011,14 +20128,16 @@ require.define('117', function(module, exports, __dirname, __filename, undefined
                     url: spec.csv.url,
                     dataType: 'text',
                     async: false,
-                    success: function (data) {
-                        var records;
-                        records = trimWhiteSpace(csv.toObjects(data));
-                        dtable = DataTable.fromRecords(records);
-                        items = dtable[name];
-                        attrs = dtable.dropColumn(name);
-                        return inode = new ItemNode(name, items, attrs, spec.type, snode.makeSampler(items));
-                    },
+                    success: function (_this) {
+                        return function (data) {
+                            var records;
+                            records = trimWhiteSpace(csv.toObjects(data));
+                            dtable = DataTable.fromRecords(records);
+                            items = dtable[name];
+                            attrs = dtable.dropColumn(name);
+                            return inode = new ItemNode(name, items, attrs, spec.type, snode.makeSampler(items));
+                        };
+                    }(this),
                     error: function (x) {
                         return console.log(x);
                     }
@@ -20124,7 +20243,7 @@ require.define('117', function(module, exports, __dirname, __filename, undefined
                     _results = [];
                     for (key in _ref) {
                         value = _ref[key];
-                        _results.push(FactorNode.build(key, value));
+                        _results.push(DependentFactorNode.build(key, value));
                     }
                     return _results;
                 }();
@@ -20132,18 +20251,33 @@ require.define('117', function(module, exports, __dirname, __filename, undefined
             return new ConditionSet(_crossed, _uncrossed);
         };
         function ConditionSet(crossed, uncrossed) {
-            var _this = this;
             this.crossed = crossed;
             this.uncrossed = uncrossed;
-            this.factorNames = [].concat(this.crossed.factorNames).concat(_.map(this.uncrossed, function (fac) {
-                return fac.name;
-            }));
+            this.factorNames = [].concat(this.crossed.factorNames).concat(_.map(this.uncrossed, function (_this) {
+                return function (fac) {
+                    return fac.name;
+                };
+            }(this)));
             this.factorArray = _.clone(this.crossed.factors);
-            _.forEach(this.uncrossed, function (fac) {
-                return _this.factorArray.push(fac);
-            });
+            _.forEach(this.uncrossed, function (_this) {
+                return function (fac) {
+                    return _this.factorArray.push(fac);
+                };
+            }(this));
             this.factorSet = _.zipObject(this.factorNames, this.factorArray);
         }
+        ConditionSet.prototype.expand = function (nblocks, nreps) {
+            var blk, cellTab, i, _i, _j, _len, _ref;
+            cellTab = this.crossed.expand(nblocks, nreps);
+            for (_i = 0, _len = cellTab.length; _i < _len; _i++) {
+                blk = cellTab[_i];
+                for (i = _j = 0, _ref = this.uncrossed.length; 0 <= _ref ? _j < _ref : _j > _ref; i = 0 <= _ref ? ++_j : --_j) {
+                    blk.bindcol(this.uncrossed[i].name, this.uncrossed[i].chooseDependent(blk.toRecordArray()));
+                }
+            }
+            console.log('cellTab is', cellTab);
+            return TrialList.fromBlockArray(cellTab);
+        };
         return ConditionSet;
     }();
     exports.TaskSchema = TaskSchema = function () {
@@ -20152,7 +20286,7 @@ require.define('117', function(module, exports, __dirname, __filename, undefined
             schema = {};
             for (key in spec) {
                 value = spec[key];
-                schema[key] = FactorSetNode.build(value);
+                schema[key] = exports.FactorSetNode.build(value);
             }
             return new TaskSchema(schema);
         };
