@@ -17568,7 +17568,7 @@ require.define('76', function(module, exports, __dirname, __filename, undefined)
     exports.inSet = function () {
         var set;
         set = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        set = _.flatten(set);
+        set = _.unique(_.flatten(set));
         return function (a) {
             return _.contains(set, a);
         };
@@ -18448,9 +18448,6 @@ require.define('101', function(module, exports, __dirname, __filename, undefined
             Page.__super__.constructor.call(this, spec);
             this.el.append(this.spec.html);
         }
-        Page.prototype.render = function (context) {
-            return context.appendHtml(this.el);
-        };
         return Page;
     }(HtmlStimulus);
     exports.Page = Page;
@@ -18520,25 +18517,30 @@ require.define('99', function(module, exports, __dirname, __filename, undefined)
     Markdown = function (_super) {
         __extends(Markdown, _super);
         function Markdown(spec) {
-            var _this = this;
             if (spec == null) {
                 spec = {};
             }
             Markdown.__super__.constructor.call(this, spec);
             if (_.isString(spec)) {
                 this.spec = {};
+                this.spec.x = 0;
+                this.spec.y = 0;
                 this.spec.content = spec;
             }
             if (this.spec.url != null) {
                 $.ajax({
                     url: this.spec.url,
-                    success: function (result) {
-                        _this.spec.content = result;
-                        return _this.el.append(marked(_this.spec.content));
-                    },
-                    error: function (result) {
-                        return console.log('ajax failure', result);
-                    }
+                    success: function (_this) {
+                        return function (result) {
+                            _this.spec.content = result;
+                            return _this.el.append(marked(_this.spec.content));
+                        };
+                    }(this),
+                    error: function (_this) {
+                        return function (result) {
+                            return console.log('ajax failure', result);
+                        };
+                    }(this)
                 });
             } else {
                 this.el.append($(marked(this.spec.content)));
@@ -19671,7 +19673,7 @@ require.define('102', function(module, exports, __dirname, __filename, undefined
 });
 require.define('117', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var ArrayIterator, BlockStructure, CellTable, ConditionSet, DataTable, DependentFactorNode, ExpDesign, Factor, FactorNode, FactorSetNode, FactorSpec, ItemNode, ItemSetNode, Iterator, SamplerNode, TaskNode, TaskSchema, TrialList, VarSpec, csv, sampler, trimWhiteSpace, utils, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var ArrayIterator, BlockStructure, CellTable, ConditionSet, DataTable, DependentFactorNode, ExpDesign, Factor, FactorNode, FactorSetNode, FactorSpec, ItemNode, ItemSetNode, Iterator, SamplerNode, TaskNode, TrialList, VarSpec, csv, sampler, trimWhiteSpace, utils, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -20275,31 +20277,9 @@ require.define('117', function(module, exports, __dirname, __filename, undefined
                     blk.bindcol(this.uncrossed[i].name, this.uncrossed[i].chooseDependent(blk.toRecordArray()));
                 }
             }
-            console.log('cellTab is', cellTab);
             return TrialList.fromBlockArray(cellTab);
         };
         return ConditionSet;
-    }();
-    exports.TaskSchema = TaskSchema = function () {
-        TaskSchema.build = function (spec) {
-            var key, schema, value;
-            schema = {};
-            for (key in spec) {
-                value = spec[key];
-                schema[key] = exports.FactorSetNode.build(value);
-            }
-            return new TaskSchema(schema);
-        };
-        function TaskSchema(schema) {
-            this.schema = schema;
-        }
-        TaskSchema.prototype.trialTypes = function () {
-            return _.keys(this.schema);
-        };
-        TaskSchema.prototype.factors = function (type) {
-            return this.schema[type];
-        };
-        return TaskSchema;
     }();
     exports.ExpDesign = ExpDesign = function () {
         ExpDesign.blocks = 1;
