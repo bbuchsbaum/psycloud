@@ -16370,7 +16370,7 @@ require.define('65', function(module, exports, __dirname, __filename, undefined)
     _ = require('16', module);
     Q = require('17', module);
     csv = require('18', module);
-    match = require('19', module);
+    match = require('19', module).match;
     include = function (lib) {
         var key, value, _results;
         _results = [];
