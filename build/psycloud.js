@@ -10,1856 +10,675 @@
   }
 })((function(require, undefined) { var global = this;
 
-require.define('2', function(module, exports, __dirname, __filename, undefined){
-;
-(function (window) {
-    var undefined;
-    var arrayPool = [], objectPool = [];
-    var idCounter = 0;
-    var indicatorObject = {};
-    var keyPrefix = +new Date() + '';
-    var largeArraySize = 75;
-    var maxPoolSize = 40;
-    var reEmptyStringLeading = /\b__p \+= '';/g, reEmptyStringMiddle = /\b(__p \+=) '' \+/g, reEmptyStringTrailing = /(__e\(.*?\)|\b__t\)) \+\n'';/g;
-    var reEscapedHtml = /&(?:amp|lt|gt|quot|#39);/g;
-    var reEsTemplate = /\$\{([^\\}]*(?:\\.[^\\}]*)*)\}/g;
-    var reFlags = /\w*$/;
-    var reInterpolate = /<%=([\s\S]+?)%>/g;
-    var reThis = (reThis = /\bthis\b/) && reThis.test(runInContext) && reThis;
-    var whitespace = ' \t\x0B\f\xa0\ufeff' + '\n\r\u2028\u2029' + '\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u202f\u205f\u3000';
-    var reLeadingSpacesAndZeros = RegExp('^[' + whitespace + ']*0+(?=.$)');
-    var reNoMatch = /($^)/;
-    var reUnescapedHtml = /[&<>"']/g;
-    var reUnescapedString = /['\n\r\t\u2028\u2029\\]/g;
-    var contextProps = [
-            'Array',
-            'Boolean',
-            'Date',
-            'Function',
-            'Math',
-            'Number',
-            'Object',
-            'RegExp',
-            'String',
-            '_',
-            'attachEvent',
-            'clearTimeout',
-            'isFinite',
-            'isNaN',
-            'parseInt',
-            'setImmediate',
-            'setTimeout'
-        ];
-    var templateCounter = 0;
-    var argsClass = '[object Arguments]', arrayClass = '[object Array]', boolClass = '[object Boolean]', dateClass = '[object Date]', errorClass = '[object Error]', funcClass = '[object Function]', numberClass = '[object Number]', objectClass = '[object Object]', regexpClass = '[object RegExp]', stringClass = '[object String]';
-    var cloneableClasses = {};
-    cloneableClasses[funcClass] = false;
-    cloneableClasses[argsClass] = cloneableClasses[arrayClass] = cloneableClasses[boolClass] = cloneableClasses[dateClass] = cloneableClasses[numberClass] = cloneableClasses[objectClass] = cloneableClasses[regexpClass] = cloneableClasses[stringClass] = true;
-    var objectTypes = {
-            'boolean': false,
-            'function': true,
-            'object': true,
-            'number': false,
-            'string': false,
-            'undefined': false
-        };
-    var stringEscapes = {
-            '\\': '\\',
-            '\'': '\'',
-            '\n': 'n',
-            '\r': 'r',
-            '\t': 't',
-            '\u2028': 'u2028',
-            '\u2029': 'u2029'
-        };
-    var freeExports = objectTypes[typeof exports] && exports;
-    var freeModule = objectTypes[typeof module] && module && module.exports == freeExports && module;
-    var freeGlobal = objectTypes[typeof global] && global;
-    if (freeGlobal && (freeGlobal.global === freeGlobal || freeGlobal.window === freeGlobal)) {
-        window = freeGlobal;
-    }
-    function basicIndexOf(array, value, fromIndex) {
-        var index = (fromIndex || 0) - 1, length = array.length;
-        while (++index < length) {
-            if (array[index] === value) {
-                return index;
+require.define('19', function(module, exports, __dirname, __filename, undefined){
+(function () {
+    var divide_list, get_type, __slice = [].slice;
+    get_type = function (varable) {
+        var as_string;
+        as_string = Object.prototype.toString.call(varable);
+        return as_string.slice(1, -1).split(' ')[1].toLowerCase();
+    };
+    divide_list = function (stack, long_list) {
+        var keys;
+        if (long_list.length > 0) {
+            if (get_type(long_list[0]) === 'object') {
+                keys = Object.keys(long_list[0]);
+                keys.forEach(function (key) {
+                    return stack.push({
+                        pattern: key,
+                        result: long_list[0][key]
+                    });
+                });
+                return divide_list(stack, long_list.slice(1));
+            } else {
+                stack.push({
+                    pattern: long_list[0],
+                    result: long_list[1]
+                });
+                return divide_list(stack, long_list.slice(2));
             }
-        }
-        return -1;
-    }
-    function cacheIndexOf(cache, value) {
-        var type = typeof value;
-        cache = cache.cache;
-        if (type == 'boolean' || value == null) {
-            return cache[value];
-        }
-        if (type != 'number' && type != 'string') {
-            type = 'object';
-        }
-        var key = type == 'number' ? value : keyPrefix + value;
-        cache = cache[type] || (cache[type] = {});
-        return type == 'object' ? cache[key] && basicIndexOf(cache[key], value) > -1 ? 0 : -1 : cache[key] ? 0 : -1;
-    }
-    function cachePush(value) {
-        var cache = this.cache, type = typeof value;
-        if (type == 'boolean' || value == null) {
-            cache[value] = true;
         } else {
-            if (type != 'number' && type != 'string') {
-                type = 'object';
-            }
-            var key = type == 'number' ? value : keyPrefix + value, typeCache = cache[type] || (cache[type] = {});
-            if (type == 'object') {
-                if ((typeCache[key] || (typeCache[key] = [])).push(value) == this.array.length) {
-                    cache[type] = false;
-                }
-            } else {
-                typeCache[key] = true;
-            }
+            return stack;
         }
-    }
-    function charAtCallback(value) {
-        return value.charCodeAt(0);
-    }
-    function compareAscending(a, b) {
-        var ai = a.index, bi = b.index;
-        a = a.criteria;
-        b = b.criteria;
-        if (a !== b) {
-            if (a > b || typeof a == 'undefined') {
-                return 1;
-            }
-            if (a < b || typeof b == 'undefined') {
-                return -1;
-            }
-        }
-        return ai < bi ? -1 : 1;
-    }
-    function createCache(array) {
-        var index = -1, length = array.length;
-        var cache = getObject();
-        cache['false'] = cache['null'] = cache['true'] = cache['undefined'] = false;
-        var result = getObject();
-        result.array = array;
-        result.cache = cache;
-        result.push = cachePush;
-        while (++index < length) {
-            result.push(array[index]);
-        }
-        return cache.object === false ? (releaseObject(result), null) : result;
-    }
-    function escapeStringChar(match) {
-        return '\\' + stringEscapes[match];
-    }
-    function getArray() {
-        return arrayPool.pop() || [];
-    }
-    function getObject() {
-        return objectPool.pop() || {
-            'array': null,
-            'cache': null,
-            'criteria': null,
-            'false': false,
-            'index': 0,
-            'leading': false,
-            'maxWait': 0,
-            'null': false,
-            'number': null,
-            'object': null,
-            'push': null,
-            'string': null,
-            'trailing': false,
-            'true': false,
-            'undefined': false,
-            'value': null
-        };
-    }
-    function noop() {
-    }
-    function releaseArray(array) {
-        array.length = 0;
-        if (arrayPool.length < maxPoolSize) {
-            arrayPool.push(array);
-        }
-    }
-    function releaseObject(object) {
-        var cache = object.cache;
-        if (cache) {
-            releaseObject(cache);
-        }
-        object.array = object.cache = object.criteria = object.object = object.number = object.string = object.value = null;
-        if (objectPool.length < maxPoolSize) {
-            objectPool.push(object);
-        }
-    }
-    function slice(array, start, end) {
-        start || (start = 0);
-        if (typeof end == 'undefined') {
-            end = array ? array.length : 0;
-        }
-        var index = -1, length = end - start || 0, result = Array(length < 0 ? 0 : length);
-        while (++index < length) {
-            result[index] = array[start + index];
-        }
-        return result;
-    }
-    function runInContext(context) {
-        context = context ? _.defaults(window.Object(), context, _.pick(window, contextProps)) : window;
-        var Array = context.Array, Boolean = context.Boolean, Date = context.Date, Function = context.Function, Math = context.Math, Number = context.Number, Object = context.Object, RegExp = context.RegExp, String = context.String, TypeError = context.TypeError;
-        var arrayRef = [];
-        var objectProto = Object.prototype, stringProto = String.prototype;
-        var oldDash = context._;
-        var reNative = RegExp('^' + String(objectProto.valueOf).replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/valueOf|for [^\]]+/g, '.+?') + '$');
-        var ceil = Math.ceil, clearTimeout = context.clearTimeout, concat = arrayRef.concat, floor = Math.floor, fnToString = Function.prototype.toString, getPrototypeOf = reNative.test(getPrototypeOf = Object.getPrototypeOf) && getPrototypeOf, hasOwnProperty = objectProto.hasOwnProperty, push = arrayRef.push, propertyIsEnumerable = objectProto.propertyIsEnumerable, setImmediate = context.setImmediate, setTimeout = context.setTimeout, toString = objectProto.toString;
-        var nativeBind = reNative.test(nativeBind = toString.bind) && nativeBind, nativeCreate = reNative.test(nativeCreate = Object.create) && nativeCreate, nativeIsArray = reNative.test(nativeIsArray = Array.isArray) && nativeIsArray, nativeIsFinite = context.isFinite, nativeIsNaN = context.isNaN, nativeKeys = reNative.test(nativeKeys = Object.keys) && nativeKeys, nativeMax = Math.max, nativeMin = Math.min, nativeParseInt = context.parseInt, nativeRandom = Math.random, nativeSlice = arrayRef.slice;
-        var isIeOpera = reNative.test(context.attachEvent), isV8 = nativeBind && !/\n|true/.test(nativeBind + isIeOpera);
-        var ctorByClass = {};
-        ctorByClass[arrayClass] = Array;
-        ctorByClass[boolClass] = Boolean;
-        ctorByClass[dateClass] = Date;
-        ctorByClass[funcClass] = Function;
-        ctorByClass[objectClass] = Object;
-        ctorByClass[numberClass] = Number;
-        ctorByClass[regexpClass] = RegExp;
-        ctorByClass[stringClass] = String;
-        function lodash(value) {
-            return value && typeof value == 'object' && !isArray(value) && hasOwnProperty.call(value, '__wrapped__') ? value : new lodashWrapper(value);
-        }
-        function lodashWrapper(value) {
-            this.__wrapped__ = value;
-        }
-        lodashWrapper.prototype = lodash.prototype;
-        var support = lodash.support = {};
-        support.fastBind = nativeBind && !isV8;
-        lodash.templateSettings = {
-            'escape': /<%-([\s\S]+?)%>/g,
-            'evaluate': /<%([\s\S]+?)%>/g,
-            'interpolate': reInterpolate,
-            'variable': '',
-            'imports': { '_': lodash }
-        };
-        function createBound(func, thisArg, partialArgs, indicator) {
-            var isFunc = isFunction(func), isPartial = !partialArgs, key = thisArg;
-            if (isPartial) {
-                var rightIndicator = indicator;
-                partialArgs = thisArg;
-            } else if (!isFunc) {
-                if (!indicator) {
-                    throw new TypeError();
-                }
-                thisArg = func;
-            }
-            function bound() {
-                var args = arguments, thisBinding = isPartial ? this : thisArg;
-                if (!isFunc) {
-                    func = thisArg[key];
-                }
-                if (partialArgs.length) {
-                    args = args.length ? (args = nativeSlice.call(args), rightIndicator ? args.concat(partialArgs) : partialArgs.concat(args)) : partialArgs;
-                }
-                if (this instanceof bound) {
-                    thisBinding = createObject(func.prototype);
-                    var result = func.apply(thisBinding, args);
-                    return isObject(result) ? result : thisBinding;
-                }
-                return func.apply(thisBinding, args);
-            }
-            return bound;
-        }
-        function createObject(prototype) {
-            return isObject(prototype) ? nativeCreate(prototype) : {};
-        }
-        function escapeHtmlChar(match) {
-            return htmlEscapes[match];
-        }
-        function getIndexOf(array, value, fromIndex) {
-            var result = (result = lodash.indexOf) === indexOf ? basicIndexOf : result;
-            return result;
-        }
-        function overloadWrapper(func) {
-            return function (array, flag, callback, thisArg) {
-                if (typeof flag != 'boolean' && flag != null) {
-                    thisArg = callback;
-                    callback = !(thisArg && thisArg[flag] === array) ? flag : undefined;
-                    flag = false;
-                }
-                if (callback != null) {
-                    callback = lodash.createCallback(callback, thisArg);
-                }
-                return func(array, flag, callback, thisArg);
-            };
-        }
-        function shimIsPlainObject(value) {
-            var ctor, result;
-            if (!(value && toString.call(value) == objectClass) || (ctor = value.constructor, isFunction(ctor) && !(ctor instanceof ctor))) {
-                return false;
-            }
-            forIn(value, function (value, key) {
-                result = key;
-            });
-            return result === undefined || hasOwnProperty.call(value, result);
-        }
-        function unescapeHtmlChar(match) {
-            return htmlUnescapes[match];
-        }
-        function isArguments(value) {
-            return toString.call(value) == argsClass;
-        }
-        var isArray = nativeIsArray;
-        var shimKeys = function (object) {
-            var index, iterable = object, result = [];
-            if (!iterable)
-                return result;
-            if (!objectTypes[typeof object])
-                return result;
-            for (index in iterable) {
-                if (hasOwnProperty.call(iterable, index)) {
-                    result.push(index);
-                }
-            }
-            return result;
-        };
-        var keys = !nativeKeys ? shimKeys : function (object) {
-                if (!isObject(object)) {
-                    return [];
-                }
-                return nativeKeys(object);
-            };
-        var htmlEscapes = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                '\'': '&#39;'
-            };
-        var htmlUnescapes = invert(htmlEscapes);
-        var assign = function (object, source, guard) {
-            var index, iterable = object, result = iterable;
-            if (!iterable)
-                return result;
-            var args = arguments, argsIndex = 0, argsLength = typeof guard == 'number' ? 2 : args.length;
-            if (argsLength > 3 && typeof args[argsLength - 2] == 'function') {
-                var callback = lodash.createCallback(args[--argsLength - 1], args[argsLength--], 2);
-            } else if (argsLength > 2 && typeof args[argsLength - 1] == 'function') {
-                callback = args[--argsLength];
-            }
-            while (++argsIndex < argsLength) {
-                iterable = args[argsIndex];
-                if (iterable && objectTypes[typeof iterable]) {
-                    var ownIndex = -1, ownProps = objectTypes[typeof iterable] && keys(iterable), length = ownProps ? ownProps.length : 0;
-                    while (++ownIndex < length) {
-                        index = ownProps[ownIndex];
-                        result[index] = callback ? callback(result[index], iterable[index]) : iterable[index];
-                    }
-                }
-            }
-            return result;
-        };
-        function clone(value, deep, callback, thisArg, stackA, stackB) {
-            var result = value;
-            if (typeof deep != 'boolean' && deep != null) {
-                thisArg = callback;
-                callback = deep;
-                deep = false;
-            }
-            if (typeof callback == 'function') {
-                callback = typeof thisArg == 'undefined' ? callback : lodash.createCallback(callback, thisArg, 1);
-                result = callback(result);
-                if (typeof result != 'undefined') {
-                    return result;
-                }
-                result = value;
-            }
-            var isObj = isObject(result);
-            if (isObj) {
-                var className = toString.call(result);
-                if (!cloneableClasses[className]) {
-                    return result;
-                }
-                var isArr = isArray(result);
-            }
-            if (!isObj || !deep) {
-                return isObj ? isArr ? slice(result) : assign({}, result) : result;
-            }
-            var ctor = ctorByClass[className];
-            switch (className) {
-            case boolClass:
-            case dateClass:
-                return new ctor(+result);
-            case numberClass:
-            case stringClass:
-                return new ctor(result);
-            case regexpClass:
-                return ctor(result.source, reFlags.exec(result));
-            }
-            var initedStack = !stackA;
-            stackA || (stackA = getArray());
-            stackB || (stackB = getArray());
-            var length = stackA.length;
-            while (length--) {
-                if (stackA[length] == value) {
-                    return stackB[length];
-                }
-            }
-            result = isArr ? ctor(result.length) : {};
-            if (isArr) {
-                if (hasOwnProperty.call(value, 'index')) {
-                    result.index = value.index;
-                }
-                if (hasOwnProperty.call(value, 'input')) {
-                    result.input = value.input;
-                }
-            }
-            stackA.push(value);
-            stackB.push(result);
-            (isArr ? forEach : forOwn)(value, function (objValue, key) {
-                result[key] = clone(objValue, deep, callback, undefined, stackA, stackB);
-            });
-            if (initedStack) {
-                releaseArray(stackA);
-                releaseArray(stackB);
-            }
-            return result;
-        }
-        function cloneDeep(value, callback, thisArg) {
-            return clone(value, true, callback, thisArg);
-        }
-        var defaults = function (object, source, guard) {
-            var index, iterable = object, result = iterable;
-            if (!iterable)
-                return result;
-            var args = arguments, argsIndex = 0, argsLength = typeof guard == 'number' ? 2 : args.length;
-            while (++argsIndex < argsLength) {
-                iterable = args[argsIndex];
-                if (iterable && objectTypes[typeof iterable]) {
-                    var ownIndex = -1, ownProps = objectTypes[typeof iterable] && keys(iterable), length = ownProps ? ownProps.length : 0;
-                    while (++ownIndex < length) {
-                        index = ownProps[ownIndex];
-                        if (typeof result[index] == 'undefined')
-                            result[index] = iterable[index];
-                    }
-                }
-            }
-            return result;
-        };
-        function findKey(object, callback, thisArg) {
-            var result;
-            callback = lodash.createCallback(callback, thisArg);
-            forOwn(object, function (value, key, object) {
-                if (callback(value, key, object)) {
-                    result = key;
+    };
+    exports.match = function () {
+        var choices, chosen, data, possible, sure;
+        data = arguments[0], choices = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+        possible = divide_list([], choices).filter(function (solution) {
+            var the_type;
+            the_type = get_type(solution.pattern);
+            if (solution.pattern === void 0) {
+                return true;
+            } else if (the_type === 'regexp') {
+                if (get_type(data) === 'string') {
+                    return data.match(solution.pattern);
+                } else {
                     return false;
                 }
-            });
-            return result;
-        }
-        var forIn = function (collection, callback, thisArg) {
-            var index, iterable = collection, result = iterable;
-            if (!iterable)
-                return result;
-            if (!objectTypes[typeof iterable])
-                return result;
-            callback = callback && typeof thisArg == 'undefined' ? callback : lodash.createCallback(callback, thisArg);
-            for (index in iterable) {
-                if (callback(iterable[index], index, collection) === false)
-                    return result;
-            }
-            return result;
-        };
-        var forOwn = function (collection, callback, thisArg) {
-            var index, iterable = collection, result = iterable;
-            if (!iterable)
-                return result;
-            if (!objectTypes[typeof iterable])
-                return result;
-            callback = callback && typeof thisArg == 'undefined' ? callback : lodash.createCallback(callback, thisArg);
-            var ownIndex = -1, ownProps = objectTypes[typeof iterable] && keys(iterable), length = ownProps ? ownProps.length : 0;
-            while (++ownIndex < length) {
-                index = ownProps[ownIndex];
-                if (callback(iterable[index], index, collection) === false)
-                    return result;
-            }
-            return result;
-        };
-        function functions(object) {
-            var result = [];
-            forIn(object, function (value, key) {
-                if (isFunction(value)) {
-                    result.push(key);
-                }
-            });
-            return result.sort();
-        }
-        function has(object, property) {
-            return object ? hasOwnProperty.call(object, property) : false;
-        }
-        function invert(object) {
-            var index = -1, props = keys(object), length = props.length, result = {};
-            while (++index < length) {
-                var key = props[index];
-                result[object[key]] = key;
-            }
-            return result;
-        }
-        function isBoolean(value) {
-            return value === true || value === false || toString.call(value) == boolClass;
-        }
-        function isDate(value) {
-            return value ? typeof value == 'object' && toString.call(value) == dateClass : false;
-        }
-        function isElement(value) {
-            return value ? value.nodeType === 1 : false;
-        }
-        function isEmpty(value) {
-            var result = true;
-            if (!value) {
-                return result;
-            }
-            var className = toString.call(value), length = value.length;
-            if (className == arrayClass || className == stringClass || className == argsClass || className == objectClass && typeof length == 'number' && isFunction(value.splice)) {
-                return !length;
-            }
-            forOwn(value, function () {
-                return result = false;
-            });
-            return result;
-        }
-        function isEqual(a, b, callback, thisArg, stackA, stackB) {
-            var whereIndicator = callback === indicatorObject;
-            if (typeof callback == 'function' && !whereIndicator) {
-                callback = lodash.createCallback(callback, thisArg, 2);
-                var result = callback(a, b);
-                if (typeof result != 'undefined') {
-                    return !!result;
-                }
-            }
-            if (a === b) {
-                return a !== 0 || 1 / a == 1 / b;
-            }
-            var type = typeof a, otherType = typeof b;
-            if (a === a && (!a || type != 'function' && type != 'object') && (!b || otherType != 'function' && otherType != 'object')) {
-                return false;
-            }
-            if (a == null || b == null) {
-                return a === b;
-            }
-            var className = toString.call(a), otherClass = toString.call(b);
-            if (className == argsClass) {
-                className = objectClass;
-            }
-            if (otherClass == argsClass) {
-                otherClass = objectClass;
-            }
-            if (className != otherClass) {
-                return false;
-            }
-            switch (className) {
-            case boolClass:
-            case dateClass:
-                return +a == +b;
-            case numberClass:
-                return a != +a ? b != +b : a == 0 ? 1 / a == 1 / b : a == +b;
-            case regexpClass:
-            case stringClass:
-                return a == String(b);
-            }
-            var isArr = className == arrayClass;
-            if (!isArr) {
-                if (hasOwnProperty.call(a, '__wrapped__ ') || hasOwnProperty.call(b, '__wrapped__')) {
-                    return isEqual(a.__wrapped__ || a, b.__wrapped__ || b, callback, thisArg, stackA, stackB);
-                }
-                if (className != objectClass) {
-                    return false;
-                }
-                var ctorA = a.constructor, ctorB = b.constructor;
-                if (ctorA != ctorB && !(isFunction(ctorA) && ctorA instanceof ctorA && isFunction(ctorB) && ctorB instanceof ctorB)) {
-                    return false;
-                }
-            }
-            var initedStack = !stackA;
-            stackA || (stackA = getArray());
-            stackB || (stackB = getArray());
-            var length = stackA.length;
-            while (length--) {
-                if (stackA[length] == a) {
-                    return stackB[length] == b;
-                }
-            }
-            var size = 0;
-            result = true;
-            stackA.push(a);
-            stackB.push(b);
-            if (isArr) {
-                length = a.length;
-                size = b.length;
-                result = size == a.length;
-                if (!result && !whereIndicator) {
-                    return result;
-                }
-                while (size--) {
-                    var index = length, value = b[size];
-                    if (whereIndicator) {
-                        while (index--) {
-                            if (result = isEqual(a[index], value, callback, thisArg, stackA, stackB)) {
-                                break;
-                            }
-                        }
-                    } else if (!(result = isEqual(a[size], value, callback, thisArg, stackA, stackB))) {
-                        break;
-                    }
-                }
-                return result;
-            }
-            forIn(b, function (value, key, b) {
-                if (hasOwnProperty.call(b, key)) {
-                    size++;
-                    return result = hasOwnProperty.call(a, key) && isEqual(a[key], value, callback, thisArg, stackA, stackB);
-                }
-            });
-            if (result && !whereIndicator) {
-                forIn(a, function (value, key, a) {
-                    if (hasOwnProperty.call(a, key)) {
-                        return result = --size > -1;
-                    }
-                });
-            }
-            if (initedStack) {
-                releaseArray(stackA);
-                releaseArray(stackB);
-            }
-            return result;
-        }
-        function isFinite(value) {
-            return nativeIsFinite(value) && !nativeIsNaN(parseFloat(value));
-        }
-        function isFunction(value) {
-            return typeof value == 'function';
-        }
-        function isObject(value) {
-            return !!(value && objectTypes[typeof value]);
-        }
-        function isNaN(value) {
-            return isNumber(value) && value != +value;
-        }
-        function isNull(value) {
-            return value === null;
-        }
-        function isNumber(value) {
-            return typeof value == 'number' || toString.call(value) == numberClass;
-        }
-        var isPlainObject = function (value) {
-            if (!(value && toString.call(value) == objectClass)) {
-                return false;
-            }
-            var valueOf = value.valueOf, objProto = typeof valueOf == 'function' && (objProto = getPrototypeOf(valueOf)) && getPrototypeOf(objProto);
-            return objProto ? value == objProto || getPrototypeOf(value) == objProto : shimIsPlainObject(value);
-        };
-        function isRegExp(value) {
-            return value ? typeof value == 'object' && toString.call(value) == regexpClass : false;
-        }
-        function isString(value) {
-            return typeof value == 'string' || toString.call(value) == stringClass;
-        }
-        function isUndefined(value) {
-            return typeof value == 'undefined';
-        }
-        function merge(object, source, deepIndicator) {
-            var args = arguments, index = 0, length = 2;
-            if (!isObject(object)) {
-                return object;
-            }
-            if (deepIndicator === indicatorObject) {
-                var callback = args[3], stackA = args[4], stackB = args[5];
+            } else if (the_type === 'function') {
+                return solution.pattern(data);
             } else {
-                var initedStack = true;
-                stackA = getArray();
-                stackB = getArray();
-                if (typeof deepIndicator != 'number') {
-                    length = args.length;
-                }
-                if (length > 3 && typeof args[length - 2] == 'function') {
-                    callback = lodash.createCallback(args[--length - 1], args[length--], 2);
-                } else if (length > 2 && typeof args[length - 1] == 'function') {
-                    callback = args[--length];
-                }
+                return data === solution.pattern;
             }
-            while (++index < length) {
-                (isArray(args[index]) ? forEach : forOwn)(args[index], function (source, key) {
-                    var found, isArr, result = source, value = object[key];
-                    if (source && ((isArr = isArray(source)) || isPlainObject(source))) {
-                        var stackLength = stackA.length;
-                        while (stackLength--) {
-                            if (found = stackA[stackLength] == source) {
-                                value = stackB[stackLength];
-                                break;
-                            }
-                        }
-                        if (!found) {
-                            var isShallow;
-                            if (callback) {
-                                result = callback(value, source);
-                                if (isShallow = typeof result != 'undefined') {
-                                    value = result;
-                                }
-                            }
-                            if (!isShallow) {
-                                value = isArr ? isArray(value) ? value : [] : isPlainObject(value) ? value : {};
-                            }
-                            stackA.push(source);
-                            stackB.push(value);
-                            if (!isShallow) {
-                                value = merge(value, source, indicatorObject, callback, stackA, stackB);
-                            }
-                        }
+        });
+        sure = possible.filter(function (solution) {
+            return solution.pattern != null;
+        });
+        chosen = sure.length > 0 ? sure[0] : possible[0];
+        if (chosen != null) {
+            if (get_type(chosen.result) === 'function') {
+                return chosen.result(data);
+            } else {
+                return chosen.result;
+            }
+        } else {
+            return chosen;
+        }
+    };
+}.call(this));
+});
+require.define('18', function(module, exports, __dirname, __filename, undefined){
+RegExp.escape = function (s) {
+    return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+};
+(function (undefined) {
+    'use strict';
+    var $;
+    if (typeof jQuery !== 'undefined' && jQuery) {
+        $ = jQuery;
+    } else {
+        $ = {};
+    }
+    $.csv = {
+        defaults: {
+            separator: ',',
+            delimiter: '"',
+            headers: true
+        },
+        hooks: {
+            castToScalar: function (value, state) {
+                var hasDot = /\./;
+                if (isNaN(value)) {
+                    return value;
+                } else {
+                    if (hasDot.test(value)) {
+                        return parseFloat(value);
                     } else {
-                        if (callback) {
-                            result = callback(value, source);
-                            if (typeof result == 'undefined') {
-                                result = source;
-                            }
-                        }
-                        if (typeof result != 'undefined') {
-                            value = result;
+                        var integer = parseInt(value);
+                        if (isNaN(integer)) {
+                            return null;
+                        } else {
+                            return integer;
                         }
                     }
-                    object[key] = value;
-                });
-            }
-            if (initedStack) {
-                releaseArray(stackA);
-                releaseArray(stackB);
-            }
-            return object;
-        }
-        function omit(object, callback, thisArg) {
-            var indexOf = getIndexOf(), isFunc = typeof callback == 'function', result = {};
-            if (isFunc) {
-                callback = lodash.createCallback(callback, thisArg);
-            } else {
-                var props = concat.apply(arrayRef, nativeSlice.call(arguments, 1));
-            }
-            forIn(object, function (value, key, object) {
-                if (isFunc ? !callback(value, key, object) : indexOf(props, key) < 0) {
-                    result[key] = value;
                 }
-            });
-            return result;
-        }
-        function pairs(object) {
-            var index = -1, props = keys(object), length = props.length, result = Array(length);
-            while (++index < length) {
-                var key = props[index];
-                result[index] = [
-                    key,
-                    object[key]
-                ];
             }
-            return result;
-        }
-        function pick(object, callback, thisArg) {
-            var result = {};
-            if (typeof callback != 'function') {
-                var index = -1, props = concat.apply(arrayRef, nativeSlice.call(arguments, 1)), length = isObject(object) ? props.length : 0;
-                while (++index < length) {
-                    var key = props[index];
-                    if (key in object) {
-                        result[key] = object[key];
+        },
+        parsers: {
+            parse: function (csv, options) {
+                var separator = options.separator;
+                var delimiter = options.delimiter;
+                if (!options.state.rowNum) {
+                    options.state.rowNum = 1;
+                }
+                if (!options.state.colNum) {
+                    options.state.colNum = 1;
+                }
+                var data = [];
+                var entry = [];
+                var state = 0;
+                var value = '';
+                var exit = false;
+                function endOfEntry() {
+                    state = 0;
+                    value = '';
+                    if (options.start && options.state.rowNum < options.start) {
+                        entry = [];
+                        options.state.rowNum++;
+                        options.state.colNum = 1;
+                        return;
                     }
-                }
-            } else {
-                callback = lodash.createCallback(callback, thisArg);
-                forIn(object, function (value, key, object) {
-                    if (callback(value, key, object)) {
-                        result[key] = value;
-                    }
-                });
-            }
-            return result;
-        }
-        function transform(object, callback, accumulator, thisArg) {
-            var isArr = isArray(object);
-            callback = lodash.createCallback(callback, thisArg, 4);
-            if (accumulator == null) {
-                if (isArr) {
-                    accumulator = [];
-                } else {
-                    var ctor = object && object.constructor, proto = ctor && ctor.prototype;
-                    accumulator = createObject(proto);
-                }
-            }
-            (isArr ? forEach : forOwn)(object, function (value, index, object) {
-                return callback(accumulator, value, index, object);
-            });
-            return accumulator;
-        }
-        function values(object) {
-            var index = -1, props = keys(object), length = props.length, result = Array(length);
-            while (++index < length) {
-                result[index] = object[props[index]];
-            }
-            return result;
-        }
-        function at(collection) {
-            var index = -1, props = concat.apply(arrayRef, nativeSlice.call(arguments, 1)), length = props.length, result = Array(length);
-            while (++index < length) {
-                result[index] = collection[props[index]];
-            }
-            return result;
-        }
-        function contains(collection, target, fromIndex) {
-            var index = -1, indexOf = getIndexOf(), length = collection ? collection.length : 0, result = false;
-            fromIndex = (fromIndex < 0 ? nativeMax(0, length + fromIndex) : fromIndex) || 0;
-            if (length && typeof length == 'number') {
-                result = (isString(collection) ? collection.indexOf(target, fromIndex) : indexOf(collection, target, fromIndex)) > -1;
-            } else {
-                forOwn(collection, function (value) {
-                    if (++index >= fromIndex) {
-                        return !(result = value === target);
-                    }
-                });
-            }
-            return result;
-        }
-        function countBy(collection, callback, thisArg) {
-            var result = {};
-            callback = lodash.createCallback(callback, thisArg);
-            forEach(collection, function (value, key, collection) {
-                key = String(callback(value, key, collection));
-                hasOwnProperty.call(result, key) ? result[key]++ : result[key] = 1;
-            });
-            return result;
-        }
-        function every(collection, callback, thisArg) {
-            var result = true;
-            callback = lodash.createCallback(callback, thisArg);
-            var index = -1, length = collection ? collection.length : 0;
-            if (typeof length == 'number') {
-                while (++index < length) {
-                    if (!(result = !!callback(collection[index], index, collection))) {
-                        break;
-                    }
-                }
-            } else {
-                forOwn(collection, function (value, index, collection) {
-                    return result = !!callback(value, index, collection);
-                });
-            }
-            return result;
-        }
-        function filter(collection, callback, thisArg) {
-            var result = [];
-            callback = lodash.createCallback(callback, thisArg);
-            var index = -1, length = collection ? collection.length : 0;
-            if (typeof length == 'number') {
-                while (++index < length) {
-                    var value = collection[index];
-                    if (callback(value, index, collection)) {
-                        result.push(value);
-                    }
-                }
-            } else {
-                forOwn(collection, function (value, index, collection) {
-                    if (callback(value, index, collection)) {
-                        result.push(value);
-                    }
-                });
-            }
-            return result;
-        }
-        function find(collection, callback, thisArg) {
-            callback = lodash.createCallback(callback, thisArg);
-            var index = -1, length = collection ? collection.length : 0;
-            if (typeof length == 'number') {
-                while (++index < length) {
-                    var value = collection[index];
-                    if (callback(value, index, collection)) {
-                        return value;
-                    }
-                }
-            } else {
-                var result;
-                forOwn(collection, function (value, index, collection) {
-                    if (callback(value, index, collection)) {
-                        result = value;
-                        return false;
-                    }
-                });
-                return result;
-            }
-        }
-        function forEach(collection, callback, thisArg) {
-            var index = -1, length = collection ? collection.length : 0;
-            callback = callback && typeof thisArg == 'undefined' ? callback : lodash.createCallback(callback, thisArg);
-            if (typeof length == 'number') {
-                while (++index < length) {
-                    if (callback(collection[index], index, collection) === false) {
-                        break;
-                    }
-                }
-            } else {
-                forOwn(collection, callback);
-            }
-            return collection;
-        }
-        function groupBy(collection, callback, thisArg) {
-            var result = {};
-            callback = lodash.createCallback(callback, thisArg);
-            forEach(collection, function (value, key, collection) {
-                key = String(callback(value, key, collection));
-                (hasOwnProperty.call(result, key) ? result[key] : result[key] = []).push(value);
-            });
-            return result;
-        }
-        function invoke(collection, methodName) {
-            var args = nativeSlice.call(arguments, 2), index = -1, isFunc = typeof methodName == 'function', length = collection ? collection.length : 0, result = Array(typeof length == 'number' ? length : 0);
-            forEach(collection, function (value) {
-                result[++index] = (isFunc ? methodName : value[methodName]).apply(value, args);
-            });
-            return result;
-        }
-        function map(collection, callback, thisArg) {
-            var index = -1, length = collection ? collection.length : 0;
-            callback = lodash.createCallback(callback, thisArg);
-            if (typeof length == 'number') {
-                var result = Array(length);
-                while (++index < length) {
-                    result[index] = callback(collection[index], index, collection);
-                }
-            } else {
-                result = [];
-                forOwn(collection, function (value, key, collection) {
-                    result[++index] = callback(value, key, collection);
-                });
-            }
-            return result;
-        }
-        function max(collection, callback, thisArg) {
-            var computed = -Infinity, result = computed;
-            if (!callback && isArray(collection)) {
-                var index = -1, length = collection.length;
-                while (++index < length) {
-                    var value = collection[index];
-                    if (value > result) {
-                        result = value;
-                    }
-                }
-            } else {
-                callback = !callback && isString(collection) ? charAtCallback : lodash.createCallback(callback, thisArg);
-                forEach(collection, function (value, index, collection) {
-                    var current = callback(value, index, collection);
-                    if (current > computed) {
-                        computed = current;
-                        result = value;
-                    }
-                });
-            }
-            return result;
-        }
-        function min(collection, callback, thisArg) {
-            var computed = Infinity, result = computed;
-            if (!callback && isArray(collection)) {
-                var index = -1, length = collection.length;
-                while (++index < length) {
-                    var value = collection[index];
-                    if (value < result) {
-                        result = value;
-                    }
-                }
-            } else {
-                callback = !callback && isString(collection) ? charAtCallback : lodash.createCallback(callback, thisArg);
-                forEach(collection, function (value, index, collection) {
-                    var current = callback(value, index, collection);
-                    if (current < computed) {
-                        computed = current;
-                        result = value;
-                    }
-                });
-            }
-            return result;
-        }
-        function pluck(collection, property) {
-            var index = -1, length = collection ? collection.length : 0;
-            if (typeof length == 'number') {
-                var result = Array(length);
-                while (++index < length) {
-                    result[index] = collection[index][property];
-                }
-            }
-            return result || map(collection, property);
-        }
-        function reduce(collection, callback, accumulator, thisArg) {
-            if (!collection)
-                return accumulator;
-            var noaccum = arguments.length < 3;
-            callback = lodash.createCallback(callback, thisArg, 4);
-            var index = -1, length = collection.length;
-            if (typeof length == 'number') {
-                if (noaccum) {
-                    accumulator = collection[++index];
-                }
-                while (++index < length) {
-                    accumulator = callback(accumulator, collection[index], index, collection);
-                }
-            } else {
-                forOwn(collection, function (value, index, collection) {
-                    accumulator = noaccum ? (noaccum = false, value) : callback(accumulator, value, index, collection);
-                });
-            }
-            return accumulator;
-        }
-        function reduceRight(collection, callback, accumulator, thisArg) {
-            var iterable = collection, length = collection ? collection.length : 0, noaccum = arguments.length < 3;
-            if (typeof length != 'number') {
-                var props = keys(collection);
-                length = props.length;
-            }
-            callback = lodash.createCallback(callback, thisArg, 4);
-            forEach(collection, function (value, index, collection) {
-                index = props ? props[--length] : --length;
-                accumulator = noaccum ? (noaccum = false, iterable[index]) : callback(accumulator, iterable[index], index, collection);
-            });
-            return accumulator;
-        }
-        function reject(collection, callback, thisArg) {
-            callback = lodash.createCallback(callback, thisArg);
-            return filter(collection, function (value, index, collection) {
-                return !callback(value, index, collection);
-            });
-        }
-        function shuffle(collection) {
-            var index = -1, length = collection ? collection.length : 0, result = Array(typeof length == 'number' ? length : 0);
-            forEach(collection, function (value) {
-                var rand = floor(nativeRandom() * (++index + 1));
-                result[index] = result[rand];
-                result[rand] = value;
-            });
-            return result;
-        }
-        function size(collection) {
-            var length = collection ? collection.length : 0;
-            return typeof length == 'number' ? length : keys(collection).length;
-        }
-        function some(collection, callback, thisArg) {
-            var result;
-            callback = lodash.createCallback(callback, thisArg);
-            var index = -1, length = collection ? collection.length : 0;
-            if (typeof length == 'number') {
-                while (++index < length) {
-                    if (result = callback(collection[index], index, collection)) {
-                        break;
-                    }
-                }
-            } else {
-                forOwn(collection, function (value, index, collection) {
-                    return !(result = callback(value, index, collection));
-                });
-            }
-            return !!result;
-        }
-        function sortBy(collection, callback, thisArg) {
-            var index = -1, length = collection ? collection.length : 0, result = Array(typeof length == 'number' ? length : 0);
-            callback = lodash.createCallback(callback, thisArg);
-            forEach(collection, function (value, key, collection) {
-                var object = result[++index] = getObject();
-                object.criteria = callback(value, key, collection);
-                object.index = index;
-                object.value = value;
-            });
-            length = result.length;
-            result.sort(compareAscending);
-            while (length--) {
-                var object = result[length];
-                result[length] = object.value;
-                releaseObject(object);
-            }
-            return result;
-        }
-        function toArray(collection) {
-            if (collection && typeof collection.length == 'number') {
-                return slice(collection);
-            }
-            return values(collection);
-        }
-        var where = filter;
-        function compact(array) {
-            var index = -1, length = array ? array.length : 0, result = [];
-            while (++index < length) {
-                var value = array[index];
-                if (value) {
-                    result.push(value);
-                }
-            }
-            return result;
-        }
-        function difference(array) {
-            var index = -1, indexOf = getIndexOf(), length = array ? array.length : 0, seen = concat.apply(arrayRef, nativeSlice.call(arguments, 1)), result = [];
-            var isLarge = length >= largeArraySize && indexOf === basicIndexOf;
-            if (isLarge) {
-                var cache = createCache(seen);
-                if (cache) {
-                    indexOf = cacheIndexOf;
-                    seen = cache;
-                } else {
-                    isLarge = false;
-                }
-            }
-            while (++index < length) {
-                var value = array[index];
-                if (indexOf(seen, value) < 0) {
-                    result.push(value);
-                }
-            }
-            if (isLarge) {
-                releaseObject(seen);
-            }
-            return result;
-        }
-        function findIndex(array, callback, thisArg) {
-            var index = -1, length = array ? array.length : 0;
-            callback = lodash.createCallback(callback, thisArg);
-            while (++index < length) {
-                if (callback(array[index], index, array)) {
-                    return index;
-                }
-            }
-            return -1;
-        }
-        function first(array, callback, thisArg) {
-            if (array) {
-                var n = 0, length = array.length;
-                if (typeof callback != 'number' && callback != null) {
-                    var index = -1;
-                    callback = lodash.createCallback(callback, thisArg);
-                    while (++index < length && callback(array[index], index, array)) {
-                        n++;
-                    }
-                } else {
-                    n = callback;
-                    if (n == null || thisArg) {
-                        return array[0];
-                    }
-                }
-                return slice(array, 0, nativeMin(nativeMax(0, n), length));
-            }
-        }
-        var flatten = overloadWrapper(function flatten(array, isShallow, callback) {
-                var index = -1, length = array ? array.length : 0, result = [];
-                while (++index < length) {
-                    var value = array[index];
-                    if (callback) {
-                        value = callback(value, index, array);
-                    }
-                    if (isArray(value)) {
-                        push.apply(result, isShallow ? value : flatten(value));
+                    if (options.onParseEntry === undefined) {
+                        data.push(entry);
                     } else {
-                        result.push(value);
-                    }
-                }
-                return result;
-            });
-        function indexOf(array, value, fromIndex) {
-            if (typeof fromIndex == 'number') {
-                var length = array ? array.length : 0;
-                fromIndex = fromIndex < 0 ? nativeMax(0, length + fromIndex) : fromIndex || 0;
-            } else if (fromIndex) {
-                var index = sortedIndex(array, value);
-                return array[index] === value ? index : -1;
-            }
-            return array ? basicIndexOf(array, value, fromIndex) : -1;
-        }
-        function initial(array, callback, thisArg) {
-            if (!array) {
-                return [];
-            }
-            var n = 0, length = array.length;
-            if (typeof callback != 'number' && callback != null) {
-                var index = length;
-                callback = lodash.createCallback(callback, thisArg);
-                while (index-- && callback(array[index], index, array)) {
-                    n++;
-                }
-            } else {
-                n = callback == null || thisArg ? 1 : callback || n;
-            }
-            return slice(array, 0, nativeMin(nativeMax(0, length - n), length));
-        }
-        function intersection(array) {
-            var args = arguments, argsLength = args.length, argsIndex = -1, caches = getArray(), index = -1, indexOf = getIndexOf(), length = array ? array.length : 0, result = [], seen = getArray();
-            while (++argsIndex < argsLength) {
-                var value = args[argsIndex];
-                caches[argsIndex] = indexOf === basicIndexOf && (value ? value.length : 0) >= largeArraySize && createCache(argsIndex ? args[argsIndex] : seen);
-            }
-            outer:
-                while (++index < length) {
-                    var cache = caches[0];
-                    value = array[index];
-                    if ((cache ? cacheIndexOf(cache, value) : indexOf(seen, value)) < 0) {
-                        argsIndex = argsLength;
-                        (cache || seen).push(value);
-                        while (--argsIndex) {
-                            cache = caches[argsIndex];
-                            if ((cache ? cacheIndexOf(cache, value) : indexOf(args[argsIndex], value)) < 0) {
-                                continue outer;
-                            }
+                        var hookVal = options.onParseEntry(entry, options.state);
+                        if (hookVal !== false) {
+                            data.push(hookVal);
                         }
-                        result.push(value);
                     }
-                }
-            while (argsLength--) {
-                cache = caches[argsLength];
-                if (cache) {
-                    releaseObject(cache);
-                }
-            }
-            releaseArray(caches);
-            releaseArray(seen);
-            return result;
-        }
-        function last(array, callback, thisArg) {
-            if (array) {
-                var n = 0, length = array.length;
-                if (typeof callback != 'number' && callback != null) {
-                    var index = length;
-                    callback = lodash.createCallback(callback, thisArg);
-                    while (index-- && callback(array[index], index, array)) {
-                        n++;
+                    entry = [];
+                    if (options.end && options.state.rowNum >= options.end) {
+                        exit = true;
                     }
-                } else {
-                    n = callback;
-                    if (n == null || thisArg) {
-                        return array[length - 1];
-                    }
+                    options.state.rowNum++;
+                    options.state.colNum = 1;
                 }
-                return slice(array, nativeMax(0, length - n));
-            }
-        }
-        function lastIndexOf(array, value, fromIndex) {
-            var index = array ? array.length : 0;
-            if (typeof fromIndex == 'number') {
-                index = (fromIndex < 0 ? nativeMax(0, index + fromIndex) : nativeMin(fromIndex, index - 1)) + 1;
-            }
-            while (index--) {
-                if (array[index] === value) {
-                    return index;
-                }
-            }
-            return -1;
-        }
-        function range(start, end, step) {
-            start = +start || 0;
-            step = +step || 1;
-            if (end == null) {
-                end = start;
-                start = 0;
-            }
-            var index = -1, length = nativeMax(0, ceil((end - start) / step)), result = Array(length);
-            while (++index < length) {
-                result[index] = start;
-                start += step;
-            }
-            return result;
-        }
-        function rest(array, callback, thisArg) {
-            if (typeof callback != 'number' && callback != null) {
-                var n = 0, index = -1, length = array ? array.length : 0;
-                callback = lodash.createCallback(callback, thisArg);
-                while (++index < length && callback(array[index], index, array)) {
-                    n++;
-                }
-            } else {
-                n = callback == null || thisArg ? 1 : nativeMax(0, callback);
-            }
-            return slice(array, n);
-        }
-        function sortedIndex(array, value, callback, thisArg) {
-            var low = 0, high = array ? array.length : low;
-            callback = callback ? lodash.createCallback(callback, thisArg, 1) : identity;
-            value = callback(value);
-            while (low < high) {
-                var mid = low + high >>> 1;
-                callback(array[mid]) < value ? low = mid + 1 : high = mid;
-            }
-            return low;
-        }
-        function union(array) {
-            if (!isArray(array)) {
-                arguments[0] = array ? nativeSlice.call(array) : arrayRef;
-            }
-            return uniq(concat.apply(arrayRef, arguments));
-        }
-        var uniq = overloadWrapper(function (array, isSorted, callback) {
-                var index = -1, indexOf = getIndexOf(), length = array ? array.length : 0, result = [];
-                var isLarge = !isSorted && length >= largeArraySize && indexOf === basicIndexOf, seen = callback || isLarge ? getArray() : result;
-                if (isLarge) {
-                    var cache = createCache(seen);
-                    if (cache) {
-                        indexOf = cacheIndexOf;
-                        seen = cache;
+                function endOfValue() {
+                    if (options.onParseValue === undefined) {
+                        entry.push(value);
                     } else {
-                        isLarge = false;
-                        seen = callback ? seen : (releaseArray(seen), result);
-                    }
-                }
-                while (++index < length) {
-                    var value = array[index], computed = callback ? callback(value, index, array) : value;
-                    if (isSorted ? !index || seen[seen.length - 1] !== computed : indexOf(seen, computed) < 0) {
-                        if (callback || isLarge) {
-                            seen.push(computed);
+                        var hook = options.onParseValue(value, options.state);
+                        if (hook !== false) {
+                            entry.push(hook);
                         }
-                        result.push(value);
                     }
+                    value = '';
+                    state = 0;
+                    options.state.colNum++;
                 }
-                if (isLarge) {
-                    releaseArray(seen.array);
-                    releaseObject(seen);
-                } else if (callback) {
-                    releaseArray(seen);
-                }
-                return result;
-            });
-        function unzip(array) {
-            var index = -1, length = array ? max(pluck(array, 'length')) : 0, result = Array(length < 0 ? 0 : length);
-            while (++index < length) {
-                result[index] = pluck(array, index);
-            }
-            return result;
-        }
-        function without(array) {
-            return difference(array, nativeSlice.call(arguments, 1));
-        }
-        function zip(array) {
-            return array ? unzip(arguments) : [];
-        }
-        function zipObject(keys, values) {
-            var index = -1, length = keys ? keys.length : 0, result = {};
-            while (++index < length) {
-                var key = keys[index];
-                if (values) {
-                    result[key] = values[index];
-                } else {
-                    result[key[0]] = key[1];
-                }
-            }
-            return result;
-        }
-        function after(n, func) {
-            if (n < 1) {
-                return func();
-            }
-            return function () {
-                if (--n < 1) {
-                    return func.apply(this, arguments);
-                }
-            };
-        }
-        function bind(func, thisArg) {
-            return support.fastBind || nativeBind && arguments.length > 2 ? nativeBind.call.apply(nativeBind, arguments) : createBound(func, thisArg, nativeSlice.call(arguments, 2));
-        }
-        function bindAll(object) {
-            var funcs = arguments.length > 1 ? concat.apply(arrayRef, nativeSlice.call(arguments, 1)) : functions(object), index = -1, length = funcs.length;
-            while (++index < length) {
-                var key = funcs[index];
-                object[key] = bind(object[key], object);
-            }
-            return object;
-        }
-        function bindKey(object, key) {
-            return createBound(object, key, nativeSlice.call(arguments, 2), indicatorObject);
-        }
-        function compose() {
-            var funcs = arguments;
-            return function () {
-                var args = arguments, length = funcs.length;
-                while (length--) {
-                    args = [funcs[length].apply(this, args)];
-                }
-                return args[0];
-            };
-        }
-        function createCallback(func, thisArg, argCount) {
-            if (func == null) {
-                return identity;
-            }
-            var type = typeof func;
-            if (type != 'function') {
-                if (type != 'object') {
-                    return function (object) {
-                        return object[func];
-                    };
-                }
-                var props = keys(func);
-                return function (object) {
-                    var length = props.length, result = false;
-                    while (length--) {
-                        if (!(result = isEqual(object[props[length]], func[props[length]], indicatorObject))) {
+                var escSeparator = RegExp.escape(separator);
+                var escDelimiter = RegExp.escape(delimiter);
+                var match = /(D|S|\r\n|\n|\r|[^DS\r\n]+)/;
+                var matchSrc = match.source;
+                matchSrc = matchSrc.replace(/S/g, escSeparator);
+                matchSrc = matchSrc.replace(/D/g, escDelimiter);
+                match = RegExp(matchSrc, 'gm');
+                csv.replace(match, function (m0) {
+                    if (exit) {
+                        return;
+                    }
+                    switch (state) {
+                    case 0:
+                        if (m0 === separator) {
+                            value += '';
+                            endOfValue();
                             break;
                         }
+                        if (m0 === delimiter) {
+                            state = 1;
+                            break;
+                        }
+                        if (/^(\r\n|\n|\r)$/.test(m0)) {
+                            endOfValue();
+                            endOfEntry();
+                            break;
+                        }
+                        value += m0;
+                        state = 3;
+                        break;
+                    case 1:
+                        if (m0 === delimiter) {
+                            state = 2;
+                            break;
+                        }
+                        value += m0;
+                        state = 1;
+                        break;
+                    case 2:
+                        if (m0 === delimiter) {
+                            value += m0;
+                            state = 1;
+                            break;
+                        }
+                        if (m0 === separator) {
+                            endOfValue();
+                            break;
+                        }
+                        if (/^(\r\n|\n|\r)$/.test(m0)) {
+                            endOfValue();
+                            endOfEntry();
+                            break;
+                        }
+                        throw new Error('CSVDataError: Illegal State [Row:' + options.state.rowNum + '][Col:' + options.state.colNum + ']');
+                    case 3:
+                        if (m0 === separator) {
+                            endOfValue();
+                            break;
+                        }
+                        if (/^(\r\n|\n|\r)$/.test(m0)) {
+                            endOfValue();
+                            endOfEntry();
+                            break;
+                        }
+                        if (m0 === delimiter) {
+                            throw new Error('CSVDataError: Illegal Quote [Row:' + options.state.rowNum + '][Col:' + options.state.colNum + ']');
+                        }
+                        throw new Error('CSVDataError: Illegal Data [Row:' + options.state.rowNum + '][Col:' + options.state.colNum + ']');
+                    default:
+                        throw new Error('CSVDataError: Unknown State [Row:' + options.state.rowNum + '][Col:' + options.state.colNum + ']');
                     }
-                    return result;
-                };
-            }
-            if (typeof thisArg == 'undefined' || reThis && !reThis.test(fnToString.call(func))) {
-                return func;
-            }
-            if (argCount === 1) {
-                return function (value) {
-                    return func.call(thisArg, value);
-                };
-            }
-            if (argCount === 2) {
-                return function (a, b) {
-                    return func.call(thisArg, a, b);
-                };
-            }
-            if (argCount === 4) {
-                return function (accumulator, value, index, collection) {
-                    return func.call(thisArg, accumulator, value, index, collection);
-                };
-            }
-            return function (value, index, collection) {
-                return func.call(thisArg, value, index, collection);
-            };
-        }
-        function debounce(func, wait, options) {
-            var args, result, thisArg, callCount = 0, lastCalled = 0, maxWait = false, maxTimeoutId = null, timeoutId = null, trailing = true;
-            function clear() {
-                clearTimeout(maxTimeoutId);
-                clearTimeout(timeoutId);
-                callCount = 0;
-                maxTimeoutId = timeoutId = null;
-            }
-            function delayed() {
-                var isCalled = trailing && (!leading || callCount > 1);
-                clear();
-                if (isCalled) {
-                    if (maxWait !== false) {
-                        lastCalled = new Date();
+                });
+                if (entry.length !== 0) {
+                    endOfValue();
+                    endOfEntry();
+                }
+                return data;
+            },
+            splitLines: function (csv, options) {
+                var separator = options.separator;
+                var delimiter = options.delimiter;
+                if (!options.state.rowNum) {
+                    options.state.rowNum = 1;
+                }
+                var entries = [];
+                var state = 0;
+                var entry = '';
+                var exit = false;
+                function endOfLine() {
+                    state = 0;
+                    if (options.start && options.state.rowNum < options.start) {
+                        entry = '';
+                        options.state.rowNum++;
+                        return;
                     }
-                    result = func.apply(thisArg, args);
-                }
-            }
-            function maxDelayed() {
-                clear();
-                if (trailing || maxWait !== wait) {
-                    lastCalled = new Date();
-                    result = func.apply(thisArg, args);
-                }
-            }
-            wait = nativeMax(0, wait || 0);
-            if (options === true) {
-                var leading = true;
-                trailing = false;
-            } else if (isObject(options)) {
-                leading = options.leading;
-                maxWait = 'maxWait' in options && nativeMax(wait, options.maxWait || 0);
-                trailing = 'trailing' in options ? options.trailing : trailing;
-            }
-            return function () {
-                args = arguments;
-                thisArg = this;
-                callCount++;
-                clearTimeout(timeoutId);
-                if (maxWait === false) {
-                    if (leading && callCount < 2) {
-                        result = func.apply(thisArg, args);
+                    if (options.onParseEntry === undefined) {
+                        entries.push(entry);
+                    } else {
+                        var hookVal = options.onParseEntry(entry, options.state);
+                        if (hookVal !== false) {
+                            entries.push(hookVal);
+                        }
                     }
-                } else {
-                    var now = new Date();
-                    if (!maxTimeoutId && !leading) {
-                        lastCalled = now;
+                    entry = '';
+                    if (options.end && options.state.rowNum >= options.end) {
+                        exit = true;
                     }
-                    var remaining = maxWait - (now - lastCalled);
-                    if (remaining <= 0) {
-                        clearTimeout(maxTimeoutId);
-                        maxTimeoutId = null;
-                        lastCalled = now;
-                        result = func.apply(thisArg, args);
-                    } else if (!maxTimeoutId) {
-                        maxTimeoutId = setTimeout(maxDelayed, remaining);
+                    options.state.rowNum++;
+                }
+                var escSeparator = RegExp.escape(separator);
+                var escDelimiter = RegExp.escape(delimiter);
+                var match = /(D|S|\n|\r|[^DS\r\n]+)/;
+                var matchSrc = match.source;
+                matchSrc = matchSrc.replace(/S/g, escSeparator);
+                matchSrc = matchSrc.replace(/D/g, escDelimiter);
+                match = RegExp(matchSrc, 'gm');
+                csv.replace(match, function (m0) {
+                    if (exit) {
+                        return;
+                    }
+                    switch (state) {
+                    case 0:
+                        if (m0 === separator) {
+                            entry += m0;
+                            state = 0;
+                            break;
+                        }
+                        if (m0 === delimiter) {
+                            entry += m0;
+                            state = 1;
+                            break;
+                        }
+                        if (m0 === '\n') {
+                            endOfLine();
+                            break;
+                        }
+                        if (/^\r$/.test(m0)) {
+                            break;
+                        }
+                        entry += m0;
+                        state = 3;
+                        break;
+                    case 1:
+                        if (m0 === delimiter) {
+                            entry += m0;
+                            state = 2;
+                            break;
+                        }
+                        entry += m0;
+                        state = 1;
+                        break;
+                    case 2:
+                        var prevChar = entry.substr(entry.length - 1);
+                        if (m0 === delimiter && prevChar === delimiter) {
+                            entry += m0;
+                            state = 1;
+                            break;
+                        }
+                        if (m0 === separator) {
+                            entry += m0;
+                            state = 0;
+                            break;
+                        }
+                        if (m0 === '\n') {
+                            endOfLine();
+                            break;
+                        }
+                        if (m0 === '\r') {
+                            break;
+                        }
+                        throw new Error('CSVDataError: Illegal state [Row:' + options.state.rowNum + ']');
+                    case 3:
+                        if (m0 === separator) {
+                            entry += m0;
+                            state = 0;
+                            break;
+                        }
+                        if (m0 === '\n') {
+                            endOfLine();
+                            break;
+                        }
+                        if (m0 === '\r') {
+                            break;
+                        }
+                        if (m0 === delimiter) {
+                            throw new Error('CSVDataError: Illegal quote [Row:' + options.state.rowNum + ']');
+                        }
+                        throw new Error('CSVDataError: Illegal state [Row:' + options.state.rowNum + ']');
+                    default:
+                        throw new Error('CSVDataError: Unknown state [Row:' + options.state.rowNum + ']');
+                    }
+                });
+                if (entry !== '') {
+                    endOfLine();
+                }
+                return entries;
+            },
+            parseEntry: function (csv, options) {
+                var separator = options.separator;
+                var delimiter = options.delimiter;
+                if (!options.state.rowNum) {
+                    options.state.rowNum = 1;
+                }
+                if (!options.state.colNum) {
+                    options.state.colNum = 1;
+                }
+                var entry = [];
+                var state = 0;
+                var value = '';
+                function endOfValue() {
+                    if (options.onParseValue === undefined) {
+                        entry.push(value);
+                    } else {
+                        var hook = options.onParseValue(value, options.state);
+                        if (hook !== false) {
+                            entry.push(hook);
+                        }
+                    }
+                    value = '';
+                    state = 0;
+                    options.state.colNum++;
+                }
+                if (!options.match) {
+                    var escSeparator = RegExp.escape(separator);
+                    var escDelimiter = RegExp.escape(delimiter);
+                    var match = /(D|S|\n|\r|[^DS\r\n]+)/;
+                    var matchSrc = match.source;
+                    matchSrc = matchSrc.replace(/S/g, escSeparator);
+                    matchSrc = matchSrc.replace(/D/g, escDelimiter);
+                    options.match = RegExp(matchSrc, 'gm');
+                }
+                csv.replace(options.match, function (m0) {
+                    switch (state) {
+                    case 0:
+                        if (m0 === separator) {
+                            value += '';
+                            endOfValue();
+                            break;
+                        }
+                        if (m0 === delimiter) {
+                            state = 1;
+                            break;
+                        }
+                        if (m0 === '\n' || m0 === '\r') {
+                            break;
+                        }
+                        value += m0;
+                        state = 3;
+                        break;
+                    case 1:
+                        if (m0 === delimiter) {
+                            state = 2;
+                            break;
+                        }
+                        value += m0;
+                        state = 1;
+                        break;
+                    case 2:
+                        if (m0 === delimiter) {
+                            value += m0;
+                            state = 1;
+                            break;
+                        }
+                        if (m0 === separator) {
+                            endOfValue();
+                            break;
+                        }
+                        if (m0 === '\n' || m0 === '\r') {
+                            break;
+                        }
+                        throw new Error('CSVDataError: Illegal State [Row:' + options.state.rowNum + '][Col:' + options.state.colNum + ']');
+                    case 3:
+                        if (m0 === separator) {
+                            endOfValue();
+                            break;
+                        }
+                        if (m0 === '\n' || m0 === '\r') {
+                            break;
+                        }
+                        if (m0 === delimiter) {
+                            throw new Error('CSVDataError: Illegal Quote [Row:' + options.state.rowNum + '][Col:' + options.state.colNum + ']');
+                        }
+                        throw new Error('CSVDataError: Illegal Data [Row:' + options.state.rowNum + '][Col:' + options.state.colNum + ']');
+                    default:
+                        throw new Error('CSVDataError: Unknown State [Row:' + options.state.rowNum + '][Col:' + options.state.colNum + ']');
+                    }
+                });
+                endOfValue();
+                return entry;
+            }
+        },
+        helpers: {
+            collectPropertyNames: function (objects) {
+                var o, propName, props = [];
+                for (o in objects) {
+                    for (propName in objects[o]) {
+                        if (objects[o].hasOwnProperty(propName) && props.indexOf(propName) < 0 && typeof objects[o][propName] !== 'function') {
+                            props.push(propName);
+                        }
                     }
                 }
-                if (wait !== maxWait) {
-                    timeoutId = setTimeout(delayed, wait);
-                }
-                return result;
-            };
-        }
-        function defer(func) {
-            var args = nativeSlice.call(arguments, 1);
-            return setTimeout(function () {
-                func.apply(undefined, args);
-            }, 1);
-        }
-        if (isV8 && freeModule && typeof setImmediate == 'function') {
-            defer = bind(setImmediate, context);
-        }
-        function delay(func, wait) {
-            var args = nativeSlice.call(arguments, 2);
-            return setTimeout(function () {
-                func.apply(undefined, args);
-            }, wait);
-        }
-        function memoize(func, resolver) {
-            function memoized() {
-                var cache = memoized.cache, key = keyPrefix + (resolver ? resolver.apply(this, arguments) : arguments[0]);
-                return hasOwnProperty.call(cache, key) ? cache[key] : cache[key] = func.apply(this, arguments);
+                return props;
             }
-            memoized.cache = {};
-            return memoized;
-        }
-        function once(func) {
-            var ran, result;
-            return function () {
-                if (ran) {
-                    return result;
-                }
-                ran = true;
-                result = func.apply(this, arguments);
-                func = null;
-                return result;
-            };
-        }
-        function partial(func) {
-            return createBound(func, nativeSlice.call(arguments, 1));
-        }
-        function partialRight(func) {
-            return createBound(func, nativeSlice.call(arguments, 1), null, indicatorObject);
-        }
-        function throttle(func, wait, options) {
-            var leading = true, trailing = true;
-            if (options === false) {
-                leading = false;
-            } else if (isObject(options)) {
-                leading = 'leading' in options ? options.leading : leading;
-                trailing = 'trailing' in options ? options.trailing : trailing;
-            }
-            options = getObject();
-            options.leading = leading;
-            options.maxWait = wait;
-            options.trailing = trailing;
-            var result = debounce(func, wait, options);
-            releaseObject(options);
-            return result;
-        }
-        function wrap(value, wrapper) {
-            return function () {
-                var args = [value];
-                push.apply(args, arguments);
-                return wrapper.apply(this, args);
-            };
-        }
-        function escape(string) {
-            return string == null ? '' : String(string).replace(reUnescapedHtml, escapeHtmlChar);
-        }
-        function identity(value) {
-            return value;
-        }
-        function mixin(object) {
-            forEach(functions(object), function (methodName) {
-                var func = lodash[methodName] = object[methodName];
-                lodash.prototype[methodName] = function () {
-                    var value = this.__wrapped__, args = [value];
-                    push.apply(args, arguments);
-                    var result = func.apply(lodash, args);
-                    return value && typeof value == 'object' && value === result ? this : new lodashWrapper(result);
+        },
+        toArray: function (csv, options, callback) {
+            var options = options !== undefined ? options : {};
+            var config = {};
+            config.callback = callback !== undefined && typeof callback === 'function' ? callback : false;
+            config.separator = 'separator' in options ? options.separator : $.csv.defaults.separator;
+            config.delimiter = 'delimiter' in options ? options.delimiter : $.csv.defaults.delimiter;
+            var state = options.state !== undefined ? options.state : {};
+            var options = {
+                    delimiter: config.delimiter,
+                    separator: config.separator,
+                    onParseEntry: options.onParseEntry,
+                    onParseValue: options.onParseValue,
+                    state: state
                 };
-            });
-        }
-        function noConflict() {
-            context._ = oldDash;
-            return this;
-        }
-        var parseInt = nativeParseInt(whitespace + '08') == 8 ? nativeParseInt : function (value, radix) {
-                return nativeParseInt(isString(value) ? value.replace(reLeadingSpacesAndZeros, '') : value, radix || 0);
-            };
-        function random(min, max) {
-            if (min == null && max == null) {
-                max = 1;
-            }
-            min = +min || 0;
-            if (max == null) {
-                max = min;
-                min = 0;
+            var entry = $.csv.parsers.parseEntry(csv, options);
+            if (!config.callback) {
+                return entry;
             } else {
-                max = +max || 0;
+                config.callback('', entry);
             }
-            var rand = nativeRandom();
-            return min % 1 || max % 1 ? min + nativeMin(rand * (max - min + parseFloat('1e-' + ((rand + '').length - 1))), max) : min + floor(rand * (max - min + 1));
-        }
-        function result(object, property) {
-            var value = object ? object[property] : undefined;
-            return isFunction(value) ? object[property]() : value;
-        }
-        function template(text, data, options) {
-            var settings = lodash.templateSettings;
-            text || (text = '');
-            options = defaults({}, options, settings);
-            var imports = defaults({}, options.imports, settings.imports), importsKeys = keys(imports), importsValues = values(imports);
-            var isEvaluating, index = 0, interpolate = options.interpolate || reNoMatch, source = '__p += \'';
-            var reDelimiters = RegExp((options.escape || reNoMatch).source + '|' + interpolate.source + '|' + (interpolate === reInterpolate ? reEsTemplate : reNoMatch).source + '|' + (options.evaluate || reNoMatch).source + '|$', 'g');
-            text.replace(reDelimiters, function (match, escapeValue, interpolateValue, esTemplateValue, evaluateValue, offset) {
-                interpolateValue || (interpolateValue = esTemplateValue);
-                source += text.slice(index, offset).replace(reUnescapedString, escapeStringChar);
-                if (escapeValue) {
-                    source += '\' +\n__e(' + escapeValue + ') +\n\'';
-                }
-                if (evaluateValue) {
-                    isEvaluating = true;
-                    source += '\';\n' + evaluateValue + ';\n__p += \'';
-                }
-                if (interpolateValue) {
-                    source += '\' +\n((__t = (' + interpolateValue + ')) == null ? \'\' : __t) +\n\'';
-                }
-                index = offset + match.length;
-                return match;
-            });
-            source += '\';\n';
-            var variable = options.variable, hasVariable = variable;
-            if (!hasVariable) {
-                variable = 'obj';
-                source = 'with (' + variable + ') {\n' + source + '\n}\n';
-            }
-            source = (isEvaluating ? source.replace(reEmptyStringLeading, '') : source).replace(reEmptyStringMiddle, '$1').replace(reEmptyStringTrailing, '$1;');
-            source = 'function(' + variable + ') {\n' + (hasVariable ? '' : variable + ' || (' + variable + ' = {});\n') + 'var __t, __p = \'\', __e = _.escape' + (isEvaluating ? ', __j = Array.prototype.join;\n' + 'function print() { __p += __j.call(arguments, \'\') }\n' : ';\n') + source + 'return __p\n}';
-            var sourceURL = '\n/*\n//@ sourceURL=' + (options.sourceURL || '/lodash/template/source[' + templateCounter++ + ']') + '\n*/';
-            try {
-                var result = Function(importsKeys, 'return ' + source + sourceURL).apply(undefined, importsValues);
-            } catch (e) {
-                e.source = source;
-                throw e;
-            }
-            if (data) {
-                return result(data);
-            }
-            result.source = source;
-            return result;
-        }
-        function times(n, callback, thisArg) {
-            n = (n = +n) > -1 ? n : 0;
-            var index = -1, result = Array(n);
-            callback = lodash.createCallback(callback, thisArg, 1);
-            while (++index < n) {
-                result[index] = callback(index);
-            }
-            return result;
-        }
-        function unescape(string) {
-            return string == null ? '' : String(string).replace(reEscapedHtml, unescapeHtmlChar);
-        }
-        function uniqueId(prefix) {
-            var id = ++idCounter;
-            return String(prefix == null ? '' : prefix) + id;
-        }
-        function tap(value, interceptor) {
-            interceptor(value);
-            return value;
-        }
-        function wrapperToString() {
-            return String(this.__wrapped__);
-        }
-        function wrapperValueOf() {
-            return this.__wrapped__;
-        }
-        lodash.after = after;
-        lodash.assign = assign;
-        lodash.at = at;
-        lodash.bind = bind;
-        lodash.bindAll = bindAll;
-        lodash.bindKey = bindKey;
-        lodash.compact = compact;
-        lodash.compose = compose;
-        lodash.countBy = countBy;
-        lodash.createCallback = createCallback;
-        lodash.debounce = debounce;
-        lodash.defaults = defaults;
-        lodash.defer = defer;
-        lodash.delay = delay;
-        lodash.difference = difference;
-        lodash.filter = filter;
-        lodash.flatten = flatten;
-        lodash.forEach = forEach;
-        lodash.forIn = forIn;
-        lodash.forOwn = forOwn;
-        lodash.functions = functions;
-        lodash.groupBy = groupBy;
-        lodash.initial = initial;
-        lodash.intersection = intersection;
-        lodash.invert = invert;
-        lodash.invoke = invoke;
-        lodash.keys = keys;
-        lodash.map = map;
-        lodash.max = max;
-        lodash.memoize = memoize;
-        lodash.merge = merge;
-        lodash.min = min;
-        lodash.omit = omit;
-        lodash.once = once;
-        lodash.pairs = pairs;
-        lodash.partial = partial;
-        lodash.partialRight = partialRight;
-        lodash.pick = pick;
-        lodash.pluck = pluck;
-        lodash.range = range;
-        lodash.reject = reject;
-        lodash.rest = rest;
-        lodash.shuffle = shuffle;
-        lodash.sortBy = sortBy;
-        lodash.tap = tap;
-        lodash.throttle = throttle;
-        lodash.times = times;
-        lodash.toArray = toArray;
-        lodash.transform = transform;
-        lodash.union = union;
-        lodash.uniq = uniq;
-        lodash.unzip = unzip;
-        lodash.values = values;
-        lodash.where = where;
-        lodash.without = without;
-        lodash.wrap = wrap;
-        lodash.zip = zip;
-        lodash.zipObject = zipObject;
-        lodash.collect = map;
-        lodash.drop = rest;
-        lodash.each = forEach;
-        lodash.extend = assign;
-        lodash.methods = functions;
-        lodash.object = zipObject;
-        lodash.select = filter;
-        lodash.tail = rest;
-        lodash.unique = uniq;
-        mixin(lodash);
-        lodash.chain = lodash;
-        lodash.prototype.chain = function () {
-            return this;
-        };
-        lodash.clone = clone;
-        lodash.cloneDeep = cloneDeep;
-        lodash.contains = contains;
-        lodash.escape = escape;
-        lodash.every = every;
-        lodash.find = find;
-        lodash.findIndex = findIndex;
-        lodash.findKey = findKey;
-        lodash.has = has;
-        lodash.identity = identity;
-        lodash.indexOf = indexOf;
-        lodash.isArguments = isArguments;
-        lodash.isArray = isArray;
-        lodash.isBoolean = isBoolean;
-        lodash.isDate = isDate;
-        lodash.isElement = isElement;
-        lodash.isEmpty = isEmpty;
-        lodash.isEqual = isEqual;
-        lodash.isFinite = isFinite;
-        lodash.isFunction = isFunction;
-        lodash.isNaN = isNaN;
-        lodash.isNull = isNull;
-        lodash.isNumber = isNumber;
-        lodash.isObject = isObject;
-        lodash.isPlainObject = isPlainObject;
-        lodash.isRegExp = isRegExp;
-        lodash.isString = isString;
-        lodash.isUndefined = isUndefined;
-        lodash.lastIndexOf = lastIndexOf;
-        lodash.mixin = mixin;
-        lodash.noConflict = noConflict;
-        lodash.parseInt = parseInt;
-        lodash.random = random;
-        lodash.reduce = reduce;
-        lodash.reduceRight = reduceRight;
-        lodash.result = result;
-        lodash.runInContext = runInContext;
-        lodash.size = size;
-        lodash.some = some;
-        lodash.sortedIndex = sortedIndex;
-        lodash.template = template;
-        lodash.unescape = unescape;
-        lodash.uniqueId = uniqueId;
-        lodash.all = every;
-        lodash.any = some;
-        lodash.detect = find;
-        lodash.findWhere = find;
-        lodash.foldl = reduce;
-        lodash.foldr = reduceRight;
-        lodash.include = contains;
-        lodash.inject = reduce;
-        forOwn(lodash, function (func, methodName) {
-            if (!lodash.prototype[methodName]) {
-                lodash.prototype[methodName] = function () {
-                    var args = [this.__wrapped__];
-                    push.apply(args, arguments);
-                    return func.apply(lodash, args);
+        },
+        toArrays: function (csv, options, callback) {
+            var options = options !== undefined ? options : {};
+            var config = {};
+            config.callback = callback !== undefined && typeof callback === 'function' ? callback : false;
+            config.separator = 'separator' in options ? options.separator : $.csv.defaults.separator;
+            config.delimiter = 'delimiter' in options ? options.delimiter : $.csv.defaults.delimiter;
+            var data = [];
+            var options = {
+                    delimiter: config.delimiter,
+                    separator: config.separator,
+                    onParseEntry: options.onParseEntry,
+                    onParseValue: options.onParseValue,
+                    start: options.start,
+                    end: options.end,
+                    state: {
+                        rowNum: 1,
+                        colNum: 1
+                    }
                 };
+            data = $.csv.parsers.parse(csv, options);
+            if (!config.callback) {
+                return data;
+            } else {
+                config.callback('', data);
             }
-        });
-        lodash.first = first;
-        lodash.last = last;
-        lodash.take = first;
-        lodash.head = first;
-        forOwn(lodash, function (func, methodName) {
-            if (!lodash.prototype[methodName]) {
-                lodash.prototype[methodName] = function (callback, thisArg) {
-                    var result = func(this.__wrapped__, callback, thisArg);
-                    return callback == null || thisArg && typeof callback != 'function' ? result : new lodashWrapper(result);
+        },
+        toObjects: function (csv, options, callback) {
+            var options = options !== undefined ? options : {};
+            var config = {};
+            config.callback = callback !== undefined && typeof callback === 'function' ? callback : false;
+            config.separator = 'separator' in options ? options.separator : $.csv.defaults.separator;
+            config.delimiter = 'delimiter' in options ? options.delimiter : $.csv.defaults.delimiter;
+            config.headers = 'headers' in options ? options.headers : $.csv.defaults.headers;
+            options.start = 'start' in options ? options.start : 1;
+            if (config.headers) {
+                options.start++;
+            }
+            if (options.end && config.headers) {
+                options.end++;
+            }
+            var lines = [];
+            var data = [];
+            var options = {
+                    delimiter: config.delimiter,
+                    separator: config.separator,
+                    onParseEntry: options.onParseEntry,
+                    onParseValue: options.onParseValue,
+                    start: options.start,
+                    end: options.end,
+                    state: {
+                        rowNum: 1,
+                        colNum: 1
+                    },
+                    match: false,
+                    transform: options.transform
                 };
+            var headerOptions = {
+                    delimiter: config.delimiter,
+                    separator: config.separator,
+                    start: 1,
+                    end: 1,
+                    state: {
+                        rowNum: 1,
+                        colNum: 1
+                    }
+                };
+            var headerLine = $.csv.parsers.splitLines(csv, headerOptions);
+            var headers = $.csv.toArray(headerLine[0], options);
+            var lines = $.csv.parsers.splitLines(csv, options);
+            options.state.colNum = 1;
+            if (headers) {
+                options.state.rowNum = 2;
+            } else {
+                options.state.rowNum = 1;
             }
-        });
-        lodash.VERSION = '1.3.1';
-        lodash.prototype.toString = wrapperToString;
-        lodash.prototype.value = wrapperValueOf;
-        lodash.prototype.valueOf = wrapperValueOf;
-        forEach([
-            'join',
-            'pop',
-            'shift'
-        ], function (methodName) {
-            var func = arrayRef[methodName];
-            lodash.prototype[methodName] = function () {
-                return func.apply(this.__wrapped__, arguments);
-            };
-        });
-        forEach([
-            'push',
-            'reverse',
-            'sort',
-            'unshift'
-        ], function (methodName) {
-            var func = arrayRef[methodName];
-            lodash.prototype[methodName] = function () {
-                func.apply(this.__wrapped__, arguments);
-                return this;
-            };
-        });
-        forEach([
-            'concat',
-            'slice',
-            'splice'
-        ], function (methodName) {
-            var func = arrayRef[methodName];
-            lodash.prototype[methodName] = function () {
-                return new lodashWrapper(func.apply(this.__wrapped__, arguments));
-            };
-        });
-        return lodash;
-    }
-    var _ = runInContext();
-    if (typeof define == 'function' && typeof define.amd == 'object' && define.amd) {
-        window._ = _;
-        define(function () {
-            return _;
-        });
-    } else if (freeExports && !freeExports.nodeType) {
-        if (freeModule) {
-            (freeModule.exports = _)._ = _;
-        } else {
-            freeExports._ = _;
+            for (var i = 0, len = lines.length; i < len; i++) {
+                var entry = $.csv.toArray(lines[i], options);
+                var object = {};
+                for (var j in headers) {
+                    object[headers[j]] = entry[j];
+                }
+                if (options.transform !== undefined) {
+                    data.push(options.transform.call(undefined, object));
+                } else {
+                    data.push(object);
+                }
+                options.state.rowNum++;
+            }
+            if (!config.callback) {
+                return data;
+            } else {
+                config.callback('', data);
+            }
+        },
+        fromArrays: function (arrays, options, callback) {
+            var options = options !== undefined ? options : {};
+            var config = {};
+            config.callback = callback !== undefined && typeof callback === 'function' ? callback : false;
+            config.separator = 'separator' in options ? options.separator : $.csv.defaults.separator;
+            config.delimiter = 'delimiter' in options ? options.delimiter : $.csv.defaults.delimiter;
+            var output = '', line, lineValues, i, j;
+            for (i = 0; i < arrays.length; i++) {
+                line = arrays[i];
+                lineValues = [];
+                for (j = 0; j < line.length; j++) {
+                    var strValue = line[j] === undefined || line[j] === null ? '' : line[j].toString();
+                    if (strValue.indexOf(config.delimiter) > -1) {
+                        strValue = strValue.replace(config.delimiter, config.delimiter + config.delimiter);
+                    }
+                    var escMatcher = '\n|\r|S|D';
+                    escMatcher = escMatcher.replace('S', config.separator);
+                    escMatcher = escMatcher.replace('D', config.delimiter);
+                    if (strValue.search(escMatcher) > -1) {
+                        strValue = config.delimiter + strValue + config.delimiter;
+                    }
+                    lineValues.push(strValue);
+                }
+                output += lineValues.join(config.separator) + '\r\n';
+            }
+            if (!config.callback) {
+                return output;
+            } else {
+                config.callback('', output);
+            }
+        },
+        fromObjects: function (objects, options, callback) {
+            var options = options !== undefined ? options : {};
+            var config = {};
+            config.callback = callback !== undefined && typeof callback === 'function' ? callback : false;
+            config.separator = 'separator' in options ? options.separator : $.csv.defaults.separator;
+            config.delimiter = 'delimiter' in options ? options.delimiter : $.csv.defaults.delimiter;
+            config.headers = 'headers' in options ? options.headers : $.csv.defaults.headers;
+            config.sortOrder = 'sortOrder' in options ? options.sortOrder : 'declare';
+            config.manualOrder = 'manualOrder' in options ? options.manualOrder : [];
+            config.transform = options.transform;
+            if (typeof config.manualOrder === 'string') {
+                config.manualOrder = $.csv.toArray(config.manualOrder, config);
+            }
+            if (config.transform !== undefined) {
+                var origObjects = objects;
+                objects = [];
+                var i;
+                for (i = 0; i < origObjects.length; i++) {
+                    objects.push(config.transform.call(undefined, origObjects[i]));
+                }
+            }
+            var props = $.csv.helpers.collectPropertyNames(objects);
+            if (config.sortOrder === 'alpha') {
+                props.sort();
+            }
+            if (config.manualOrder.length > 0) {
+                var propsManual = [].concat(config.manualOrder);
+                var p;
+                for (p = 0; p < props.length; p++) {
+                    if (propsManual.indexOf(props[p]) < 0) {
+                        propsManual.push(props[p]);
+                    }
+                }
+                props = propsManual;
+            }
+            var o, p, line, output = [], propName;
+            if (config.headers) {
+                output.push(props);
+            }
+            for (o = 0; o < objects.length; o++) {
+                line = [];
+                for (p = 0; p < props.length; p++) {
+                    propName = props[p];
+                    if (propName in objects[o] && typeof objects[o][propName] !== 'function') {
+                        line.push(objects[o][propName]);
+                    } else {
+                        line.push('');
+                    }
+                }
+                output.push(line);
+            }
+            return $.csv.fromArrays(output, options, config.callback);
         }
-    } else {
-        window._ = _;
+    };
+    $.csvEntry2Array = $.csv.toArray;
+    $.csv2Array = $.csv.toArrays;
+    $.csv2Dictionary = $.csv.toObjects;
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = $.csv;
     }
-}(this));
+}.call(this));
 });
-require.define('9', function(module, exports, __dirname, __filename, undefined){
+require.define('17', function(module, exports, __dirname, __filename, undefined){
 (function (definition) {
     if (typeof bootstrap === 'function') {
         bootstrap('promise', definition);
@@ -3027,689 +1846,2296 @@ require.define('9', function(module, exports, __dirname, __filename, undefined){
     return Q;
 }));
 });
-require.define('11', function(module, exports, __dirname, __filename, undefined){
-(function (name, context, factory) {
-    if (typeof module !== 'undefined' && module.exports) {
-        module.exports = factory();
-    } else if (typeof context.define === 'function' && context.define.amd) {
-        define(name, [], factory);
-    } else {
-        context[name] = factory();
-    }
-}('buzz', this, function () {
-    var buzz = {
-            defaults: {
-                autoplay: false,
-                duration: 5000,
-                formats: [],
-                loop: false,
-                placeholder: '--',
-                preload: 'metadata',
-                volume: 80,
-                document: document
-            },
-            types: {
-                mp3: 'audio/mpeg',
-                ogg: 'audio/ogg',
-                wav: 'audio/wav',
-                aac: 'audio/aac',
-                m4a: 'audio/x-m4a'
-            },
-            sounds: [],
-            el: document.createElement('audio'),
-            sound: function (src, options) {
-                options = options || {};
-                var doc = options.document || buzz.defaults.document;
-                var pid = 0, events = [], eventsOnce = {}, supported = buzz.isSupported();
-                this.load = function () {
-                    if (!supported) {
-                        return this;
-                    }
-                    this.sound.load();
-                    return this;
-                };
-                this.play = function () {
-                    if (!supported) {
-                        return this;
-                    }
-                    this.sound.play();
-                    return this;
-                };
-                this.togglePlay = function () {
-                    if (!supported) {
-                        return this;
-                    }
-                    if (this.sound.paused) {
-                        this.sound.play();
-                    } else {
-                        this.sound.pause();
-                    }
-                    return this;
-                };
-                this.pause = function () {
-                    if (!supported) {
-                        return this;
-                    }
-                    this.sound.pause();
-                    return this;
-                };
-                this.isPaused = function () {
-                    if (!supported) {
-                        return null;
-                    }
-                    return this.sound.paused;
-                };
-                this.stop = function () {
-                    if (!supported) {
-                        return this;
-                    }
-                    this.setTime(0);
-                    this.sound.pause();
-                    return this;
-                };
-                this.isEnded = function () {
-                    if (!supported) {
-                        return null;
-                    }
-                    return this.sound.ended;
-                };
-                this.loop = function () {
-                    if (!supported) {
-                        return this;
-                    }
-                    this.sound.loop = 'loop';
-                    this.bind('ended.buzzloop', function () {
-                        this.currentTime = 0;
-                        this.play();
-                    });
-                    return this;
-                };
-                this.unloop = function () {
-                    if (!supported) {
-                        return this;
-                    }
-                    this.sound.removeAttribute('loop');
-                    this.unbind('ended.buzzloop');
-                    return this;
-                };
-                this.mute = function () {
-                    if (!supported) {
-                        return this;
-                    }
-                    this.sound.muted = true;
-                    return this;
-                };
-                this.unmute = function () {
-                    if (!supported) {
-                        return this;
-                    }
-                    this.sound.muted = false;
-                    return this;
-                };
-                this.toggleMute = function () {
-                    if (!supported) {
-                        return this;
-                    }
-                    this.sound.muted = !this.sound.muted;
-                    return this;
-                };
-                this.isMuted = function () {
-                    if (!supported) {
-                        return null;
-                    }
-                    return this.sound.muted;
-                };
-                this.setVolume = function (volume) {
-                    if (!supported) {
-                        return this;
-                    }
-                    if (volume < 0) {
-                        volume = 0;
-                    }
-                    if (volume > 100) {
-                        volume = 100;
-                    }
-                    this.volume = volume;
-                    this.sound.volume = volume / 100;
-                    return this;
-                };
-                this.getVolume = function () {
-                    if (!supported) {
-                        return this;
-                    }
-                    return this.volume;
-                };
-                this.increaseVolume = function (value) {
-                    return this.setVolume(this.volume + (value || 1));
-                };
-                this.decreaseVolume = function (value) {
-                    return this.setVolume(this.volume - (value || 1));
-                };
-                this.setTime = function (time) {
-                    if (!supported) {
-                        return this;
-                    }
-                    var set = true;
-                    this.whenReady(function () {
-                        if (set === true) {
-                            set = false;
-                            this.sound.currentTime = time;
-                        }
-                    });
-                    return this;
-                };
-                this.getTime = function () {
-                    if (!supported) {
-                        return null;
-                    }
-                    var time = Math.round(this.sound.currentTime * 100) / 100;
-                    return isNaN(time) ? buzz.defaults.placeholder : time;
-                };
-                this.setPercent = function (percent) {
-                    if (!supported) {
-                        return this;
-                    }
-                    return this.setTime(buzz.fromPercent(percent, this.sound.duration));
-                };
-                this.getPercent = function () {
-                    if (!supported) {
-                        return null;
-                    }
-                    var percent = Math.round(buzz.toPercent(this.sound.currentTime, this.sound.duration));
-                    return isNaN(percent) ? buzz.defaults.placeholder : percent;
-                };
-                this.setSpeed = function (duration) {
-                    if (!supported) {
-                        return this;
-                    }
-                    this.sound.playbackRate = duration;
-                    return this;
-                };
-                this.getSpeed = function () {
-                    if (!supported) {
-                        return null;
-                    }
-                    return this.sound.playbackRate;
-                };
-                this.getDuration = function () {
-                    if (!supported) {
-                        return null;
-                    }
-                    var duration = Math.round(this.sound.duration * 100) / 100;
-                    return isNaN(duration) ? buzz.defaults.placeholder : duration;
-                };
-                this.getPlayed = function () {
-                    if (!supported) {
-                        return null;
-                    }
-                    return timerangeToArray(this.sound.played);
-                };
-                this.getBuffered = function () {
-                    if (!supported) {
-                        return null;
-                    }
-                    return timerangeToArray(this.sound.buffered);
-                };
-                this.getSeekable = function () {
-                    if (!supported) {
-                        return null;
-                    }
-                    return timerangeToArray(this.sound.seekable);
-                };
-                this.getErrorCode = function () {
-                    if (supported && this.sound.error) {
-                        return this.sound.error.code;
-                    }
-                    return 0;
-                };
-                this.getErrorMessage = function () {
-                    if (!supported) {
-                        return null;
-                    }
-                    switch (this.getErrorCode()) {
-                    case 1:
-                        return 'MEDIA_ERR_ABORTED';
-                    case 2:
-                        return 'MEDIA_ERR_NETWORK';
-                    case 3:
-                        return 'MEDIA_ERR_DECODE';
-                    case 4:
-                        return 'MEDIA_ERR_SRC_NOT_SUPPORTED';
-                    default:
-                        return null;
-                    }
-                };
-                this.getStateCode = function () {
-                    if (!supported) {
-                        return null;
-                    }
-                    return this.sound.readyState;
-                };
-                this.getStateMessage = function () {
-                    if (!supported) {
-                        return null;
-                    }
-                    switch (this.getStateCode()) {
-                    case 0:
-                        return 'HAVE_NOTHING';
-                    case 1:
-                        return 'HAVE_METADATA';
-                    case 2:
-                        return 'HAVE_CURRENT_DATA';
-                    case 3:
-                        return 'HAVE_FUTURE_DATA';
-                    case 4:
-                        return 'HAVE_ENOUGH_DATA';
-                    default:
-                        return null;
-                    }
-                };
-                this.getNetworkStateCode = function () {
-                    if (!supported) {
-                        return null;
-                    }
-                    return this.sound.networkState;
-                };
-                this.getNetworkStateMessage = function () {
-                    if (!supported) {
-                        return null;
-                    }
-                    switch (this.getNetworkStateCode()) {
-                    case 0:
-                        return 'NETWORK_EMPTY';
-                    case 1:
-                        return 'NETWORK_IDLE';
-                    case 2:
-                        return 'NETWORK_LOADING';
-                    case 3:
-                        return 'NETWORK_NO_SOURCE';
-                    default:
-                        return null;
-                    }
-                };
-                this.set = function (key, value) {
-                    if (!supported) {
-                        return this;
-                    }
-                    this.sound[key] = value;
-                    return this;
-                };
-                this.get = function (key) {
-                    if (!supported) {
-                        return null;
-                    }
-                    return key ? this.sound[key] : this.sound;
-                };
-                this.bind = function (types, func) {
-                    if (!supported) {
-                        return this;
-                    }
-                    types = types.split(' ');
-                    var self = this, efunc = function (e) {
-                            func.call(self, e);
-                        };
-                    for (var t = 0; t < types.length; t++) {
-                        var type = types[t], idx = type;
-                        type = idx.split('.')[0];
-                        events.push({
-                            idx: idx,
-                            func: efunc
-                        });
-                        this.sound.addEventListener(type, efunc, true);
-                    }
-                    return this;
-                };
-                this.unbind = function (types) {
-                    if (!supported) {
-                        return this;
-                    }
-                    types = types.split(' ');
-                    for (var t = 0; t < types.length; t++) {
-                        var idx = types[t], type = idx.split('.')[0];
-                        for (var i = 0; i < events.length; i++) {
-                            var namespace = events[i].idx.split('.');
-                            if (events[i].idx == idx || namespace[1] && namespace[1] == idx.replace('.', '')) {
-                                this.sound.removeEventListener(type, events[i].func, true);
-                                events.splice(i, 1);
-                            }
-                        }
-                    }
-                    return this;
-                };
-                this.bindOnce = function (type, func) {
-                    if (!supported) {
-                        return this;
-                    }
-                    var self = this;
-                    eventsOnce[pid++] = false;
-                    this.bind(type + '.' + pid, function () {
-                        if (!eventsOnce[pid]) {
-                            eventsOnce[pid] = true;
-                            func.call(self);
-                        }
-                        self.unbind(type + '.' + pid);
-                    });
-                    return this;
-                };
-                this.trigger = function (types) {
-                    if (!supported) {
-                        return this;
-                    }
-                    types = types.split(' ');
-                    for (var t = 0; t < types.length; t++) {
-                        var idx = types[t];
-                        for (var i = 0; i < events.length; i++) {
-                            var eventType = events[i].idx.split('.');
-                            if (events[i].idx == idx || eventType[0] && eventType[0] == idx.replace('.', '')) {
-                                var evt = doc.createEvent('HTMLEvents');
-                                evt.initEvent(eventType[0], false, true);
-                                this.sound.dispatchEvent(evt);
-                            }
-                        }
-                    }
-                    return this;
-                };
-                this.fadeTo = function (to, duration, callback) {
-                    if (!supported) {
-                        return this;
-                    }
-                    if (duration instanceof Function) {
-                        callback = duration;
-                        duration = buzz.defaults.duration;
-                    } else {
-                        duration = duration || buzz.defaults.duration;
-                    }
-                    var from = this.volume, delay = duration / Math.abs(from - to), self = this;
-                    this.play();
-                    function doFade() {
-                        setTimeout(function () {
-                            if (from < to && self.volume < to) {
-                                self.setVolume(self.volume += 1);
-                                doFade();
-                            } else if (from > to && self.volume > to) {
-                                self.setVolume(self.volume -= 1);
-                                doFade();
-                            } else if (callback instanceof Function) {
-                                callback.apply(self);
-                            }
-                        }, delay);
-                    }
-                    this.whenReady(function () {
-                        doFade();
-                    });
-                    return this;
-                };
-                this.fadeIn = function (duration, callback) {
-                    if (!supported) {
-                        return this;
-                    }
-                    return this.setVolume(0).fadeTo(100, duration, callback);
-                };
-                this.fadeOut = function (duration, callback) {
-                    if (!supported) {
-                        return this;
-                    }
-                    return this.fadeTo(0, duration, callback);
-                };
-                this.fadeWith = function (sound, duration) {
-                    if (!supported) {
-                        return this;
-                    }
-                    this.fadeOut(duration, function () {
-                        this.stop();
-                    });
-                    sound.play().fadeIn(duration);
-                    return this;
-                };
-                this.whenReady = function (func) {
-                    if (!supported) {
-                        return null;
-                    }
-                    var self = this;
-                    if (this.sound.readyState === 0) {
-                        this.bind('canplay.buzzwhenready', function () {
-                            func.call(self);
-                        });
-                    } else {
-                        func.call(self);
-                    }
-                };
-                function timerangeToArray(timeRange) {
-                    var array = [], length = timeRange.length - 1;
-                    for (var i = 0; i <= length; i++) {
-                        array.push({
-                            start: timeRange.start(i),
-                            end: timeRange.end(i)
-                        });
-                    }
-                    return array;
-                }
-                function getExt(filename) {
-                    return filename.split('.').pop();
-                }
-                function addSource(sound, src) {
-                    var source = doc.createElement('source');
-                    source.src = src;
-                    if (buzz.types[getExt(src)]) {
-                        source.type = buzz.types[getExt(src)];
-                    }
-                    sound.appendChild(source);
-                }
-                if (supported && src) {
-                    for (var i in buzz.defaults) {
-                        if (buzz.defaults.hasOwnProperty(i)) {
-                            options[i] = options[i] || buzz.defaults[i];
-                        }
-                    }
-                    this.sound = doc.createElement('audio');
-                    if (src instanceof Array) {
-                        for (var j in src) {
-                            if (src.hasOwnProperty(j)) {
-                                addSource(this.sound, src[j]);
-                            }
-                        }
-                    } else if (options.formats.length) {
-                        for (var k in options.formats) {
-                            if (options.formats.hasOwnProperty(k)) {
-                                addSource(this.sound, src + '.' + options.formats[k]);
-                            }
-                        }
-                    } else {
-                        addSource(this.sound, src);
-                    }
-                    if (options.loop) {
-                        this.loop();
-                    }
-                    if (options.autoplay) {
-                        this.sound.autoplay = 'autoplay';
-                    }
-                    if (options.preload === true) {
-                        this.sound.preload = 'auto';
-                    } else if (options.preload === false) {
-                        this.sound.preload = 'none';
-                    } else {
-                        this.sound.preload = options.preload;
-                    }
-                    this.setVolume(options.volume);
-                    buzz.sounds.push(this);
-                }
-            },
-            group: function (sounds) {
-                sounds = argsToArray(sounds, arguments);
-                this.getSounds = function () {
-                    return sounds;
-                };
-                this.add = function (soundArray) {
-                    soundArray = argsToArray(soundArray, arguments);
-                    for (var a = 0; a < soundArray.length; a++) {
-                        sounds.push(soundArray[a]);
-                    }
-                };
-                this.remove = function (soundArray) {
-                    soundArray = argsToArray(soundArray, arguments);
-                    for (var a = 0; a < soundArray.length; a++) {
-                        for (var i = 0; i < sounds.length; i++) {
-                            if (sounds[i] == soundArray[a]) {
-                                sounds.splice(i, 1);
-                                break;
-                            }
-                        }
-                    }
-                };
-                this.load = function () {
-                    fn('load');
-                    return this;
-                };
-                this.play = function () {
-                    fn('play');
-                    return this;
-                };
-                this.togglePlay = function () {
-                    fn('togglePlay');
-                    return this;
-                };
-                this.pause = function (time) {
-                    fn('pause', time);
-                    return this;
-                };
-                this.stop = function () {
-                    fn('stop');
-                    return this;
-                };
-                this.mute = function () {
-                    fn('mute');
-                    return this;
-                };
-                this.unmute = function () {
-                    fn('unmute');
-                    return this;
-                };
-                this.toggleMute = function () {
-                    fn('toggleMute');
-                    return this;
-                };
-                this.setVolume = function (volume) {
-                    fn('setVolume', volume);
-                    return this;
-                };
-                this.increaseVolume = function (value) {
-                    fn('increaseVolume', value);
-                    return this;
-                };
-                this.decreaseVolume = function (value) {
-                    fn('decreaseVolume', value);
-                    return this;
-                };
-                this.loop = function () {
-                    fn('loop');
-                    return this;
-                };
-                this.unloop = function () {
-                    fn('unloop');
-                    return this;
-                };
-                this.setTime = function (time) {
-                    fn('setTime', time);
-                    return this;
-                };
-                this.set = function (key, value) {
-                    fn('set', key, value);
-                    return this;
-                };
-                this.bind = function (type, func) {
-                    fn('bind', type, func);
-                    return this;
-                };
-                this.unbind = function (type) {
-                    fn('unbind', type);
-                    return this;
-                };
-                this.bindOnce = function (type, func) {
-                    fn('bindOnce', type, func);
-                    return this;
-                };
-                this.trigger = function (type) {
-                    fn('trigger', type);
-                    return this;
-                };
-                this.fade = function (from, to, duration, callback) {
-                    fn('fade', from, to, duration, callback);
-                    return this;
-                };
-                this.fadeIn = function (duration, callback) {
-                    fn('fadeIn', duration, callback);
-                    return this;
-                };
-                this.fadeOut = function (duration, callback) {
-                    fn('fadeOut', duration, callback);
-                    return this;
-                };
-                function fn() {
-                    var args = argsToArray(null, arguments), func = args.shift();
-                    for (var i = 0; i < sounds.length; i++) {
-                        sounds[i][func].apply(sounds[i], args);
-                    }
-                }
-                function argsToArray(array, args) {
-                    return array instanceof Array ? array : Array.prototype.slice.call(args);
-                }
-            },
-            all: function () {
-                return new buzz.group(buzz.sounds);
-            },
-            isSupported: function () {
-                return !!buzz.el.canPlayType;
-            },
-            isOGGSupported: function () {
-                return !!buzz.el.canPlayType && buzz.el.canPlayType('audio/ogg; codecs="vorbis"');
-            },
-            isWAVSupported: function () {
-                return !!buzz.el.canPlayType && buzz.el.canPlayType('audio/wav; codecs="1"');
-            },
-            isMP3Supported: function () {
-                return !!buzz.el.canPlayType && buzz.el.canPlayType('audio/mpeg;');
-            },
-            isAACSupported: function () {
-                return !!buzz.el.canPlayType && (buzz.el.canPlayType('audio/x-m4a;') || buzz.el.canPlayType('audio/aac;'));
-            },
-            toTimer: function (time, withHours) {
-                var h, m, s;
-                h = Math.floor(time / 3600);
-                h = isNaN(h) ? '--' : h >= 10 ? h : '0' + h;
-                m = withHours ? Math.floor(time / 60 % 60) : Math.floor(time / 60);
-                m = isNaN(m) ? '--' : m >= 10 ? m : '0' + m;
-                s = Math.floor(time % 60);
-                s = isNaN(s) ? '--' : s >= 10 ? s : '0' + s;
-                return withHours ? h + ':' + m + ':' + s : m + ':' + s;
-            },
-            fromTimer: function (time) {
-                var splits = time.toString().split(':');
-                if (splits && splits.length == 3) {
-                    time = parseInt(splits[0], 10) * 3600 + parseInt(splits[1], 10) * 60 + parseInt(splits[2], 10);
-                }
-                if (splits && splits.length == 2) {
-                    time = parseInt(splits[0], 10) * 60 + parseInt(splits[1], 10);
-                }
-                return time;
-            },
-            toPercent: function (value, total, decimal) {
-                var r = Math.pow(10, decimal || 0);
-                return Math.round(value * 100 / total * r) / r;
-            },
-            fromPercent: function (percent, total, decimal) {
-                var r = Math.pow(10, decimal || 0);
-                return Math.round(total / 100 * percent * r) / r;
-            }
-        };
-    return buzz;
-}));
-});
-require.define('27', function(module, exports, __dirname, __filename, undefined){
+require.define('16', function(module, exports, __dirname, __filename, undefined){
+;
 (function () {
-    exports.Kinetic = require('28', module);
+    var undefined;
+    var arrayPool = [], objectPool = [];
+    var idCounter = 0;
+    var keyPrefix = +new Date() + '';
+    var largeArraySize = 75;
+    var maxPoolSize = 40;
+    var whitespace = ' \t\x0B\f\xa0\ufeff' + '\n\r\u2028\u2029' + '\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u202f\u205f\u3000';
+    var reEmptyStringLeading = /\b__p \+= '';/g, reEmptyStringMiddle = /\b(__p \+=) '' \+/g, reEmptyStringTrailing = /(__e\(.*?\)|\b__t\)) \+\n'';/g;
+    var reEsTemplate = /\$\{([^\\}]*(?:\\.[^\\}]*)*)\}/g;
+    var reFlags = /\w*$/;
+    var reFuncName = /^\s*function[ \n\r\t]+\w/;
+    var reInterpolate = /<%=([\s\S]+?)%>/g;
+    var reLeadingSpacesAndZeros = RegExp('^[' + whitespace + ']*0+(?=.$)');
+    var reNoMatch = /($^)/;
+    var reThis = /\bthis\b/;
+    var reUnescapedString = /['\n\r\t\u2028\u2029\\]/g;
+    var contextProps = [
+            'Array',
+            'Boolean',
+            'Date',
+            'Function',
+            'Math',
+            'Number',
+            'Object',
+            'RegExp',
+            'String',
+            '_',
+            'attachEvent',
+            'clearTimeout',
+            'isFinite',
+            'isNaN',
+            'parseInt',
+            'setTimeout'
+        ];
+    var templateCounter = 0;
+    var argsClass = '[object Arguments]', arrayClass = '[object Array]', boolClass = '[object Boolean]', dateClass = '[object Date]', funcClass = '[object Function]', numberClass = '[object Number]', objectClass = '[object Object]', regexpClass = '[object RegExp]', stringClass = '[object String]';
+    var cloneableClasses = {};
+    cloneableClasses[funcClass] = false;
+    cloneableClasses[argsClass] = cloneableClasses[arrayClass] = cloneableClasses[boolClass] = cloneableClasses[dateClass] = cloneableClasses[numberClass] = cloneableClasses[objectClass] = cloneableClasses[regexpClass] = cloneableClasses[stringClass] = true;
+    var debounceOptions = {
+            'leading': false,
+            'maxWait': 0,
+            'trailing': false
+        };
+    var descriptor = {
+            'configurable': false,
+            'enumerable': false,
+            'value': null,
+            'writable': false
+        };
+    var objectTypes = {
+            'boolean': false,
+            'function': true,
+            'object': true,
+            'number': false,
+            'string': false,
+            'undefined': false
+        };
+    var stringEscapes = {
+            '\\': '\\',
+            '\'': '\'',
+            '\n': 'n',
+            '\r': 'r',
+            '\t': 't',
+            '\u2028': 'u2028',
+            '\u2029': 'u2029'
+        };
+    var root = objectTypes[typeof window] && window || this;
+    var freeExports = objectTypes[typeof exports] && exports && !exports.nodeType && exports;
+    var freeModule = objectTypes[typeof module] && module && !module.nodeType && module;
+    var moduleExports = freeModule && freeModule.exports === freeExports && freeExports;
+    var freeGlobal = objectTypes[typeof global] && global;
+    if (freeGlobal && (freeGlobal.global === freeGlobal || freeGlobal.window === freeGlobal)) {
+        root = freeGlobal;
+    }
+    function baseIndexOf(array, value, fromIndex) {
+        var index = (fromIndex || 0) - 1, length = array ? array.length : 0;
+        while (++index < length) {
+            if (array[index] === value) {
+                return index;
+            }
+        }
+        return -1;
+    }
+    function cacheIndexOf(cache, value) {
+        var type = typeof value;
+        cache = cache.cache;
+        if (type == 'boolean' || value == null) {
+            return cache[value] ? 0 : -1;
+        }
+        if (type != 'number' && type != 'string') {
+            type = 'object';
+        }
+        var key = type == 'number' ? value : keyPrefix + value;
+        cache = (cache = cache[type]) && cache[key];
+        return type == 'object' ? cache && baseIndexOf(cache, value) > -1 ? 0 : -1 : cache ? 0 : -1;
+    }
+    function cachePush(value) {
+        var cache = this.cache, type = typeof value;
+        if (type == 'boolean' || value == null) {
+            cache[value] = true;
+        } else {
+            if (type != 'number' && type != 'string') {
+                type = 'object';
+            }
+            var key = type == 'number' ? value : keyPrefix + value, typeCache = cache[type] || (cache[type] = {});
+            if (type == 'object') {
+                (typeCache[key] || (typeCache[key] = [])).push(value);
+            } else {
+                typeCache[key] = true;
+            }
+        }
+    }
+    function charAtCallback(value) {
+        return value.charCodeAt(0);
+    }
+    function compareAscending(a, b) {
+        var ac = a.criteria, bc = b.criteria, index = -1, length = ac.length;
+        while (++index < length) {
+            var value = ac[index], other = bc[index];
+            if (value !== other) {
+                if (value > other || typeof value == 'undefined') {
+                    return 1;
+                }
+                if (value < other || typeof other == 'undefined') {
+                    return -1;
+                }
+            }
+        }
+        return a.index - b.index;
+    }
+    function createCache(array) {
+        var index = -1, length = array.length, first = array[0], mid = array[length / 2 | 0], last = array[length - 1];
+        if (first && typeof first == 'object' && mid && typeof mid == 'object' && last && typeof last == 'object') {
+            return false;
+        }
+        var cache = getObject();
+        cache['false'] = cache['null'] = cache['true'] = cache['undefined'] = false;
+        var result = getObject();
+        result.array = array;
+        result.cache = cache;
+        result.push = cachePush;
+        while (++index < length) {
+            result.push(array[index]);
+        }
+        return result;
+    }
+    function escapeStringChar(match) {
+        return '\\' + stringEscapes[match];
+    }
+    function getArray() {
+        return arrayPool.pop() || [];
+    }
+    function getObject() {
+        return objectPool.pop() || {
+            'array': null,
+            'cache': null,
+            'criteria': null,
+            'false': false,
+            'index': 0,
+            'null': false,
+            'number': null,
+            'object': null,
+            'push': null,
+            'string': null,
+            'true': false,
+            'undefined': false,
+            'value': null
+        };
+    }
+    function releaseArray(array) {
+        array.length = 0;
+        if (arrayPool.length < maxPoolSize) {
+            arrayPool.push(array);
+        }
+    }
+    function releaseObject(object) {
+        var cache = object.cache;
+        if (cache) {
+            releaseObject(cache);
+        }
+        object.array = object.cache = object.criteria = object.object = object.number = object.string = object.value = null;
+        if (objectPool.length < maxPoolSize) {
+            objectPool.push(object);
+        }
+    }
+    function slice(array, start, end) {
+        start || (start = 0);
+        if (typeof end == 'undefined') {
+            end = array ? array.length : 0;
+        }
+        var index = -1, length = end - start || 0, result = Array(length < 0 ? 0 : length);
+        while (++index < length) {
+            result[index] = array[start + index];
+        }
+        return result;
+    }
+    function runInContext(context) {
+        context = context ? _.defaults(root.Object(), context, _.pick(root, contextProps)) : root;
+        var Array = context.Array, Boolean = context.Boolean, Date = context.Date, Function = context.Function, Math = context.Math, Number = context.Number, Object = context.Object, RegExp = context.RegExp, String = context.String, TypeError = context.TypeError;
+        var arrayRef = [];
+        var objectProto = Object.prototype;
+        var oldDash = context._;
+        var toString = objectProto.toString;
+        var reNative = RegExp('^' + String(toString).replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/toString| for [^\]]+/g, '.*?') + '$');
+        var ceil = Math.ceil, clearTimeout = context.clearTimeout, floor = Math.floor, fnToString = Function.prototype.toString, getPrototypeOf = isNative(getPrototypeOf = Object.getPrototypeOf) && getPrototypeOf, hasOwnProperty = objectProto.hasOwnProperty, push = arrayRef.push, setTimeout = context.setTimeout, splice = arrayRef.splice, unshift = arrayRef.unshift;
+        var defineProperty = function () {
+                try {
+                    var o = {}, func = isNative(func = Object.defineProperty) && func, result = func(o, o, o) && func;
+                } catch (e) {
+                }
+                return result;
+            }();
+        var nativeCreate = isNative(nativeCreate = Object.create) && nativeCreate, nativeIsArray = isNative(nativeIsArray = Array.isArray) && nativeIsArray, nativeIsFinite = context.isFinite, nativeIsNaN = context.isNaN, nativeKeys = isNative(nativeKeys = Object.keys) && nativeKeys, nativeMax = Math.max, nativeMin = Math.min, nativeParseInt = context.parseInt, nativeRandom = Math.random;
+        var ctorByClass = {};
+        ctorByClass[arrayClass] = Array;
+        ctorByClass[boolClass] = Boolean;
+        ctorByClass[dateClass] = Date;
+        ctorByClass[funcClass] = Function;
+        ctorByClass[objectClass] = Object;
+        ctorByClass[numberClass] = Number;
+        ctorByClass[regexpClass] = RegExp;
+        ctorByClass[stringClass] = String;
+        function lodash(value) {
+            return value && typeof value == 'object' && !isArray(value) && hasOwnProperty.call(value, '__wrapped__') ? value : new lodashWrapper(value);
+        }
+        function lodashWrapper(value, chainAll) {
+            this.__chain__ = !!chainAll;
+            this.__wrapped__ = value;
+        }
+        lodashWrapper.prototype = lodash.prototype;
+        var support = lodash.support = {};
+        support.funcDecomp = !isNative(context.WinRTError) && reThis.test(runInContext);
+        support.funcNames = typeof Function.name == 'string';
+        lodash.templateSettings = {
+            'escape': /<%-([\s\S]+?)%>/g,
+            'evaluate': /<%([\s\S]+?)%>/g,
+            'interpolate': reInterpolate,
+            'variable': '',
+            'imports': { '_': lodash }
+        };
+        function baseBind(bindData) {
+            var func = bindData[0], partialArgs = bindData[2], thisArg = bindData[4];
+            function bound() {
+                if (partialArgs) {
+                    var args = slice(partialArgs);
+                    push.apply(args, arguments);
+                }
+                if (this instanceof bound) {
+                    var thisBinding = baseCreate(func.prototype), result = func.apply(thisBinding, args || arguments);
+                    return isObject(result) ? result : thisBinding;
+                }
+                return func.apply(thisArg, args || arguments);
+            }
+            setBindData(bound, bindData);
+            return bound;
+        }
+        function baseClone(value, isDeep, callback, stackA, stackB) {
+            if (callback) {
+                var result = callback(value);
+                if (typeof result != 'undefined') {
+                    return result;
+                }
+            }
+            var isObj = isObject(value);
+            if (isObj) {
+                var className = toString.call(value);
+                if (!cloneableClasses[className]) {
+                    return value;
+                }
+                var ctor = ctorByClass[className];
+                switch (className) {
+                case boolClass:
+                case dateClass:
+                    return new ctor(+value);
+                case numberClass:
+                case stringClass:
+                    return new ctor(value);
+                case regexpClass:
+                    result = ctor(value.source, reFlags.exec(value));
+                    result.lastIndex = value.lastIndex;
+                    return result;
+                }
+            } else {
+                return value;
+            }
+            var isArr = isArray(value);
+            if (isDeep) {
+                var initedStack = !stackA;
+                stackA || (stackA = getArray());
+                stackB || (stackB = getArray());
+                var length = stackA.length;
+                while (length--) {
+                    if (stackA[length] == value) {
+                        return stackB[length];
+                    }
+                }
+                result = isArr ? ctor(value.length) : {};
+            } else {
+                result = isArr ? slice(value) : assign({}, value);
+            }
+            if (isArr) {
+                if (hasOwnProperty.call(value, 'index')) {
+                    result.index = value.index;
+                }
+                if (hasOwnProperty.call(value, 'input')) {
+                    result.input = value.input;
+                }
+            }
+            if (!isDeep) {
+                return result;
+            }
+            stackA.push(value);
+            stackB.push(result);
+            (isArr ? forEach : forOwn)(value, function (objValue, key) {
+                result[key] = baseClone(objValue, isDeep, callback, stackA, stackB);
+            });
+            if (initedStack) {
+                releaseArray(stackA);
+                releaseArray(stackB);
+            }
+            return result;
+        }
+        function baseCreate(prototype, properties) {
+            return isObject(prototype) ? nativeCreate(prototype) : {};
+        }
+        if (!nativeCreate) {
+            baseCreate = function () {
+                function Object() {
+                }
+                return function (prototype) {
+                    if (isObject(prototype)) {
+                        Object.prototype = prototype;
+                        var result = new Object();
+                        Object.prototype = null;
+                    }
+                    return result || context.Object();
+                };
+            }();
+        }
+        function baseCreateCallback(func, thisArg, argCount) {
+            if (typeof func != 'function') {
+                return identity;
+            }
+            if (typeof thisArg == 'undefined' || !('prototype' in func)) {
+                return func;
+            }
+            var bindData = func.__bindData__;
+            if (typeof bindData == 'undefined') {
+                if (support.funcNames) {
+                    bindData = !func.name;
+                }
+                bindData = bindData || !support.funcDecomp;
+                if (!bindData) {
+                    var source = fnToString.call(func);
+                    if (!support.funcNames) {
+                        bindData = !reFuncName.test(source);
+                    }
+                    if (!bindData) {
+                        bindData = reThis.test(source);
+                        setBindData(func, bindData);
+                    }
+                }
+            }
+            if (bindData === false || bindData !== true && bindData[1] & 1) {
+                return func;
+            }
+            switch (argCount) {
+            case 1:
+                return function (value) {
+                    return func.call(thisArg, value);
+                };
+            case 2:
+                return function (a, b) {
+                    return func.call(thisArg, a, b);
+                };
+            case 3:
+                return function (value, index, collection) {
+                    return func.call(thisArg, value, index, collection);
+                };
+            case 4:
+                return function (accumulator, value, index, collection) {
+                    return func.call(thisArg, accumulator, value, index, collection);
+                };
+            }
+            return bind(func, thisArg);
+        }
+        function baseCreateWrapper(bindData) {
+            var func = bindData[0], bitmask = bindData[1], partialArgs = bindData[2], partialRightArgs = bindData[3], thisArg = bindData[4], arity = bindData[5];
+            var isBind = bitmask & 1, isBindKey = bitmask & 2, isCurry = bitmask & 4, isCurryBound = bitmask & 8, key = func;
+            function bound() {
+                var thisBinding = isBind ? thisArg : this;
+                if (partialArgs) {
+                    var args = slice(partialArgs);
+                    push.apply(args, arguments);
+                }
+                if (partialRightArgs || isCurry) {
+                    args || (args = slice(arguments));
+                    if (partialRightArgs) {
+                        push.apply(args, partialRightArgs);
+                    }
+                    if (isCurry && args.length < arity) {
+                        bitmask |= 16 & ~32;
+                        return baseCreateWrapper([
+                            func,
+                            isCurryBound ? bitmask : bitmask & ~3,
+                            args,
+                            null,
+                            thisArg,
+                            arity
+                        ]);
+                    }
+                }
+                args || (args = arguments);
+                if (isBindKey) {
+                    func = thisBinding[key];
+                }
+                if (this instanceof bound) {
+                    thisBinding = baseCreate(func.prototype);
+                    var result = func.apply(thisBinding, args);
+                    return isObject(result) ? result : thisBinding;
+                }
+                return func.apply(thisBinding, args);
+            }
+            setBindData(bound, bindData);
+            return bound;
+        }
+        function baseDifference(array, values) {
+            var index = -1, indexOf = getIndexOf(), length = array ? array.length : 0, isLarge = length >= largeArraySize && indexOf === baseIndexOf, result = [];
+            if (isLarge) {
+                var cache = createCache(values);
+                if (cache) {
+                    indexOf = cacheIndexOf;
+                    values = cache;
+                } else {
+                    isLarge = false;
+                }
+            }
+            while (++index < length) {
+                var value = array[index];
+                if (indexOf(values, value) < 0) {
+                    result.push(value);
+                }
+            }
+            if (isLarge) {
+                releaseObject(values);
+            }
+            return result;
+        }
+        function baseFlatten(array, isShallow, isStrict, fromIndex) {
+            var index = (fromIndex || 0) - 1, length = array ? array.length : 0, result = [];
+            while (++index < length) {
+                var value = array[index];
+                if (value && typeof value == 'object' && typeof value.length == 'number' && (isArray(value) || isArguments(value))) {
+                    if (!isShallow) {
+                        value = baseFlatten(value, isShallow, isStrict);
+                    }
+                    var valIndex = -1, valLength = value.length, resIndex = result.length;
+                    result.length += valLength;
+                    while (++valIndex < valLength) {
+                        result[resIndex++] = value[valIndex];
+                    }
+                } else if (!isStrict) {
+                    result.push(value);
+                }
+            }
+            return result;
+        }
+        function baseIsEqual(a, b, callback, isWhere, stackA, stackB) {
+            if (callback) {
+                var result = callback(a, b);
+                if (typeof result != 'undefined') {
+                    return !!result;
+                }
+            }
+            if (a === b) {
+                return a !== 0 || 1 / a == 1 / b;
+            }
+            var type = typeof a, otherType = typeof b;
+            if (a === a && !(a && objectTypes[type]) && !(b && objectTypes[otherType])) {
+                return false;
+            }
+            if (a == null || b == null) {
+                return a === b;
+            }
+            var className = toString.call(a), otherClass = toString.call(b);
+            if (className == argsClass) {
+                className = objectClass;
+            }
+            if (otherClass == argsClass) {
+                otherClass = objectClass;
+            }
+            if (className != otherClass) {
+                return false;
+            }
+            switch (className) {
+            case boolClass:
+            case dateClass:
+                return +a == +b;
+            case numberClass:
+                return a != +a ? b != +b : a == 0 ? 1 / a == 1 / b : a == +b;
+            case regexpClass:
+            case stringClass:
+                return a == String(b);
+            }
+            var isArr = className == arrayClass;
+            if (!isArr) {
+                var aWrapped = hasOwnProperty.call(a, '__wrapped__'), bWrapped = hasOwnProperty.call(b, '__wrapped__');
+                if (aWrapped || bWrapped) {
+                    return baseIsEqual(aWrapped ? a.__wrapped__ : a, bWrapped ? b.__wrapped__ : b, callback, isWhere, stackA, stackB);
+                }
+                if (className != objectClass) {
+                    return false;
+                }
+                var ctorA = a.constructor, ctorB = b.constructor;
+                if (ctorA != ctorB && !(isFunction(ctorA) && ctorA instanceof ctorA && isFunction(ctorB) && ctorB instanceof ctorB) && ('constructor' in a && 'constructor' in b)) {
+                    return false;
+                }
+            }
+            var initedStack = !stackA;
+            stackA || (stackA = getArray());
+            stackB || (stackB = getArray());
+            var length = stackA.length;
+            while (length--) {
+                if (stackA[length] == a) {
+                    return stackB[length] == b;
+                }
+            }
+            var size = 0;
+            result = true;
+            stackA.push(a);
+            stackB.push(b);
+            if (isArr) {
+                length = a.length;
+                size = b.length;
+                result = size == length;
+                if (result || isWhere) {
+                    while (size--) {
+                        var index = length, value = b[size];
+                        if (isWhere) {
+                            while (index--) {
+                                if (result = baseIsEqual(a[index], value, callback, isWhere, stackA, stackB)) {
+                                    break;
+                                }
+                            }
+                        } else if (!(result = baseIsEqual(a[size], value, callback, isWhere, stackA, stackB))) {
+                            break;
+                        }
+                    }
+                }
+            } else {
+                forIn(b, function (value, key, b) {
+                    if (hasOwnProperty.call(b, key)) {
+                        size++;
+                        return result = hasOwnProperty.call(a, key) && baseIsEqual(a[key], value, callback, isWhere, stackA, stackB);
+                    }
+                });
+                if (result && !isWhere) {
+                    forIn(a, function (value, key, a) {
+                        if (hasOwnProperty.call(a, key)) {
+                            return result = --size > -1;
+                        }
+                    });
+                }
+            }
+            stackA.pop();
+            stackB.pop();
+            if (initedStack) {
+                releaseArray(stackA);
+                releaseArray(stackB);
+            }
+            return result;
+        }
+        function baseMerge(object, source, callback, stackA, stackB) {
+            (isArray(source) ? forEach : forOwn)(source, function (source, key) {
+                var found, isArr, result = source, value = object[key];
+                if (source && ((isArr = isArray(source)) || isPlainObject(source))) {
+                    var stackLength = stackA.length;
+                    while (stackLength--) {
+                        if (found = stackA[stackLength] == source) {
+                            value = stackB[stackLength];
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        var isShallow;
+                        if (callback) {
+                            result = callback(value, source);
+                            if (isShallow = typeof result != 'undefined') {
+                                value = result;
+                            }
+                        }
+                        if (!isShallow) {
+                            value = isArr ? isArray(value) ? value : [] : isPlainObject(value) ? value : {};
+                        }
+                        stackA.push(source);
+                        stackB.push(value);
+                        if (!isShallow) {
+                            baseMerge(value, source, callback, stackA, stackB);
+                        }
+                    }
+                } else {
+                    if (callback) {
+                        result = callback(value, source);
+                        if (typeof result == 'undefined') {
+                            result = source;
+                        }
+                    }
+                    if (typeof result != 'undefined') {
+                        value = result;
+                    }
+                }
+                object[key] = value;
+            });
+        }
+        function baseRandom(min, max) {
+            return min + floor(nativeRandom() * (max - min + 1));
+        }
+        function baseUniq(array, isSorted, callback) {
+            var index = -1, indexOf = getIndexOf(), length = array ? array.length : 0, result = [];
+            var isLarge = !isSorted && length >= largeArraySize && indexOf === baseIndexOf, seen = callback || isLarge ? getArray() : result;
+            if (isLarge) {
+                var cache = createCache(seen);
+                indexOf = cacheIndexOf;
+                seen = cache;
+            }
+            while (++index < length) {
+                var value = array[index], computed = callback ? callback(value, index, array) : value;
+                if (isSorted ? !index || seen[seen.length - 1] !== computed : indexOf(seen, computed) < 0) {
+                    if (callback || isLarge) {
+                        seen.push(computed);
+                    }
+                    result.push(value);
+                }
+            }
+            if (isLarge) {
+                releaseArray(seen.array);
+                releaseObject(seen);
+            } else if (callback) {
+                releaseArray(seen);
+            }
+            return result;
+        }
+        function createAggregator(setter) {
+            return function (collection, callback, thisArg) {
+                var result = {};
+                callback = lodash.createCallback(callback, thisArg, 3);
+                var index = -1, length = collection ? collection.length : 0;
+                if (typeof length == 'number') {
+                    while (++index < length) {
+                        var value = collection[index];
+                        setter(result, value, callback(value, index, collection), collection);
+                    }
+                } else {
+                    forOwn(collection, function (value, key, collection) {
+                        setter(result, value, callback(value, key, collection), collection);
+                    });
+                }
+                return result;
+            };
+        }
+        function createWrapper(func, bitmask, partialArgs, partialRightArgs, thisArg, arity) {
+            var isBind = bitmask & 1, isBindKey = bitmask & 2, isCurry = bitmask & 4, isCurryBound = bitmask & 8, isPartial = bitmask & 16, isPartialRight = bitmask & 32;
+            if (!isBindKey && !isFunction(func)) {
+                throw new TypeError();
+            }
+            if (isPartial && !partialArgs.length) {
+                bitmask &= ~16;
+                isPartial = partialArgs = false;
+            }
+            if (isPartialRight && !partialRightArgs.length) {
+                bitmask &= ~32;
+                isPartialRight = partialRightArgs = false;
+            }
+            var bindData = func && func.__bindData__;
+            if (bindData && bindData !== true) {
+                bindData = slice(bindData);
+                if (bindData[2]) {
+                    bindData[2] = slice(bindData[2]);
+                }
+                if (bindData[3]) {
+                    bindData[3] = slice(bindData[3]);
+                }
+                if (isBind && !(bindData[1] & 1)) {
+                    bindData[4] = thisArg;
+                }
+                if (!isBind && bindData[1] & 1) {
+                    bitmask |= 8;
+                }
+                if (isCurry && !(bindData[1] & 4)) {
+                    bindData[5] = arity;
+                }
+                if (isPartial) {
+                    push.apply(bindData[2] || (bindData[2] = []), partialArgs);
+                }
+                if (isPartialRight) {
+                    unshift.apply(bindData[3] || (bindData[3] = []), partialRightArgs);
+                }
+                bindData[1] |= bitmask;
+                return createWrapper.apply(null, bindData);
+            }
+            var creater = bitmask == 1 || bitmask === 17 ? baseBind : baseCreateWrapper;
+            return creater([
+                func,
+                bitmask,
+                partialArgs,
+                partialRightArgs,
+                thisArg,
+                arity
+            ]);
+        }
+        function escapeHtmlChar(match) {
+            return htmlEscapes[match];
+        }
+        function getIndexOf() {
+            var result = (result = lodash.indexOf) === indexOf ? baseIndexOf : result;
+            return result;
+        }
+        function isNative(value) {
+            return typeof value == 'function' && reNative.test(value);
+        }
+        var setBindData = !defineProperty ? noop : function (func, value) {
+                descriptor.value = value;
+                defineProperty(func, '__bindData__', descriptor);
+            };
+        function shimIsPlainObject(value) {
+            var ctor, result;
+            if (!(value && toString.call(value) == objectClass) || (ctor = value.constructor, isFunction(ctor) && !(ctor instanceof ctor))) {
+                return false;
+            }
+            forIn(value, function (value, key) {
+                result = key;
+            });
+            return typeof result == 'undefined' || hasOwnProperty.call(value, result);
+        }
+        function unescapeHtmlChar(match) {
+            return htmlUnescapes[match];
+        }
+        function isArguments(value) {
+            return value && typeof value == 'object' && typeof value.length == 'number' && toString.call(value) == argsClass || false;
+        }
+        var isArray = nativeIsArray || function (value) {
+                return value && typeof value == 'object' && typeof value.length == 'number' && toString.call(value) == arrayClass || false;
+            };
+        var shimKeys = function (object) {
+            var index, iterable = object, result = [];
+            if (!iterable)
+                return result;
+            if (!objectTypes[typeof object])
+                return result;
+            for (index in iterable) {
+                if (hasOwnProperty.call(iterable, index)) {
+                    result.push(index);
+                }
+            }
+            return result;
+        };
+        var keys = !nativeKeys ? shimKeys : function (object) {
+                if (!isObject(object)) {
+                    return [];
+                }
+                return nativeKeys(object);
+            };
+        var htmlEscapes = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                '\'': '&#39;'
+            };
+        var htmlUnescapes = invert(htmlEscapes);
+        var reEscapedHtml = RegExp('(' + keys(htmlUnescapes).join('|') + ')', 'g'), reUnescapedHtml = RegExp('[' + keys(htmlEscapes).join('') + ']', 'g');
+        var assign = function (object, source, guard) {
+            var index, iterable = object, result = iterable;
+            if (!iterable)
+                return result;
+            var args = arguments, argsIndex = 0, argsLength = typeof guard == 'number' ? 2 : args.length;
+            if (argsLength > 3 && typeof args[argsLength - 2] == 'function') {
+                var callback = baseCreateCallback(args[--argsLength - 1], args[argsLength--], 2);
+            } else if (argsLength > 2 && typeof args[argsLength - 1] == 'function') {
+                callback = args[--argsLength];
+            }
+            while (++argsIndex < argsLength) {
+                iterable = args[argsIndex];
+                if (iterable && objectTypes[typeof iterable]) {
+                    var ownIndex = -1, ownProps = objectTypes[typeof iterable] && keys(iterable), length = ownProps ? ownProps.length : 0;
+                    while (++ownIndex < length) {
+                        index = ownProps[ownIndex];
+                        result[index] = callback ? callback(result[index], iterable[index]) : iterable[index];
+                    }
+                }
+            }
+            return result;
+        };
+        function clone(value, isDeep, callback, thisArg) {
+            if (typeof isDeep != 'boolean' && isDeep != null) {
+                thisArg = callback;
+                callback = isDeep;
+                isDeep = false;
+            }
+            return baseClone(value, isDeep, typeof callback == 'function' && baseCreateCallback(callback, thisArg, 1));
+        }
+        function cloneDeep(value, callback, thisArg) {
+            return baseClone(value, true, typeof callback == 'function' && baseCreateCallback(callback, thisArg, 1));
+        }
+        function create(prototype, properties) {
+            var result = baseCreate(prototype);
+            return properties ? assign(result, properties) : result;
+        }
+        var defaults = function (object, source, guard) {
+            var index, iterable = object, result = iterable;
+            if (!iterable)
+                return result;
+            var args = arguments, argsIndex = 0, argsLength = typeof guard == 'number' ? 2 : args.length;
+            while (++argsIndex < argsLength) {
+                iterable = args[argsIndex];
+                if (iterable && objectTypes[typeof iterable]) {
+                    var ownIndex = -1, ownProps = objectTypes[typeof iterable] && keys(iterable), length = ownProps ? ownProps.length : 0;
+                    while (++ownIndex < length) {
+                        index = ownProps[ownIndex];
+                        if (typeof result[index] == 'undefined')
+                            result[index] = iterable[index];
+                    }
+                }
+            }
+            return result;
+        };
+        function findKey(object, callback, thisArg) {
+            var result;
+            callback = lodash.createCallback(callback, thisArg, 3);
+            forOwn(object, function (value, key, object) {
+                if (callback(value, key, object)) {
+                    result = key;
+                    return false;
+                }
+            });
+            return result;
+        }
+        function findLastKey(object, callback, thisArg) {
+            var result;
+            callback = lodash.createCallback(callback, thisArg, 3);
+            forOwnRight(object, function (value, key, object) {
+                if (callback(value, key, object)) {
+                    result = key;
+                    return false;
+                }
+            });
+            return result;
+        }
+        var forIn = function (collection, callback, thisArg) {
+            var index, iterable = collection, result = iterable;
+            if (!iterable)
+                return result;
+            if (!objectTypes[typeof iterable])
+                return result;
+            callback = callback && typeof thisArg == 'undefined' ? callback : baseCreateCallback(callback, thisArg, 3);
+            for (index in iterable) {
+                if (callback(iterable[index], index, collection) === false)
+                    return result;
+            }
+            return result;
+        };
+        function forInRight(object, callback, thisArg) {
+            var pairs = [];
+            forIn(object, function (value, key) {
+                pairs.push(key, value);
+            });
+            var length = pairs.length;
+            callback = baseCreateCallback(callback, thisArg, 3);
+            while (length--) {
+                if (callback(pairs[length--], pairs[length], object) === false) {
+                    break;
+                }
+            }
+            return object;
+        }
+        var forOwn = function (collection, callback, thisArg) {
+            var index, iterable = collection, result = iterable;
+            if (!iterable)
+                return result;
+            if (!objectTypes[typeof iterable])
+                return result;
+            callback = callback && typeof thisArg == 'undefined' ? callback : baseCreateCallback(callback, thisArg, 3);
+            var ownIndex = -1, ownProps = objectTypes[typeof iterable] && keys(iterable), length = ownProps ? ownProps.length : 0;
+            while (++ownIndex < length) {
+                index = ownProps[ownIndex];
+                if (callback(iterable[index], index, collection) === false)
+                    return result;
+            }
+            return result;
+        };
+        function forOwnRight(object, callback, thisArg) {
+            var props = keys(object), length = props.length;
+            callback = baseCreateCallback(callback, thisArg, 3);
+            while (length--) {
+                var key = props[length];
+                if (callback(object[key], key, object) === false) {
+                    break;
+                }
+            }
+            return object;
+        }
+        function functions(object) {
+            var result = [];
+            forIn(object, function (value, key) {
+                if (isFunction(value)) {
+                    result.push(key);
+                }
+            });
+            return result.sort();
+        }
+        function has(object, key) {
+            return object ? hasOwnProperty.call(object, key) : false;
+        }
+        function invert(object) {
+            var index = -1, props = keys(object), length = props.length, result = {};
+            while (++index < length) {
+                var key = props[index];
+                result[object[key]] = key;
+            }
+            return result;
+        }
+        function isBoolean(value) {
+            return value === true || value === false || value && typeof value == 'object' && toString.call(value) == boolClass || false;
+        }
+        function isDate(value) {
+            return value && typeof value == 'object' && toString.call(value) == dateClass || false;
+        }
+        function isElement(value) {
+            return value && value.nodeType === 1 || false;
+        }
+        function isEmpty(value) {
+            var result = true;
+            if (!value) {
+                return result;
+            }
+            var className = toString.call(value), length = value.length;
+            if (className == arrayClass || className == stringClass || className == argsClass || className == objectClass && typeof length == 'number' && isFunction(value.splice)) {
+                return !length;
+            }
+            forOwn(value, function () {
+                return result = false;
+            });
+            return result;
+        }
+        function isEqual(a, b, callback, thisArg) {
+            return baseIsEqual(a, b, typeof callback == 'function' && baseCreateCallback(callback, thisArg, 2));
+        }
+        function isFinite(value) {
+            return nativeIsFinite(value) && !nativeIsNaN(parseFloat(value));
+        }
+        function isFunction(value) {
+            return typeof value == 'function';
+        }
+        function isObject(value) {
+            return !!(value && objectTypes[typeof value]);
+        }
+        function isNaN(value) {
+            return isNumber(value) && value != +value;
+        }
+        function isNull(value) {
+            return value === null;
+        }
+        function isNumber(value) {
+            return typeof value == 'number' || value && typeof value == 'object' && toString.call(value) == numberClass || false;
+        }
+        var isPlainObject = !getPrototypeOf ? shimIsPlainObject : function (value) {
+                if (!(value && toString.call(value) == objectClass)) {
+                    return false;
+                }
+                var valueOf = value.valueOf, objProto = isNative(valueOf) && (objProto = getPrototypeOf(valueOf)) && getPrototypeOf(objProto);
+                return objProto ? value == objProto || getPrototypeOf(value) == objProto : shimIsPlainObject(value);
+            };
+        function isRegExp(value) {
+            return value && typeof value == 'object' && toString.call(value) == regexpClass || false;
+        }
+        function isString(value) {
+            return typeof value == 'string' || value && typeof value == 'object' && toString.call(value) == stringClass || false;
+        }
+        function isUndefined(value) {
+            return typeof value == 'undefined';
+        }
+        function mapValues(object, callback, thisArg) {
+            var result = {};
+            callback = lodash.createCallback(callback, thisArg, 3);
+            forOwn(object, function (value, key, object) {
+                result[key] = callback(value, key, object);
+            });
+            return result;
+        }
+        function merge(object) {
+            var args = arguments, length = 2;
+            if (!isObject(object)) {
+                return object;
+            }
+            if (typeof args[2] != 'number') {
+                length = args.length;
+            }
+            if (length > 3 && typeof args[length - 2] == 'function') {
+                var callback = baseCreateCallback(args[--length - 1], args[length--], 2);
+            } else if (length > 2 && typeof args[length - 1] == 'function') {
+                callback = args[--length];
+            }
+            var sources = slice(arguments, 1, length), index = -1, stackA = getArray(), stackB = getArray();
+            while (++index < length) {
+                baseMerge(object, sources[index], callback, stackA, stackB);
+            }
+            releaseArray(stackA);
+            releaseArray(stackB);
+            return object;
+        }
+        function omit(object, callback, thisArg) {
+            var result = {};
+            if (typeof callback != 'function') {
+                var props = [];
+                forIn(object, function (value, key) {
+                    props.push(key);
+                });
+                props = baseDifference(props, baseFlatten(arguments, true, false, 1));
+                var index = -1, length = props.length;
+                while (++index < length) {
+                    var key = props[index];
+                    result[key] = object[key];
+                }
+            } else {
+                callback = lodash.createCallback(callback, thisArg, 3);
+                forIn(object, function (value, key, object) {
+                    if (!callback(value, key, object)) {
+                        result[key] = value;
+                    }
+                });
+            }
+            return result;
+        }
+        function pairs(object) {
+            var index = -1, props = keys(object), length = props.length, result = Array(length);
+            while (++index < length) {
+                var key = props[index];
+                result[index] = [
+                    key,
+                    object[key]
+                ];
+            }
+            return result;
+        }
+        function pick(object, callback, thisArg) {
+            var result = {};
+            if (typeof callback != 'function') {
+                var index = -1, props = baseFlatten(arguments, true, false, 1), length = isObject(object) ? props.length : 0;
+                while (++index < length) {
+                    var key = props[index];
+                    if (key in object) {
+                        result[key] = object[key];
+                    }
+                }
+            } else {
+                callback = lodash.createCallback(callback, thisArg, 3);
+                forIn(object, function (value, key, object) {
+                    if (callback(value, key, object)) {
+                        result[key] = value;
+                    }
+                });
+            }
+            return result;
+        }
+        function transform(object, callback, accumulator, thisArg) {
+            var isArr = isArray(object);
+            if (accumulator == null) {
+                if (isArr) {
+                    accumulator = [];
+                } else {
+                    var ctor = object && object.constructor, proto = ctor && ctor.prototype;
+                    accumulator = baseCreate(proto);
+                }
+            }
+            if (callback) {
+                callback = lodash.createCallback(callback, thisArg, 4);
+                (isArr ? forEach : forOwn)(object, function (value, index, object) {
+                    return callback(accumulator, value, index, object);
+                });
+            }
+            return accumulator;
+        }
+        function values(object) {
+            var index = -1, props = keys(object), length = props.length, result = Array(length);
+            while (++index < length) {
+                result[index] = object[props[index]];
+            }
+            return result;
+        }
+        function at(collection) {
+            var args = arguments, index = -1, props = baseFlatten(args, true, false, 1), length = args[2] && args[2][args[1]] === collection ? 1 : props.length, result = Array(length);
+            while (++index < length) {
+                result[index] = collection[props[index]];
+            }
+            return result;
+        }
+        function contains(collection, target, fromIndex) {
+            var index = -1, indexOf = getIndexOf(), length = collection ? collection.length : 0, result = false;
+            fromIndex = (fromIndex < 0 ? nativeMax(0, length + fromIndex) : fromIndex) || 0;
+            if (isArray(collection)) {
+                result = indexOf(collection, target, fromIndex) > -1;
+            } else if (typeof length == 'number') {
+                result = (isString(collection) ? collection.indexOf(target, fromIndex) : indexOf(collection, target, fromIndex)) > -1;
+            } else {
+                forOwn(collection, function (value) {
+                    if (++index >= fromIndex) {
+                        return !(result = value === target);
+                    }
+                });
+            }
+            return result;
+        }
+        var countBy = createAggregator(function (result, value, key) {
+                hasOwnProperty.call(result, key) ? result[key]++ : result[key] = 1;
+            });
+        function every(collection, callback, thisArg) {
+            var result = true;
+            callback = lodash.createCallback(callback, thisArg, 3);
+            var index = -1, length = collection ? collection.length : 0;
+            if (typeof length == 'number') {
+                while (++index < length) {
+                    if (!(result = !!callback(collection[index], index, collection))) {
+                        break;
+                    }
+                }
+            } else {
+                forOwn(collection, function (value, index, collection) {
+                    return result = !!callback(value, index, collection);
+                });
+            }
+            return result;
+        }
+        function filter(collection, callback, thisArg) {
+            var result = [];
+            callback = lodash.createCallback(callback, thisArg, 3);
+            var index = -1, length = collection ? collection.length : 0;
+            if (typeof length == 'number') {
+                while (++index < length) {
+                    var value = collection[index];
+                    if (callback(value, index, collection)) {
+                        result.push(value);
+                    }
+                }
+            } else {
+                forOwn(collection, function (value, index, collection) {
+                    if (callback(value, index, collection)) {
+                        result.push(value);
+                    }
+                });
+            }
+            return result;
+        }
+        function find(collection, callback, thisArg) {
+            callback = lodash.createCallback(callback, thisArg, 3);
+            var index = -1, length = collection ? collection.length : 0;
+            if (typeof length == 'number') {
+                while (++index < length) {
+                    var value = collection[index];
+                    if (callback(value, index, collection)) {
+                        return value;
+                    }
+                }
+            } else {
+                var result;
+                forOwn(collection, function (value, index, collection) {
+                    if (callback(value, index, collection)) {
+                        result = value;
+                        return false;
+                    }
+                });
+                return result;
+            }
+        }
+        function findLast(collection, callback, thisArg) {
+            var result;
+            callback = lodash.createCallback(callback, thisArg, 3);
+            forEachRight(collection, function (value, index, collection) {
+                if (callback(value, index, collection)) {
+                    result = value;
+                    return false;
+                }
+            });
+            return result;
+        }
+        function forEach(collection, callback, thisArg) {
+            var index = -1, length = collection ? collection.length : 0;
+            callback = callback && typeof thisArg == 'undefined' ? callback : baseCreateCallback(callback, thisArg, 3);
+            if (typeof length == 'number') {
+                while (++index < length) {
+                    if (callback(collection[index], index, collection) === false) {
+                        break;
+                    }
+                }
+            } else {
+                forOwn(collection, callback);
+            }
+            return collection;
+        }
+        function forEachRight(collection, callback, thisArg) {
+            var length = collection ? collection.length : 0;
+            callback = callback && typeof thisArg == 'undefined' ? callback : baseCreateCallback(callback, thisArg, 3);
+            if (typeof length == 'number') {
+                while (length--) {
+                    if (callback(collection[length], length, collection) === false) {
+                        break;
+                    }
+                }
+            } else {
+                var props = keys(collection);
+                length = props.length;
+                forOwn(collection, function (value, key, collection) {
+                    key = props ? props[--length] : --length;
+                    return callback(collection[key], key, collection);
+                });
+            }
+            return collection;
+        }
+        var groupBy = createAggregator(function (result, value, key) {
+                (hasOwnProperty.call(result, key) ? result[key] : result[key] = []).push(value);
+            });
+        var indexBy = createAggregator(function (result, value, key) {
+                result[key] = value;
+            });
+        function invoke(collection, methodName) {
+            var args = slice(arguments, 2), index = -1, isFunc = typeof methodName == 'function', length = collection ? collection.length : 0, result = Array(typeof length == 'number' ? length : 0);
+            forEach(collection, function (value) {
+                result[++index] = (isFunc ? methodName : value[methodName]).apply(value, args);
+            });
+            return result;
+        }
+        function map(collection, callback, thisArg) {
+            var index = -1, length = collection ? collection.length : 0;
+            callback = lodash.createCallback(callback, thisArg, 3);
+            if (typeof length == 'number') {
+                var result = Array(length);
+                while (++index < length) {
+                    result[index] = callback(collection[index], index, collection);
+                }
+            } else {
+                result = [];
+                forOwn(collection, function (value, key, collection) {
+                    result[++index] = callback(value, key, collection);
+                });
+            }
+            return result;
+        }
+        function max(collection, callback, thisArg) {
+            var computed = -Infinity, result = computed;
+            if (typeof callback != 'function' && thisArg && thisArg[callback] === collection) {
+                callback = null;
+            }
+            if (callback == null && isArray(collection)) {
+                var index = -1, length = collection.length;
+                while (++index < length) {
+                    var value = collection[index];
+                    if (value > result) {
+                        result = value;
+                    }
+                }
+            } else {
+                callback = callback == null && isString(collection) ? charAtCallback : lodash.createCallback(callback, thisArg, 3);
+                forEach(collection, function (value, index, collection) {
+                    var current = callback(value, index, collection);
+                    if (current > computed) {
+                        computed = current;
+                        result = value;
+                    }
+                });
+            }
+            return result;
+        }
+        function min(collection, callback, thisArg) {
+            var computed = Infinity, result = computed;
+            if (typeof callback != 'function' && thisArg && thisArg[callback] === collection) {
+                callback = null;
+            }
+            if (callback == null && isArray(collection)) {
+                var index = -1, length = collection.length;
+                while (++index < length) {
+                    var value = collection[index];
+                    if (value < result) {
+                        result = value;
+                    }
+                }
+            } else {
+                callback = callback == null && isString(collection) ? charAtCallback : lodash.createCallback(callback, thisArg, 3);
+                forEach(collection, function (value, index, collection) {
+                    var current = callback(value, index, collection);
+                    if (current < computed) {
+                        computed = current;
+                        result = value;
+                    }
+                });
+            }
+            return result;
+        }
+        var pluck = map;
+        function reduce(collection, callback, accumulator, thisArg) {
+            if (!collection)
+                return accumulator;
+            var noaccum = arguments.length < 3;
+            callback = lodash.createCallback(callback, thisArg, 4);
+            var index = -1, length = collection.length;
+            if (typeof length == 'number') {
+                if (noaccum) {
+                    accumulator = collection[++index];
+                }
+                while (++index < length) {
+                    accumulator = callback(accumulator, collection[index], index, collection);
+                }
+            } else {
+                forOwn(collection, function (value, index, collection) {
+                    accumulator = noaccum ? (noaccum = false, value) : callback(accumulator, value, index, collection);
+                });
+            }
+            return accumulator;
+        }
+        function reduceRight(collection, callback, accumulator, thisArg) {
+            var noaccum = arguments.length < 3;
+            callback = lodash.createCallback(callback, thisArg, 4);
+            forEachRight(collection, function (value, index, collection) {
+                accumulator = noaccum ? (noaccum = false, value) : callback(accumulator, value, index, collection);
+            });
+            return accumulator;
+        }
+        function reject(collection, callback, thisArg) {
+            callback = lodash.createCallback(callback, thisArg, 3);
+            return filter(collection, function (value, index, collection) {
+                return !callback(value, index, collection);
+            });
+        }
+        function sample(collection, n, guard) {
+            if (collection && typeof collection.length != 'number') {
+                collection = values(collection);
+            }
+            if (n == null || guard) {
+                return collection ? collection[baseRandom(0, collection.length - 1)] : undefined;
+            }
+            var result = shuffle(collection);
+            result.length = nativeMin(nativeMax(0, n), result.length);
+            return result;
+        }
+        function shuffle(collection) {
+            var index = -1, length = collection ? collection.length : 0, result = Array(typeof length == 'number' ? length : 0);
+            forEach(collection, function (value) {
+                var rand = baseRandom(0, ++index);
+                result[index] = result[rand];
+                result[rand] = value;
+            });
+            return result;
+        }
+        function size(collection) {
+            var length = collection ? collection.length : 0;
+            return typeof length == 'number' ? length : keys(collection).length;
+        }
+        function some(collection, callback, thisArg) {
+            var result;
+            callback = lodash.createCallback(callback, thisArg, 3);
+            var index = -1, length = collection ? collection.length : 0;
+            if (typeof length == 'number') {
+                while (++index < length) {
+                    if (result = callback(collection[index], index, collection)) {
+                        break;
+                    }
+                }
+            } else {
+                forOwn(collection, function (value, index, collection) {
+                    return !(result = callback(value, index, collection));
+                });
+            }
+            return !!result;
+        }
+        function sortBy(collection, callback, thisArg) {
+            var index = -1, isArr = isArray(callback), length = collection ? collection.length : 0, result = Array(typeof length == 'number' ? length : 0);
+            if (!isArr) {
+                callback = lodash.createCallback(callback, thisArg, 3);
+            }
+            forEach(collection, function (value, key, collection) {
+                var object = result[++index] = getObject();
+                if (isArr) {
+                    object.criteria = map(callback, function (key) {
+                        return value[key];
+                    });
+                } else {
+                    (object.criteria = getArray())[0] = callback(value, key, collection);
+                }
+                object.index = index;
+                object.value = value;
+            });
+            length = result.length;
+            result.sort(compareAscending);
+            while (length--) {
+                var object = result[length];
+                result[length] = object.value;
+                if (!isArr) {
+                    releaseArray(object.criteria);
+                }
+                releaseObject(object);
+            }
+            return result;
+        }
+        function toArray(collection) {
+            if (collection && typeof collection.length == 'number') {
+                return slice(collection);
+            }
+            return values(collection);
+        }
+        var where = filter;
+        function compact(array) {
+            var index = -1, length = array ? array.length : 0, result = [];
+            while (++index < length) {
+                var value = array[index];
+                if (value) {
+                    result.push(value);
+                }
+            }
+            return result;
+        }
+        function difference(array) {
+            return baseDifference(array, baseFlatten(arguments, true, true, 1));
+        }
+        function findIndex(array, callback, thisArg) {
+            var index = -1, length = array ? array.length : 0;
+            callback = lodash.createCallback(callback, thisArg, 3);
+            while (++index < length) {
+                if (callback(array[index], index, array)) {
+                    return index;
+                }
+            }
+            return -1;
+        }
+        function findLastIndex(array, callback, thisArg) {
+            var length = array ? array.length : 0;
+            callback = lodash.createCallback(callback, thisArg, 3);
+            while (length--) {
+                if (callback(array[length], length, array)) {
+                    return length;
+                }
+            }
+            return -1;
+        }
+        function first(array, callback, thisArg) {
+            var n = 0, length = array ? array.length : 0;
+            if (typeof callback != 'number' && callback != null) {
+                var index = -1;
+                callback = lodash.createCallback(callback, thisArg, 3);
+                while (++index < length && callback(array[index], index, array)) {
+                    n++;
+                }
+            } else {
+                n = callback;
+                if (n == null || thisArg) {
+                    return array ? array[0] : undefined;
+                }
+            }
+            return slice(array, 0, nativeMin(nativeMax(0, n), length));
+        }
+        function flatten(array, isShallow, callback, thisArg) {
+            if (typeof isShallow != 'boolean' && isShallow != null) {
+                thisArg = callback;
+                callback = typeof isShallow != 'function' && thisArg && thisArg[isShallow] === array ? null : isShallow;
+                isShallow = false;
+            }
+            if (callback != null) {
+                array = map(array, callback, thisArg);
+            }
+            return baseFlatten(array, isShallow);
+        }
+        function indexOf(array, value, fromIndex) {
+            if (typeof fromIndex == 'number') {
+                var length = array ? array.length : 0;
+                fromIndex = fromIndex < 0 ? nativeMax(0, length + fromIndex) : fromIndex || 0;
+            } else if (fromIndex) {
+                var index = sortedIndex(array, value);
+                return array[index] === value ? index : -1;
+            }
+            return baseIndexOf(array, value, fromIndex);
+        }
+        function initial(array, callback, thisArg) {
+            var n = 0, length = array ? array.length : 0;
+            if (typeof callback != 'number' && callback != null) {
+                var index = length;
+                callback = lodash.createCallback(callback, thisArg, 3);
+                while (index-- && callback(array[index], index, array)) {
+                    n++;
+                }
+            } else {
+                n = callback == null || thisArg ? 1 : callback || n;
+            }
+            return slice(array, 0, nativeMin(nativeMax(0, length - n), length));
+        }
+        function intersection() {
+            var args = [], argsIndex = -1, argsLength = arguments.length, caches = getArray(), indexOf = getIndexOf(), trustIndexOf = indexOf === baseIndexOf, seen = getArray();
+            while (++argsIndex < argsLength) {
+                var value = arguments[argsIndex];
+                if (isArray(value) || isArguments(value)) {
+                    args.push(value);
+                    caches.push(trustIndexOf && value.length >= largeArraySize && createCache(argsIndex ? args[argsIndex] : seen));
+                }
+            }
+            var array = args[0], index = -1, length = array ? array.length : 0, result = [];
+            outer:
+                while (++index < length) {
+                    var cache = caches[0];
+                    value = array[index];
+                    if ((cache ? cacheIndexOf(cache, value) : indexOf(seen, value)) < 0) {
+                        argsIndex = argsLength;
+                        (cache || seen).push(value);
+                        while (--argsIndex) {
+                            cache = caches[argsIndex];
+                            if ((cache ? cacheIndexOf(cache, value) : indexOf(args[argsIndex], value)) < 0) {
+                                continue outer;
+                            }
+                        }
+                        result.push(value);
+                    }
+                }
+            while (argsLength--) {
+                cache = caches[argsLength];
+                if (cache) {
+                    releaseObject(cache);
+                }
+            }
+            releaseArray(caches);
+            releaseArray(seen);
+            return result;
+        }
+        function last(array, callback, thisArg) {
+            var n = 0, length = array ? array.length : 0;
+            if (typeof callback != 'number' && callback != null) {
+                var index = length;
+                callback = lodash.createCallback(callback, thisArg, 3);
+                while (index-- && callback(array[index], index, array)) {
+                    n++;
+                }
+            } else {
+                n = callback;
+                if (n == null || thisArg) {
+                    return array ? array[length - 1] : undefined;
+                }
+            }
+            return slice(array, nativeMax(0, length - n));
+        }
+        function lastIndexOf(array, value, fromIndex) {
+            var index = array ? array.length : 0;
+            if (typeof fromIndex == 'number') {
+                index = (fromIndex < 0 ? nativeMax(0, index + fromIndex) : nativeMin(fromIndex, index - 1)) + 1;
+            }
+            while (index--) {
+                if (array[index] === value) {
+                    return index;
+                }
+            }
+            return -1;
+        }
+        function pull(array) {
+            var args = arguments, argsIndex = 0, argsLength = args.length, length = array ? array.length : 0;
+            while (++argsIndex < argsLength) {
+                var index = -1, value = args[argsIndex];
+                while (++index < length) {
+                    if (array[index] === value) {
+                        splice.call(array, index--, 1);
+                        length--;
+                    }
+                }
+            }
+            return array;
+        }
+        function range(start, end, step) {
+            start = +start || 0;
+            step = typeof step == 'number' ? step : +step || 1;
+            if (end == null) {
+                end = start;
+                start = 0;
+            }
+            var index = -1, length = nativeMax(0, ceil((end - start) / (step || 1))), result = Array(length);
+            while (++index < length) {
+                result[index] = start;
+                start += step;
+            }
+            return result;
+        }
+        function remove(array, callback, thisArg) {
+            var index = -1, length = array ? array.length : 0, result = [];
+            callback = lodash.createCallback(callback, thisArg, 3);
+            while (++index < length) {
+                var value = array[index];
+                if (callback(value, index, array)) {
+                    result.push(value);
+                    splice.call(array, index--, 1);
+                    length--;
+                }
+            }
+            return result;
+        }
+        function rest(array, callback, thisArg) {
+            if (typeof callback != 'number' && callback != null) {
+                var n = 0, index = -1, length = array ? array.length : 0;
+                callback = lodash.createCallback(callback, thisArg, 3);
+                while (++index < length && callback(array[index], index, array)) {
+                    n++;
+                }
+            } else {
+                n = callback == null || thisArg ? 1 : nativeMax(0, callback);
+            }
+            return slice(array, n);
+        }
+        function sortedIndex(array, value, callback, thisArg) {
+            var low = 0, high = array ? array.length : low;
+            callback = callback ? lodash.createCallback(callback, thisArg, 1) : identity;
+            value = callback(value);
+            while (low < high) {
+                var mid = low + high >>> 1;
+                callback(array[mid]) < value ? low = mid + 1 : high = mid;
+            }
+            return low;
+        }
+        function union() {
+            return baseUniq(baseFlatten(arguments, true, true));
+        }
+        function uniq(array, isSorted, callback, thisArg) {
+            if (typeof isSorted != 'boolean' && isSorted != null) {
+                thisArg = callback;
+                callback = typeof isSorted != 'function' && thisArg && thisArg[isSorted] === array ? null : isSorted;
+                isSorted = false;
+            }
+            if (callback != null) {
+                callback = lodash.createCallback(callback, thisArg, 3);
+            }
+            return baseUniq(array, isSorted, callback);
+        }
+        function without(array) {
+            return baseDifference(array, slice(arguments, 1));
+        }
+        function xor() {
+            var index = -1, length = arguments.length;
+            while (++index < length) {
+                var array = arguments[index];
+                if (isArray(array) || isArguments(array)) {
+                    var result = result ? baseUniq(baseDifference(result, array).concat(baseDifference(array, result))) : array;
+                }
+            }
+            return result || [];
+        }
+        function zip() {
+            var array = arguments.length > 1 ? arguments : arguments[0], index = -1, length = array ? max(pluck(array, 'length')) : 0, result = Array(length < 0 ? 0 : length);
+            while (++index < length) {
+                result[index] = pluck(array, index);
+            }
+            return result;
+        }
+        function zipObject(keys, values) {
+            var index = -1, length = keys ? keys.length : 0, result = {};
+            if (!values && length && !isArray(keys[0])) {
+                values = [];
+            }
+            while (++index < length) {
+                var key = keys[index];
+                if (values) {
+                    result[key] = values[index];
+                } else if (key) {
+                    result[key[0]] = key[1];
+                }
+            }
+            return result;
+        }
+        function after(n, func) {
+            if (!isFunction(func)) {
+                throw new TypeError();
+            }
+            return function () {
+                if (--n < 1) {
+                    return func.apply(this, arguments);
+                }
+            };
+        }
+        function bind(func, thisArg) {
+            return arguments.length > 2 ? createWrapper(func, 17, slice(arguments, 2), null, thisArg) : createWrapper(func, 1, null, null, thisArg);
+        }
+        function bindAll(object) {
+            var funcs = arguments.length > 1 ? baseFlatten(arguments, true, false, 1) : functions(object), index = -1, length = funcs.length;
+            while (++index < length) {
+                var key = funcs[index];
+                object[key] = createWrapper(object[key], 1, null, null, object);
+            }
+            return object;
+        }
+        function bindKey(object, key) {
+            return arguments.length > 2 ? createWrapper(key, 19, slice(arguments, 2), null, object) : createWrapper(key, 3, null, null, object);
+        }
+        function compose() {
+            var funcs = arguments, length = funcs.length;
+            while (length--) {
+                if (!isFunction(funcs[length])) {
+                    throw new TypeError();
+                }
+            }
+            return function () {
+                var args = arguments, length = funcs.length;
+                while (length--) {
+                    args = [funcs[length].apply(this, args)];
+                }
+                return args[0];
+            };
+        }
+        function curry(func, arity) {
+            arity = typeof arity == 'number' ? arity : +arity || func.length;
+            return createWrapper(func, 4, null, null, null, arity);
+        }
+        function debounce(func, wait, options) {
+            var args, maxTimeoutId, result, stamp, thisArg, timeoutId, trailingCall, lastCalled = 0, maxWait = false, trailing = true;
+            if (!isFunction(func)) {
+                throw new TypeError();
+            }
+            wait = nativeMax(0, wait) || 0;
+            if (options === true) {
+                var leading = true;
+                trailing = false;
+            } else if (isObject(options)) {
+                leading = options.leading;
+                maxWait = 'maxWait' in options && (nativeMax(wait, options.maxWait) || 0);
+                trailing = 'trailing' in options ? options.trailing : trailing;
+            }
+            var delayed = function () {
+                var remaining = wait - (now() - stamp);
+                if (remaining <= 0) {
+                    if (maxTimeoutId) {
+                        clearTimeout(maxTimeoutId);
+                    }
+                    var isCalled = trailingCall;
+                    maxTimeoutId = timeoutId = trailingCall = undefined;
+                    if (isCalled) {
+                        lastCalled = now();
+                        result = func.apply(thisArg, args);
+                        if (!timeoutId && !maxTimeoutId) {
+                            args = thisArg = null;
+                        }
+                    }
+                } else {
+                    timeoutId = setTimeout(delayed, remaining);
+                }
+            };
+            var maxDelayed = function () {
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                }
+                maxTimeoutId = timeoutId = trailingCall = undefined;
+                if (trailing || maxWait !== wait) {
+                    lastCalled = now();
+                    result = func.apply(thisArg, args);
+                    if (!timeoutId && !maxTimeoutId) {
+                        args = thisArg = null;
+                    }
+                }
+            };
+            return function () {
+                args = arguments;
+                stamp = now();
+                thisArg = this;
+                trailingCall = trailing && (timeoutId || !leading);
+                if (maxWait === false) {
+                    var leadingCall = leading && !timeoutId;
+                } else {
+                    if (!maxTimeoutId && !leading) {
+                        lastCalled = stamp;
+                    }
+                    var remaining = maxWait - (stamp - lastCalled), isCalled = remaining <= 0;
+                    if (isCalled) {
+                        if (maxTimeoutId) {
+                            maxTimeoutId = clearTimeout(maxTimeoutId);
+                        }
+                        lastCalled = stamp;
+                        result = func.apply(thisArg, args);
+                    } else if (!maxTimeoutId) {
+                        maxTimeoutId = setTimeout(maxDelayed, remaining);
+                    }
+                }
+                if (isCalled && timeoutId) {
+                    timeoutId = clearTimeout(timeoutId);
+                } else if (!timeoutId && wait !== maxWait) {
+                    timeoutId = setTimeout(delayed, wait);
+                }
+                if (leadingCall) {
+                    isCalled = true;
+                    result = func.apply(thisArg, args);
+                }
+                if (isCalled && !timeoutId && !maxTimeoutId) {
+                    args = thisArg = null;
+                }
+                return result;
+            };
+        }
+        function defer(func) {
+            if (!isFunction(func)) {
+                throw new TypeError();
+            }
+            var args = slice(arguments, 1);
+            return setTimeout(function () {
+                func.apply(undefined, args);
+            }, 1);
+        }
+        function delay(func, wait) {
+            if (!isFunction(func)) {
+                throw new TypeError();
+            }
+            var args = slice(arguments, 2);
+            return setTimeout(function () {
+                func.apply(undefined, args);
+            }, wait);
+        }
+        function memoize(func, resolver) {
+            if (!isFunction(func)) {
+                throw new TypeError();
+            }
+            var memoized = function () {
+                var cache = memoized.cache, key = resolver ? resolver.apply(this, arguments) : keyPrefix + arguments[0];
+                return hasOwnProperty.call(cache, key) ? cache[key] : cache[key] = func.apply(this, arguments);
+            };
+            memoized.cache = {};
+            return memoized;
+        }
+        function once(func) {
+            var ran, result;
+            if (!isFunction(func)) {
+                throw new TypeError();
+            }
+            return function () {
+                if (ran) {
+                    return result;
+                }
+                ran = true;
+                result = func.apply(this, arguments);
+                func = null;
+                return result;
+            };
+        }
+        function partial(func) {
+            return createWrapper(func, 16, slice(arguments, 1));
+        }
+        function partialRight(func) {
+            return createWrapper(func, 32, null, slice(arguments, 1));
+        }
+        function throttle(func, wait, options) {
+            var leading = true, trailing = true;
+            if (!isFunction(func)) {
+                throw new TypeError();
+            }
+            if (options === false) {
+                leading = false;
+            } else if (isObject(options)) {
+                leading = 'leading' in options ? options.leading : leading;
+                trailing = 'trailing' in options ? options.trailing : trailing;
+            }
+            debounceOptions.leading = leading;
+            debounceOptions.maxWait = wait;
+            debounceOptions.trailing = trailing;
+            return debounce(func, wait, debounceOptions);
+        }
+        function wrap(value, wrapper) {
+            return createWrapper(wrapper, 16, [value]);
+        }
+        function constant(value) {
+            return function () {
+                return value;
+            };
+        }
+        function createCallback(func, thisArg, argCount) {
+            var type = typeof func;
+            if (func == null || type == 'function') {
+                return baseCreateCallback(func, thisArg, argCount);
+            }
+            if (type != 'object') {
+                return property(func);
+            }
+            var props = keys(func), key = props[0], a = func[key];
+            if (props.length == 1 && a === a && !isObject(a)) {
+                return function (object) {
+                    var b = object[key];
+                    return a === b && (a !== 0 || 1 / a == 1 / b);
+                };
+            }
+            return function (object) {
+                var length = props.length, result = false;
+                while (length--) {
+                    if (!(result = baseIsEqual(object[props[length]], func[props[length]], null, true))) {
+                        break;
+                    }
+                }
+                return result;
+            };
+        }
+        function escape(string) {
+            return string == null ? '' : String(string).replace(reUnescapedHtml, escapeHtmlChar);
+        }
+        function identity(value) {
+            return value;
+        }
+        function mixin(object, source, options) {
+            var chain = true, methodNames = source && functions(source);
+            if (!source || !options && !methodNames.length) {
+                if (options == null) {
+                    options = source;
+                }
+                ctor = lodashWrapper;
+                source = object;
+                object = lodash;
+                methodNames = functions(source);
+            }
+            if (options === false) {
+                chain = false;
+            } else if (isObject(options) && 'chain' in options) {
+                chain = options.chain;
+            }
+            var ctor = object, isFunc = isFunction(ctor);
+            forEach(methodNames, function (methodName) {
+                var func = object[methodName] = source[methodName];
+                if (isFunc) {
+                    ctor.prototype[methodName] = function () {
+                        var chainAll = this.__chain__, value = this.__wrapped__, args = [value];
+                        push.apply(args, arguments);
+                        var result = func.apply(object, args);
+                        if (chain || chainAll) {
+                            if (value === result && isObject(result)) {
+                                return this;
+                            }
+                            result = new ctor(result);
+                            result.__chain__ = chainAll;
+                        }
+                        return result;
+                    };
+                }
+            });
+        }
+        function noConflict() {
+            context._ = oldDash;
+            return this;
+        }
+        function noop() {
+        }
+        var now = isNative(now = Date.now) && now || function () {
+                return new Date().getTime();
+            };
+        var parseInt = nativeParseInt(whitespace + '08') == 8 ? nativeParseInt : function (value, radix) {
+                return nativeParseInt(isString(value) ? value.replace(reLeadingSpacesAndZeros, '') : value, radix || 0);
+            };
+        function property(key) {
+            return function (object) {
+                return object[key];
+            };
+        }
+        function random(min, max, floating) {
+            var noMin = min == null, noMax = max == null;
+            if (floating == null) {
+                if (typeof min == 'boolean' && noMax) {
+                    floating = min;
+                    min = 1;
+                } else if (!noMax && typeof max == 'boolean') {
+                    floating = max;
+                    noMax = true;
+                }
+            }
+            if (noMin && noMax) {
+                max = 1;
+            }
+            min = +min || 0;
+            if (noMax) {
+                max = min;
+                min = 0;
+            } else {
+                max = +max || 0;
+            }
+            if (floating || min % 1 || max % 1) {
+                var rand = nativeRandom();
+                return nativeMin(min + rand * (max - min + parseFloat('1e-' + ((rand + '').length - 1))), max);
+            }
+            return baseRandom(min, max);
+        }
+        function result(object, key) {
+            if (object) {
+                var value = object[key];
+                return isFunction(value) ? object[key]() : value;
+            }
+        }
+        function template(text, data, options) {
+            var settings = lodash.templateSettings;
+            text = String(text || '');
+            options = defaults({}, options, settings);
+            var imports = defaults({}, options.imports, settings.imports), importsKeys = keys(imports), importsValues = values(imports);
+            var isEvaluating, index = 0, interpolate = options.interpolate || reNoMatch, source = '__p += \'';
+            var reDelimiters = RegExp((options.escape || reNoMatch).source + '|' + interpolate.source + '|' + (interpolate === reInterpolate ? reEsTemplate : reNoMatch).source + '|' + (options.evaluate || reNoMatch).source + '|$', 'g');
+            text.replace(reDelimiters, function (match, escapeValue, interpolateValue, esTemplateValue, evaluateValue, offset) {
+                interpolateValue || (interpolateValue = esTemplateValue);
+                source += text.slice(index, offset).replace(reUnescapedString, escapeStringChar);
+                if (escapeValue) {
+                    source += '\' +\n__e(' + escapeValue + ') +\n\'';
+                }
+                if (evaluateValue) {
+                    isEvaluating = true;
+                    source += '\';\n' + evaluateValue + ';\n__p += \'';
+                }
+                if (interpolateValue) {
+                    source += '\' +\n((__t = (' + interpolateValue + ')) == null ? \'\' : __t) +\n\'';
+                }
+                index = offset + match.length;
+                return match;
+            });
+            source += '\';\n';
+            var variable = options.variable, hasVariable = variable;
+            if (!hasVariable) {
+                variable = 'obj';
+                source = 'with (' + variable + ') {\n' + source + '\n}\n';
+            }
+            source = (isEvaluating ? source.replace(reEmptyStringLeading, '') : source).replace(reEmptyStringMiddle, '$1').replace(reEmptyStringTrailing, '$1;');
+            source = 'function(' + variable + ') {\n' + (hasVariable ? '' : variable + ' || (' + variable + ' = {});\n') + 'var __t, __p = \'\', __e = _.escape' + (isEvaluating ? ', __j = Array.prototype.join;\n' + 'function print() { __p += __j.call(arguments, \'\') }\n' : ';\n') + source + 'return __p\n}';
+            var sourceURL = '\n/*\n//# sourceURL=' + (options.sourceURL || '/lodash/template/source[' + templateCounter++ + ']') + '\n*/';
+            try {
+                var result = Function(importsKeys, 'return ' + source + sourceURL).apply(undefined, importsValues);
+            } catch (e) {
+                e.source = source;
+                throw e;
+            }
+            if (data) {
+                return result(data);
+            }
+            result.source = source;
+            return result;
+        }
+        function times(n, callback, thisArg) {
+            n = (n = +n) > -1 ? n : 0;
+            var index = -1, result = Array(n);
+            callback = baseCreateCallback(callback, thisArg, 1);
+            while (++index < n) {
+                result[index] = callback(index);
+            }
+            return result;
+        }
+        function unescape(string) {
+            return string == null ? '' : String(string).replace(reEscapedHtml, unescapeHtmlChar);
+        }
+        function uniqueId(prefix) {
+            var id = ++idCounter;
+            return String(prefix == null ? '' : prefix) + id;
+        }
+        function chain(value) {
+            value = new lodashWrapper(value);
+            value.__chain__ = true;
+            return value;
+        }
+        function tap(value, interceptor) {
+            interceptor(value);
+            return value;
+        }
+        function wrapperChain() {
+            this.__chain__ = true;
+            return this;
+        }
+        function wrapperToString() {
+            return String(this.__wrapped__);
+        }
+        function wrapperValueOf() {
+            return this.__wrapped__;
+        }
+        lodash.after = after;
+        lodash.assign = assign;
+        lodash.at = at;
+        lodash.bind = bind;
+        lodash.bindAll = bindAll;
+        lodash.bindKey = bindKey;
+        lodash.chain = chain;
+        lodash.compact = compact;
+        lodash.compose = compose;
+        lodash.constant = constant;
+        lodash.countBy = countBy;
+        lodash.create = create;
+        lodash.createCallback = createCallback;
+        lodash.curry = curry;
+        lodash.debounce = debounce;
+        lodash.defaults = defaults;
+        lodash.defer = defer;
+        lodash.delay = delay;
+        lodash.difference = difference;
+        lodash.filter = filter;
+        lodash.flatten = flatten;
+        lodash.forEach = forEach;
+        lodash.forEachRight = forEachRight;
+        lodash.forIn = forIn;
+        lodash.forInRight = forInRight;
+        lodash.forOwn = forOwn;
+        lodash.forOwnRight = forOwnRight;
+        lodash.functions = functions;
+        lodash.groupBy = groupBy;
+        lodash.indexBy = indexBy;
+        lodash.initial = initial;
+        lodash.intersection = intersection;
+        lodash.invert = invert;
+        lodash.invoke = invoke;
+        lodash.keys = keys;
+        lodash.map = map;
+        lodash.mapValues = mapValues;
+        lodash.max = max;
+        lodash.memoize = memoize;
+        lodash.merge = merge;
+        lodash.min = min;
+        lodash.omit = omit;
+        lodash.once = once;
+        lodash.pairs = pairs;
+        lodash.partial = partial;
+        lodash.partialRight = partialRight;
+        lodash.pick = pick;
+        lodash.pluck = pluck;
+        lodash.property = property;
+        lodash.pull = pull;
+        lodash.range = range;
+        lodash.reject = reject;
+        lodash.remove = remove;
+        lodash.rest = rest;
+        lodash.shuffle = shuffle;
+        lodash.sortBy = sortBy;
+        lodash.tap = tap;
+        lodash.throttle = throttle;
+        lodash.times = times;
+        lodash.toArray = toArray;
+        lodash.transform = transform;
+        lodash.union = union;
+        lodash.uniq = uniq;
+        lodash.values = values;
+        lodash.where = where;
+        lodash.without = without;
+        lodash.wrap = wrap;
+        lodash.xor = xor;
+        lodash.zip = zip;
+        lodash.zipObject = zipObject;
+        lodash.collect = map;
+        lodash.drop = rest;
+        lodash.each = forEach;
+        lodash.eachRight = forEachRight;
+        lodash.extend = assign;
+        lodash.methods = functions;
+        lodash.object = zipObject;
+        lodash.select = filter;
+        lodash.tail = rest;
+        lodash.unique = uniq;
+        lodash.unzip = zip;
+        mixin(lodash);
+        lodash.clone = clone;
+        lodash.cloneDeep = cloneDeep;
+        lodash.contains = contains;
+        lodash.escape = escape;
+        lodash.every = every;
+        lodash.find = find;
+        lodash.findIndex = findIndex;
+        lodash.findKey = findKey;
+        lodash.findLast = findLast;
+        lodash.findLastIndex = findLastIndex;
+        lodash.findLastKey = findLastKey;
+        lodash.has = has;
+        lodash.identity = identity;
+        lodash.indexOf = indexOf;
+        lodash.isArguments = isArguments;
+        lodash.isArray = isArray;
+        lodash.isBoolean = isBoolean;
+        lodash.isDate = isDate;
+        lodash.isElement = isElement;
+        lodash.isEmpty = isEmpty;
+        lodash.isEqual = isEqual;
+        lodash.isFinite = isFinite;
+        lodash.isFunction = isFunction;
+        lodash.isNaN = isNaN;
+        lodash.isNull = isNull;
+        lodash.isNumber = isNumber;
+        lodash.isObject = isObject;
+        lodash.isPlainObject = isPlainObject;
+        lodash.isRegExp = isRegExp;
+        lodash.isString = isString;
+        lodash.isUndefined = isUndefined;
+        lodash.lastIndexOf = lastIndexOf;
+        lodash.mixin = mixin;
+        lodash.noConflict = noConflict;
+        lodash.noop = noop;
+        lodash.now = now;
+        lodash.parseInt = parseInt;
+        lodash.random = random;
+        lodash.reduce = reduce;
+        lodash.reduceRight = reduceRight;
+        lodash.result = result;
+        lodash.runInContext = runInContext;
+        lodash.size = size;
+        lodash.some = some;
+        lodash.sortedIndex = sortedIndex;
+        lodash.template = template;
+        lodash.unescape = unescape;
+        lodash.uniqueId = uniqueId;
+        lodash.all = every;
+        lodash.any = some;
+        lodash.detect = find;
+        lodash.findWhere = find;
+        lodash.foldl = reduce;
+        lodash.foldr = reduceRight;
+        lodash.include = contains;
+        lodash.inject = reduce;
+        mixin(function () {
+            var source = {};
+            forOwn(lodash, function (func, methodName) {
+                if (!lodash.prototype[methodName]) {
+                    source[methodName] = func;
+                }
+            });
+            return source;
+        }(), false);
+        lodash.first = first;
+        lodash.last = last;
+        lodash.sample = sample;
+        lodash.take = first;
+        lodash.head = first;
+        forOwn(lodash, function (func, methodName) {
+            var callbackable = methodName !== 'sample';
+            if (!lodash.prototype[methodName]) {
+                lodash.prototype[methodName] = function (n, guard) {
+                    var chainAll = this.__chain__, result = func(this.__wrapped__, n, guard);
+                    return !chainAll && (n == null || guard && !(callbackable && typeof n == 'function')) ? result : new lodashWrapper(result, chainAll);
+                };
+            }
+        });
+        lodash.VERSION = '2.4.1';
+        lodash.prototype.chain = wrapperChain;
+        lodash.prototype.toString = wrapperToString;
+        lodash.prototype.value = wrapperValueOf;
+        lodash.prototype.valueOf = wrapperValueOf;
+        forEach([
+            'join',
+            'pop',
+            'shift'
+        ], function (methodName) {
+            var func = arrayRef[methodName];
+            lodash.prototype[methodName] = function () {
+                var chainAll = this.__chain__, result = func.apply(this.__wrapped__, arguments);
+                return chainAll ? new lodashWrapper(result, chainAll) : result;
+            };
+        });
+        forEach([
+            'push',
+            'reverse',
+            'sort',
+            'unshift'
+        ], function (methodName) {
+            var func = arrayRef[methodName];
+            lodash.prototype[methodName] = function () {
+                func.apply(this.__wrapped__, arguments);
+                return this;
+            };
+        });
+        forEach([
+            'concat',
+            'slice',
+            'splice'
+        ], function (methodName) {
+            var func = arrayRef[methodName];
+            lodash.prototype[methodName] = function () {
+                return new lodashWrapper(func.apply(this.__wrapped__, arguments), this.__chain__);
+            };
+        });
+        return lodash;
+    }
+    var _ = runInContext();
+    if (typeof define == 'function' && typeof define.amd == 'object' && define.amd) {
+        root._ = _;
+        define(function () {
+            return _;
+        });
+    } else if (freeExports && freeModule) {
+        if (moduleExports) {
+            (freeModule.exports = _)._ = _;
+        } else {
+            freeExports._ = _;
+        }
+    } else {
+        root._ = _;
+    }
 }.call(this));
 });
-require.define('28', function(module, exports, __dirname, __filename, undefined){
+require.define('15', function(module, exports, __dirname, __filename, undefined){
+(function () {
+    exports.Kinetic = require('20', module);
+}.call(this));
+});
+require.define('20', function(module, exports, __dirname, __filename, undefined){
 var Kinetic = {};
 (function () {
     Kinetic = {
@@ -10046,7 +10472,7 @@ var Kinetic = {};
     };
 }());
 });
-require.define('25', function(module, exports, __dirname, __filename, undefined){
+require.define('22', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var Bacon, BufferingSource, Bus, CompositeUnsubscribe, Desc, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref, _ref1, _ref2, __slice = [].slice, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -12670,7 +13096,7 @@ require.define('25', function(module, exports, __dirname, __filename, undefined)
     }
 }.call(this));
 });
-require.define('23', function(module, exports, __dirname, __filename, undefined){
+require.define('21', function(module, exports, __dirname, __filename, undefined){
 var TAFFY, exports, T;
 (function () {
     'use strict';
@@ -13839,7 +14265,684 @@ if (typeof exports === 'object') {
     exports.taffy = TAFFY;
 }
 });
-require.define('40', function(module, exports, __dirname, __filename, undefined){
+require.define('35', function(module, exports, __dirname, __filename, undefined){
+(function (name, context, factory) {
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = factory();
+    } else if (typeof context.define === 'function' && context.define.amd) {
+        define(name, [], factory);
+    } else {
+        context[name] = factory();
+    }
+}('buzz', this, function () {
+    var buzz = {
+            defaults: {
+                autoplay: false,
+                duration: 5000,
+                formats: [],
+                loop: false,
+                placeholder: '--',
+                preload: 'metadata',
+                volume: 80,
+                document: document
+            },
+            types: {
+                mp3: 'audio/mpeg',
+                ogg: 'audio/ogg',
+                wav: 'audio/wav',
+                aac: 'audio/aac',
+                m4a: 'audio/x-m4a'
+            },
+            sounds: [],
+            el: document.createElement('audio'),
+            sound: function (src, options) {
+                options = options || {};
+                var doc = options.document || buzz.defaults.document;
+                var pid = 0, events = [], eventsOnce = {}, supported = buzz.isSupported();
+                this.load = function () {
+                    if (!supported) {
+                        return this;
+                    }
+                    this.sound.load();
+                    return this;
+                };
+                this.play = function () {
+                    if (!supported) {
+                        return this;
+                    }
+                    this.sound.play();
+                    return this;
+                };
+                this.togglePlay = function () {
+                    if (!supported) {
+                        return this;
+                    }
+                    if (this.sound.paused) {
+                        this.sound.play();
+                    } else {
+                        this.sound.pause();
+                    }
+                    return this;
+                };
+                this.pause = function () {
+                    if (!supported) {
+                        return this;
+                    }
+                    this.sound.pause();
+                    return this;
+                };
+                this.isPaused = function () {
+                    if (!supported) {
+                        return null;
+                    }
+                    return this.sound.paused;
+                };
+                this.stop = function () {
+                    if (!supported) {
+                        return this;
+                    }
+                    this.setTime(0);
+                    this.sound.pause();
+                    return this;
+                };
+                this.isEnded = function () {
+                    if (!supported) {
+                        return null;
+                    }
+                    return this.sound.ended;
+                };
+                this.loop = function () {
+                    if (!supported) {
+                        return this;
+                    }
+                    this.sound.loop = 'loop';
+                    this.bind('ended.buzzloop', function () {
+                        this.currentTime = 0;
+                        this.play();
+                    });
+                    return this;
+                };
+                this.unloop = function () {
+                    if (!supported) {
+                        return this;
+                    }
+                    this.sound.removeAttribute('loop');
+                    this.unbind('ended.buzzloop');
+                    return this;
+                };
+                this.mute = function () {
+                    if (!supported) {
+                        return this;
+                    }
+                    this.sound.muted = true;
+                    return this;
+                };
+                this.unmute = function () {
+                    if (!supported) {
+                        return this;
+                    }
+                    this.sound.muted = false;
+                    return this;
+                };
+                this.toggleMute = function () {
+                    if (!supported) {
+                        return this;
+                    }
+                    this.sound.muted = !this.sound.muted;
+                    return this;
+                };
+                this.isMuted = function () {
+                    if (!supported) {
+                        return null;
+                    }
+                    return this.sound.muted;
+                };
+                this.setVolume = function (volume) {
+                    if (!supported) {
+                        return this;
+                    }
+                    if (volume < 0) {
+                        volume = 0;
+                    }
+                    if (volume > 100) {
+                        volume = 100;
+                    }
+                    this.volume = volume;
+                    this.sound.volume = volume / 100;
+                    return this;
+                };
+                this.getVolume = function () {
+                    if (!supported) {
+                        return this;
+                    }
+                    return this.volume;
+                };
+                this.increaseVolume = function (value) {
+                    return this.setVolume(this.volume + (value || 1));
+                };
+                this.decreaseVolume = function (value) {
+                    return this.setVolume(this.volume - (value || 1));
+                };
+                this.setTime = function (time) {
+                    if (!supported) {
+                        return this;
+                    }
+                    var set = true;
+                    this.whenReady(function () {
+                        if (set === true) {
+                            set = false;
+                            this.sound.currentTime = time;
+                        }
+                    });
+                    return this;
+                };
+                this.getTime = function () {
+                    if (!supported) {
+                        return null;
+                    }
+                    var time = Math.round(this.sound.currentTime * 100) / 100;
+                    return isNaN(time) ? buzz.defaults.placeholder : time;
+                };
+                this.setPercent = function (percent) {
+                    if (!supported) {
+                        return this;
+                    }
+                    return this.setTime(buzz.fromPercent(percent, this.sound.duration));
+                };
+                this.getPercent = function () {
+                    if (!supported) {
+                        return null;
+                    }
+                    var percent = Math.round(buzz.toPercent(this.sound.currentTime, this.sound.duration));
+                    return isNaN(percent) ? buzz.defaults.placeholder : percent;
+                };
+                this.setSpeed = function (duration) {
+                    if (!supported) {
+                        return this;
+                    }
+                    this.sound.playbackRate = duration;
+                    return this;
+                };
+                this.getSpeed = function () {
+                    if (!supported) {
+                        return null;
+                    }
+                    return this.sound.playbackRate;
+                };
+                this.getDuration = function () {
+                    if (!supported) {
+                        return null;
+                    }
+                    var duration = Math.round(this.sound.duration * 100) / 100;
+                    return isNaN(duration) ? buzz.defaults.placeholder : duration;
+                };
+                this.getPlayed = function () {
+                    if (!supported) {
+                        return null;
+                    }
+                    return timerangeToArray(this.sound.played);
+                };
+                this.getBuffered = function () {
+                    if (!supported) {
+                        return null;
+                    }
+                    return timerangeToArray(this.sound.buffered);
+                };
+                this.getSeekable = function () {
+                    if (!supported) {
+                        return null;
+                    }
+                    return timerangeToArray(this.sound.seekable);
+                };
+                this.getErrorCode = function () {
+                    if (supported && this.sound.error) {
+                        return this.sound.error.code;
+                    }
+                    return 0;
+                };
+                this.getErrorMessage = function () {
+                    if (!supported) {
+                        return null;
+                    }
+                    switch (this.getErrorCode()) {
+                    case 1:
+                        return 'MEDIA_ERR_ABORTED';
+                    case 2:
+                        return 'MEDIA_ERR_NETWORK';
+                    case 3:
+                        return 'MEDIA_ERR_DECODE';
+                    case 4:
+                        return 'MEDIA_ERR_SRC_NOT_SUPPORTED';
+                    default:
+                        return null;
+                    }
+                };
+                this.getStateCode = function () {
+                    if (!supported) {
+                        return null;
+                    }
+                    return this.sound.readyState;
+                };
+                this.getStateMessage = function () {
+                    if (!supported) {
+                        return null;
+                    }
+                    switch (this.getStateCode()) {
+                    case 0:
+                        return 'HAVE_NOTHING';
+                    case 1:
+                        return 'HAVE_METADATA';
+                    case 2:
+                        return 'HAVE_CURRENT_DATA';
+                    case 3:
+                        return 'HAVE_FUTURE_DATA';
+                    case 4:
+                        return 'HAVE_ENOUGH_DATA';
+                    default:
+                        return null;
+                    }
+                };
+                this.getNetworkStateCode = function () {
+                    if (!supported) {
+                        return null;
+                    }
+                    return this.sound.networkState;
+                };
+                this.getNetworkStateMessage = function () {
+                    if (!supported) {
+                        return null;
+                    }
+                    switch (this.getNetworkStateCode()) {
+                    case 0:
+                        return 'NETWORK_EMPTY';
+                    case 1:
+                        return 'NETWORK_IDLE';
+                    case 2:
+                        return 'NETWORK_LOADING';
+                    case 3:
+                        return 'NETWORK_NO_SOURCE';
+                    default:
+                        return null;
+                    }
+                };
+                this.set = function (key, value) {
+                    if (!supported) {
+                        return this;
+                    }
+                    this.sound[key] = value;
+                    return this;
+                };
+                this.get = function (key) {
+                    if (!supported) {
+                        return null;
+                    }
+                    return key ? this.sound[key] : this.sound;
+                };
+                this.bind = function (types, func) {
+                    if (!supported) {
+                        return this;
+                    }
+                    types = types.split(' ');
+                    var self = this, efunc = function (e) {
+                            func.call(self, e);
+                        };
+                    for (var t = 0; t < types.length; t++) {
+                        var type = types[t], idx = type;
+                        type = idx.split('.')[0];
+                        events.push({
+                            idx: idx,
+                            func: efunc
+                        });
+                        this.sound.addEventListener(type, efunc, true);
+                    }
+                    return this;
+                };
+                this.unbind = function (types) {
+                    if (!supported) {
+                        return this;
+                    }
+                    types = types.split(' ');
+                    for (var t = 0; t < types.length; t++) {
+                        var idx = types[t], type = idx.split('.')[0];
+                        for (var i = 0; i < events.length; i++) {
+                            var namespace = events[i].idx.split('.');
+                            if (events[i].idx == idx || namespace[1] && namespace[1] == idx.replace('.', '')) {
+                                this.sound.removeEventListener(type, events[i].func, true);
+                                events.splice(i, 1);
+                            }
+                        }
+                    }
+                    return this;
+                };
+                this.bindOnce = function (type, func) {
+                    if (!supported) {
+                        return this;
+                    }
+                    var self = this;
+                    eventsOnce[pid++] = false;
+                    this.bind(type + '.' + pid, function () {
+                        if (!eventsOnce[pid]) {
+                            eventsOnce[pid] = true;
+                            func.call(self);
+                        }
+                        self.unbind(type + '.' + pid);
+                    });
+                    return this;
+                };
+                this.trigger = function (types) {
+                    if (!supported) {
+                        return this;
+                    }
+                    types = types.split(' ');
+                    for (var t = 0; t < types.length; t++) {
+                        var idx = types[t];
+                        for (var i = 0; i < events.length; i++) {
+                            var eventType = events[i].idx.split('.');
+                            if (events[i].idx == idx || eventType[0] && eventType[0] == idx.replace('.', '')) {
+                                var evt = doc.createEvent('HTMLEvents');
+                                evt.initEvent(eventType[0], false, true);
+                                this.sound.dispatchEvent(evt);
+                            }
+                        }
+                    }
+                    return this;
+                };
+                this.fadeTo = function (to, duration, callback) {
+                    if (!supported) {
+                        return this;
+                    }
+                    if (duration instanceof Function) {
+                        callback = duration;
+                        duration = buzz.defaults.duration;
+                    } else {
+                        duration = duration || buzz.defaults.duration;
+                    }
+                    var from = this.volume, delay = duration / Math.abs(from - to), self = this;
+                    this.play();
+                    function doFade() {
+                        setTimeout(function () {
+                            if (from < to && self.volume < to) {
+                                self.setVolume(self.volume += 1);
+                                doFade();
+                            } else if (from > to && self.volume > to) {
+                                self.setVolume(self.volume -= 1);
+                                doFade();
+                            } else if (callback instanceof Function) {
+                                callback.apply(self);
+                            }
+                        }, delay);
+                    }
+                    this.whenReady(function () {
+                        doFade();
+                    });
+                    return this;
+                };
+                this.fadeIn = function (duration, callback) {
+                    if (!supported) {
+                        return this;
+                    }
+                    return this.setVolume(0).fadeTo(100, duration, callback);
+                };
+                this.fadeOut = function (duration, callback) {
+                    if (!supported) {
+                        return this;
+                    }
+                    return this.fadeTo(0, duration, callback);
+                };
+                this.fadeWith = function (sound, duration) {
+                    if (!supported) {
+                        return this;
+                    }
+                    this.fadeOut(duration, function () {
+                        this.stop();
+                    });
+                    sound.play().fadeIn(duration);
+                    return this;
+                };
+                this.whenReady = function (func) {
+                    if (!supported) {
+                        return null;
+                    }
+                    var self = this;
+                    if (this.sound.readyState === 0) {
+                        this.bind('canplay.buzzwhenready', function () {
+                            func.call(self);
+                        });
+                    } else {
+                        func.call(self);
+                    }
+                };
+                function timerangeToArray(timeRange) {
+                    var array = [], length = timeRange.length - 1;
+                    for (var i = 0; i <= length; i++) {
+                        array.push({
+                            start: timeRange.start(i),
+                            end: timeRange.end(i)
+                        });
+                    }
+                    return array;
+                }
+                function getExt(filename) {
+                    return filename.split('.').pop();
+                }
+                function addSource(sound, src) {
+                    var source = doc.createElement('source');
+                    source.src = src;
+                    if (buzz.types[getExt(src)]) {
+                        source.type = buzz.types[getExt(src)];
+                    }
+                    sound.appendChild(source);
+                }
+                if (supported && src) {
+                    for (var i in buzz.defaults) {
+                        if (buzz.defaults.hasOwnProperty(i)) {
+                            options[i] = options[i] || buzz.defaults[i];
+                        }
+                    }
+                    this.sound = doc.createElement('audio');
+                    if (src instanceof Array) {
+                        for (var j in src) {
+                            if (src.hasOwnProperty(j)) {
+                                addSource(this.sound, src[j]);
+                            }
+                        }
+                    } else if (options.formats.length) {
+                        for (var k in options.formats) {
+                            if (options.formats.hasOwnProperty(k)) {
+                                addSource(this.sound, src + '.' + options.formats[k]);
+                            }
+                        }
+                    } else {
+                        addSource(this.sound, src);
+                    }
+                    if (options.loop) {
+                        this.loop();
+                    }
+                    if (options.autoplay) {
+                        this.sound.autoplay = 'autoplay';
+                    }
+                    if (options.preload === true) {
+                        this.sound.preload = 'auto';
+                    } else if (options.preload === false) {
+                        this.sound.preload = 'none';
+                    } else {
+                        this.sound.preload = options.preload;
+                    }
+                    this.setVolume(options.volume);
+                    buzz.sounds.push(this);
+                }
+            },
+            group: function (sounds) {
+                sounds = argsToArray(sounds, arguments);
+                this.getSounds = function () {
+                    return sounds;
+                };
+                this.add = function (soundArray) {
+                    soundArray = argsToArray(soundArray, arguments);
+                    for (var a = 0; a < soundArray.length; a++) {
+                        sounds.push(soundArray[a]);
+                    }
+                };
+                this.remove = function (soundArray) {
+                    soundArray = argsToArray(soundArray, arguments);
+                    for (var a = 0; a < soundArray.length; a++) {
+                        for (var i = 0; i < sounds.length; i++) {
+                            if (sounds[i] == soundArray[a]) {
+                                sounds.splice(i, 1);
+                                break;
+                            }
+                        }
+                    }
+                };
+                this.load = function () {
+                    fn('load');
+                    return this;
+                };
+                this.play = function () {
+                    fn('play');
+                    return this;
+                };
+                this.togglePlay = function () {
+                    fn('togglePlay');
+                    return this;
+                };
+                this.pause = function (time) {
+                    fn('pause', time);
+                    return this;
+                };
+                this.stop = function () {
+                    fn('stop');
+                    return this;
+                };
+                this.mute = function () {
+                    fn('mute');
+                    return this;
+                };
+                this.unmute = function () {
+                    fn('unmute');
+                    return this;
+                };
+                this.toggleMute = function () {
+                    fn('toggleMute');
+                    return this;
+                };
+                this.setVolume = function (volume) {
+                    fn('setVolume', volume);
+                    return this;
+                };
+                this.increaseVolume = function (value) {
+                    fn('increaseVolume', value);
+                    return this;
+                };
+                this.decreaseVolume = function (value) {
+                    fn('decreaseVolume', value);
+                    return this;
+                };
+                this.loop = function () {
+                    fn('loop');
+                    return this;
+                };
+                this.unloop = function () {
+                    fn('unloop');
+                    return this;
+                };
+                this.setTime = function (time) {
+                    fn('setTime', time);
+                    return this;
+                };
+                this.set = function (key, value) {
+                    fn('set', key, value);
+                    return this;
+                };
+                this.bind = function (type, func) {
+                    fn('bind', type, func);
+                    return this;
+                };
+                this.unbind = function (type) {
+                    fn('unbind', type);
+                    return this;
+                };
+                this.bindOnce = function (type, func) {
+                    fn('bindOnce', type, func);
+                    return this;
+                };
+                this.trigger = function (type) {
+                    fn('trigger', type);
+                    return this;
+                };
+                this.fade = function (from, to, duration, callback) {
+                    fn('fade', from, to, duration, callback);
+                    return this;
+                };
+                this.fadeIn = function (duration, callback) {
+                    fn('fadeIn', duration, callback);
+                    return this;
+                };
+                this.fadeOut = function (duration, callback) {
+                    fn('fadeOut', duration, callback);
+                    return this;
+                };
+                function fn() {
+                    var args = argsToArray(null, arguments), func = args.shift();
+                    for (var i = 0; i < sounds.length; i++) {
+                        sounds[i][func].apply(sounds[i], args);
+                    }
+                }
+                function argsToArray(array, args) {
+                    return array instanceof Array ? array : Array.prototype.slice.call(args);
+                }
+            },
+            all: function () {
+                return new buzz.group(buzz.sounds);
+            },
+            isSupported: function () {
+                return !!buzz.el.canPlayType;
+            },
+            isOGGSupported: function () {
+                return !!buzz.el.canPlayType && buzz.el.canPlayType('audio/ogg; codecs="vorbis"');
+            },
+            isWAVSupported: function () {
+                return !!buzz.el.canPlayType && buzz.el.canPlayType('audio/wav; codecs="1"');
+            },
+            isMP3Supported: function () {
+                return !!buzz.el.canPlayType && buzz.el.canPlayType('audio/mpeg;');
+            },
+            isAACSupported: function () {
+                return !!buzz.el.canPlayType && (buzz.el.canPlayType('audio/x-m4a;') || buzz.el.canPlayType('audio/aac;'));
+            },
+            toTimer: function (time, withHours) {
+                var h, m, s;
+                h = Math.floor(time / 3600);
+                h = isNaN(h) ? '--' : h >= 10 ? h : '0' + h;
+                m = withHours ? Math.floor(time / 60 % 60) : Math.floor(time / 60);
+                m = isNaN(m) ? '--' : m >= 10 ? m : '0' + m;
+                s = Math.floor(time % 60);
+                s = isNaN(s) ? '--' : s >= 10 ? s : '0' + s;
+                return withHours ? h + ':' + m + ':' + s : m + ':' + s;
+            },
+            fromTimer: function (time) {
+                var splits = time.toString().split(':');
+                if (splits && splits.length == 3) {
+                    time = parseInt(splits[0], 10) * 3600 + parseInt(splits[1], 10) * 60 + parseInt(splits[2], 10);
+                }
+                if (splits && splits.length == 2) {
+                    time = parseInt(splits[0], 10) * 60 + parseInt(splits[1], 10);
+                }
+                return time;
+            },
+            toPercent: function (value, total, decimal) {
+                var r = Math.pow(10, decimal || 0);
+                return Math.round(value * 100 / total * r) / r;
+            },
+            fromPercent: function (percent, total, decimal) {
+                var r = Math.pow(10, decimal || 0);
+                return Math.round(total / 100 * percent * r) / r;
+            }
+        };
+    return buzz;
+}));
+});
+require.define('45', function(module, exports, __dirname, __filename, undefined){
 ;
 (function () {
     var block = {
@@ -14570,7 +15673,7 @@ require.define('40', function(module, exports, __dirname, __filename, undefined)
     return this || (typeof window !== 'undefined' ? window : global);
 }()));
 });
-require.define('31', function(module, exports, __dirname, __filename, undefined){
+require.define('36', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var Mixen, indexOf, moduleSuper, uniqueId, __slice = [].slice, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -14695,67 +15798,7 @@ require.define('31', function(module, exports, __dirname, __filename, undefined)
     }
 }.call(this));
 });
-require.define('55', function(module, exports, __dirname, __filename, undefined){
-var Dots, Exp, Kinetic, Psy, Q, canvas, components, csv, datatable, design, factory, html, include, layout, lib, libs, match, samplers, stimresp, utils, _, _i, _len;
-Exp = require('114', module);
-Psy = require('83', module);
-Dots = require('115', module);
-utils = require('76', module);
-datatable = require('77', module);
-samplers = require('116', module);
-stimresp = require('73', module);
-layout = require('74', module);
-design = require('117', module);
-canvas = require('80', module);
-html = require('81', module);
-components = require('82', module);
-factory = require('122', module);
-Kinetic = require('27', module).Kinetic;
-_ = require('2', module);
-Q = require('9', module);
-csv = require('120', module);
-match = require('123', module).match;
-include = function (lib) {
-    var key, value, _results;
-    _results = [];
-    for (key in lib) {
-        value = lib[key];
-        _results.push(exports[key] = value);
-    }
-    return _results;
-};
-libs = [
-    Exp,
-    Psy,
-    Dots,
-    utils,
-    datatable,
-    samplers,
-    stimresp,
-    layout,
-    design,
-    canvas,
-    html,
-    components,
-    factory,
-    match
-];
-for (_i = 0, _len = libs.length; _i < _len; _i++) {
-    lib = libs[_i];
-    include(lib);
-}
-exports.Q = Q;
-exports._ = _;
-exports.Kinetic = Kinetic;
-exports.csv = csv;
-exports.match = match;
-if (!String.prototype.trim) {
-    String.prototype.trim = function () {
-        return this.replace(/^\s+|\s+$/g, '');
-    };
-}
-});
-require.define('60', function(module, exports, __dirname, __filename, undefined){
+require.define('61', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var Teacup, doctypes, elements, merge_elements, tagName, _fn, _fn1, _fn2, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, __slice = [].slice, __indexOf = [].indexOf || function (item) {
             for (var i = 0, l = this.length; i < l; i++) {
@@ -15101,105 +16144,7 @@ require.define('60', function(module, exports, __dirname, __filename, undefined)
     }
 }.call(this));
 });
-require.define('70', function(module, exports, __dirname, __filename, undefined){
-var util = require('util');
-var assert = require('assert');
-var slice = Array.prototype.slice;
-var console;
-var times = {};
-if (typeof global !== 'undefined' && global.console) {
-    console = global.console;
-} else if (typeof window !== 'undefined' && window.console) {
-    console = window.console;
-} else {
-    console = {};
-}
-var functions = [
-        [
-            log,
-            'log'
-        ],
-        [
-            info,
-            'info'
-        ],
-        [
-            warn,
-            'warn'
-        ],
-        [
-            error,
-            'error'
-        ],
-        [
-            time,
-            'time'
-        ],
-        [
-            timeEnd,
-            'timeEnd'
-        ],
-        [
-            trace,
-            'trace'
-        ],
-        [
-            dir,
-            'dir'
-        ],
-        [
-            assert,
-            'assert'
-        ]
-    ];
-for (var i = 0; i < functions.length; i++) {
-    var tuple = functions[i];
-    var f = tuple[0];
-    var name = tuple[1];
-    if (!console[name]) {
-        console[name] = f;
-    }
-}
-module.exports = console;
-function log() {
-}
-function info() {
-    console.log.apply(console, arguments);
-}
-function warn() {
-    console.log.apply(console, arguments);
-}
-function error() {
-    console.warn.apply(console, arguments);
-}
-function time(label) {
-    times[label] = Date.now();
-}
-function timeEnd(label) {
-    var time = times[label];
-    if (!time) {
-        throw new Error('No such label: ' + label);
-    }
-    var duration = Date.now() - time;
-    console.log(label + ': ' + duration + 'ms');
-}
-function trace() {
-    var err = new Error();
-    err.name = 'Trace';
-    err.message = util.format.apply(null, arguments);
-    console.error(err.stack);
-}
-function dir(object) {
-    console.log(util.inspect(object) + '\n');
-}
-function assert(expression) {
-    if (!expression) {
-        var arr = slice.call(arguments, 1);
-        assert.ok(false, util.format.apply(null, arr));
-    }
-}
-});
-require.define('71', function(module, exports, __dirname, __filename, undefined){
+require.define('62', function(module, exports, __dirname, __filename, undefined){
 try {
     if (!setTimeout.call) {
         var slicer = Array.prototype.slice;
@@ -15307,9 +16252,169 @@ if (!exports.setImmediate) {
     };
 }
 });
-require.define('73', function(module, exports, __dirname, __filename, undefined){
+require.define('63', function(module, exports, __dirname, __filename, undefined){
+var util = require('util');
+var assert = require('assert');
+var slice = Array.prototype.slice;
+var console;
+var times = {};
+if (typeof global !== 'undefined' && global.console) {
+    console = global.console;
+} else if (typeof window !== 'undefined' && window.console) {
+    console = window.console;
+} else {
+    console = {};
+}
+var functions = [
+        [
+            log,
+            'log'
+        ],
+        [
+            info,
+            'info'
+        ],
+        [
+            warn,
+            'warn'
+        ],
+        [
+            error,
+            'error'
+        ],
+        [
+            time,
+            'time'
+        ],
+        [
+            timeEnd,
+            'timeEnd'
+        ],
+        [
+            trace,
+            'trace'
+        ],
+        [
+            dir,
+            'dir'
+        ],
+        [
+            assert,
+            'assert'
+        ]
+    ];
+for (var i = 0; i < functions.length; i++) {
+    var tuple = functions[i];
+    var f = tuple[0];
+    var name = tuple[1];
+    if (!console[name]) {
+        console[name] = f;
+    }
+}
+module.exports = console;
+function log() {
+}
+function info() {
+    console.log.apply(console, arguments);
+}
+function warn() {
+    console.log.apply(console, arguments);
+}
+function error() {
+    console.warn.apply(console, arguments);
+}
+function time(label) {
+    times[label] = Date.now();
+}
+function timeEnd(label) {
+    var time = times[label];
+    if (!time) {
+        throw new Error('No such label: ' + label);
+    }
+    var duration = Date.now() - time;
+    console.log(label + ': ' + duration + 'ms');
+}
+function trace() {
+    var err = new Error();
+    err.name = 'Trace';
+    err.message = util.format.apply(null, arguments);
+    console.error(err.stack);
+}
+function dir(object) {
+    console.log(util.inspect(object) + '\n');
+}
+function assert(expression) {
+    if (!expression) {
+        var arr = slice.call(arguments, 1);
+        assert.ok(false, util.format.apply(null, arr));
+    }
+}
+});
+require.define('65', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var ActionPresentable, ContainerDrawable, Drawable, GraphicalStimulus, Kinetic, KineticDrawable, KineticStimulus, Presentable, Response, ResponseData, Stimulus, lay, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var Dots, Exp, Kinetic, Psy, Q, canvas, components, csv, datatable, design, factory, html, include, layout, lib, libs, match, samplers, stimresp, utils, _, _i, _len;
+    Exp = require('66', module);
+    Psy = require('67', module);
+    Dots = require('68', module);
+    utils = require('69', module);
+    datatable = require('70', module);
+    samplers = require('71', module);
+    stimresp = require('72', module);
+    layout = require('73', module);
+    design = require('74', module);
+    canvas = require('75', module);
+    html = require('76', module);
+    components = require('77', module);
+    factory = require('78', module);
+    Kinetic = require('15', module).Kinetic;
+    _ = require('16', module);
+    Q = require('17', module);
+    csv = require('18', module);
+    match = require('19', module);
+    include = function (lib) {
+        var key, value, _results;
+        _results = [];
+        for (key in lib) {
+            value = lib[key];
+            _results.push(exports[key] = value);
+        }
+        return _results;
+    };
+    libs = [
+        Exp,
+        Psy,
+        Dots,
+        utils,
+        datatable,
+        samplers,
+        stimresp,
+        layout,
+        design,
+        canvas,
+        html,
+        components,
+        factory,
+        match
+    ];
+    for (_i = 0, _len = libs.length; _i < _len; _i++) {
+        lib = libs[_i];
+        include(lib);
+    }
+    exports.Q = Q;
+    exports._ = _;
+    exports.Kinetic = Kinetic;
+    exports.csv = csv;
+    exports.match = match;
+    if (!String.prototype.trim) {
+        String.prototype.trim = function () {
+            return this.replace(/^\s+|\s+$/g, '');
+        };
+    }
+}.call(this));
+});
+require.define('78', function(module, exports, __dirname, __filename, undefined){
+(function () {
+    var Canvas, ComponentFactory, Components, DefaultComponentFactory, Html, Layout, Psy, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -15322,439 +16427,185 @@ require.define('73', function(module, exports, __dirname, __filename, undefined)
             child.__super__ = parent.prototype;
             return child;
         };
-    _ = require('2', module);
-    lay = require('74', module);
-    Kinetic = require('27', module);
-    exports.Stimulus = Stimulus = function () {
-        Stimulus.prototype.standardDefaults = {};
-        Stimulus.prototype.defaults = {};
-        function Stimulus(spec) {
-            var _ref;
-            if (spec == null) {
-                spec = {};
-            }
-            this.spec = _.defaults(spec, this.defaults);
-            this.spec = _.defaults(spec, this.standardDefaults);
-            this.spec = _.omit(this.spec, function (value, key) {
-                return value == null;
-            });
-            this.name = this.constructor.name;
-            if (((_ref = this.spec) != null ? _ref.id : void 0) != null) {
-                this.id = this.spec.id;
-            } else {
-                this.id = _.uniqueId('stim_');
-            }
-            this.stopped = false;
-            this.name = this.constructor.name;
-            this.initialize();
+    _ = require('16', module);
+    Canvas = require('75', module).Canvas;
+    Html = require('76', module).Html;
+    Components = require('77', module);
+    Psy = require('67', module);
+    Layout = require('73', module);
+    ComponentFactory = function () {
+        function ComponentFactory(context) {
+            this.context = context;
         }
-        Stimulus.prototype.initialize = function () {
+        ComponentFactory.prototype.buildStimulus = function (spec) {
+            var params, stimType;
+            stimType = _.keys(spec)[0];
+            params = _.values(spec)[0];
+            return this.makeStimulus(stimType, params);
         };
-        Stimulus.prototype.get = function (name) {
-            return this.spec[name];
+        ComponentFactory.prototype.buildResponse = function (spec) {
+            var params, responseType;
+            responseType = _.keys(spec)[0];
+            params = _.values(spec)[0];
+            return this.makeResponse(responseType, params);
         };
-        Stimulus.prototype.set = function (name, value) {
-            return this.spec[name] = value;
+        ComponentFactory.prototype.buildEvent = function (spec) {
+            var response, responseSpec, stim, stimSpec;
+            if (spec.Next == null) {
+                console.log('error building event with spec: ', spec);
+                throw new Error('Event specification does not contain \'Next\' element');
+            }
+            stimSpec = _.omit(spec, 'Next');
+            responseSpec = _.pick(spec, 'Next');
+            stim = this.buildStimulus(stimSpec);
+            response = this.buildResponse(responseSpec.Next);
+            return this.makeEvent(stim, response);
         };
-        Stimulus.prototype.reset = function () {
-            return this.stopped = false;
+        ComponentFactory.prototype.make = function (name, params, registry) {
+            throw new Error('unimplemented', name, params, registry);
         };
-        Stimulus.prototype.render = function (context, layer) {
+        ComponentFactory.prototype.makeStimulus = function (name, params) {
+            throw new Error('unimplemented', name, params);
         };
-        Stimulus.prototype.stop = function (context) {
-            return this.stopped = true;
+        ComponentFactory.prototype.makeResponse = function (name, params) {
+            throw new Error('unimplemented', name, params);
         };
-        return Stimulus;
+        ComponentFactory.prototype.makeEvent = function (stim, response) {
+            throw new Error('unimplemented', stim, response);
+        };
+        ComponentFactory.prototype.makeLayout = function (name, params, context) {
+            throw new Error('unimplemented', name, params, context);
+        };
+        return ComponentFactory;
     }();
-    exports.GraphicalStimulus = GraphicalStimulus = function (_super) {
-        __extends(GraphicalStimulus, _super);
-        GraphicalStimulus.prototype.standardDefaults = {
-            x: 0,
-            y: 0,
-            origin: 'top-left'
-        };
-        function GraphicalStimulus(spec) {
-            if (spec == null) {
-                spec = {};
-            }
-            if (spec.layout != null) {
-                this.layout = spec.layout;
-            } else {
-                this.layout = new lay.AbsoluteLayout();
-            }
-            this.overlay = false;
-            GraphicalStimulus.__super__.constructor.call(this, spec);
+    exports.ComponentFactory = ComponentFactory;
+    DefaultComponentFactory = function (_super) {
+        __extends(DefaultComponentFactory, _super);
+        function DefaultComponentFactory() {
+            this.registry = _.merge(Components, Canvas, Html);
         }
-        GraphicalStimulus.prototype.drawable = function (knode) {
-            return function (context) {
-                return console.log('GraphicalStimulus: drawable, no op');
-            };
-        };
-        GraphicalStimulus.prototype.toPixels = function (arg, dim) {
-            return lay.toPixels(arg, dim);
-        };
-        GraphicalStimulus.prototype.xyoffset = function (origin, nodeWidth, nodeHeight) {
-            switch (origin) {
-            case 'center':
-                return [
-                    -nodeWidth / 2,
-                    -nodeHeight / 2
-                ];
-            case 'center-left' || 'left-center':
-                return [
-                    0,
-                    -nodeHeight / 2
-                ];
-            case 'center-right' || 'right-center':
-                return [
-                    -nodeWidth,
-                    -nodeHeight / 2
-                ];
-            case 'top-left' || 'left-top':
-                return [
-                    0,
-                    0
-                ];
-            case 'top-right' || 'right-top':
-                return [
-                    -nodeWidth,
-                    0
-                ];
-            case 'top-center' || 'center-top':
-                return [
-                    -nodeWidth / 2,
-                    0
-                ];
-            case 'bottom-left' || 'left-bottom':
-                return [
-                    0,
-                    -nodeHeight
-                ];
-            case 'bottom-right' || 'right-bottom':
-                return [
-                    -nodeWidth,
-                    -nodeHeight
-                ];
-            case 'bottom-center' || 'center-bottom':
-                return [
-                    -nodeWidth / 2,
-                    -nodeHeight
-                ];
+        DefaultComponentFactory.prototype.make = function (name, params, registry) {
+            var callee, layoutName, layoutParams, names, props, resps, stims, _i, _j, _k, _l, _ref, _ref1, _ref2, _ref3, _results, _results1, _results2, _results3;
+            callee = arguments.callee;
+            console.log('making', name);
+            switch (name) {
+            case 'Group':
+                console.log('building group');
+                names = _.map(params.stims, function (stim) {
+                    return _.keys(stim)[0];
+                });
+                props = _.map(params.stims, function (stim) {
+                    return _.values(stim)[0];
+                });
+                stims = _.map(function () {
+                    _results = [];
+                    for (var _i = 0, _ref = names.length; 0 <= _ref ? _i < _ref : _i > _ref; 0 <= _ref ? _i++ : _i--) {
+                        _results.push(_i);
+                    }
+                    return _results;
+                }.apply(this), function (_this) {
+                    return function (i) {
+                        return callee(names[i], props[i], _this.registry);
+                    };
+                }(this));
+                if (params.layout != null) {
+                    layoutName = _.keys(params.layout)[0];
+                    layoutParams = _.values(params.layout)[0];
+                    return new Components.Group(stims, this.makeLayout(layoutName, layoutParams, context));
+                } else {
+                    return new Components.Group(stims);
+                }
+                break;
+            case 'Grid':
+                names = _.map(params.stims, function (stim) {
+                    return _.keys(stim)[0];
+                });
+                props = _.map(params.stims, function (stim) {
+                    return _.values(stim)[0];
+                });
+                stims = _.map(function () {
+                    _results1 = [];
+                    for (var _j = 0, _ref1 = names.length; 0 <= _ref1 ? _j < _ref1 : _j > _ref1; 0 <= _ref1 ? _j++ : _j--) {
+                        _results1.push(_j);
+                    }
+                    return _results1;
+                }.apply(this), function (_this) {
+                    return function (i) {
+                        return callee(names[i], props[i], _this.registry);
+                    };
+                }(this));
+                return new Components.Grid(stims, params.rows || 3, params.columns || 3, params.bounds || null);
+            case 'Background':
+                console.log('building background', params);
+                names = _.keys(params);
+                props = _.values(params);
+                console.log('names', names);
+                console.log('props', props);
+                stims = _.map(function () {
+                    _results2 = [];
+                    for (var _k = 0, _ref2 = names.length; 0 <= _ref2 ? _k < _ref2 : _k > _ref2; 0 <= _ref2 ? _k++ : _k--) {
+                        _results2.push(_k);
+                    }
+                    return _results2;
+                }.apply(this), function (_this) {
+                    return function (i) {
+                        return callee(names[i], props[i], _this.registry);
+                    };
+                }(this));
+                return new Canvas.Background(stims);
+            case 'First':
+                names = _.keys(params);
+                props = _.values(params);
+                resps = _.map(function () {
+                    _results3 = [];
+                    for (var _l = 0, _ref3 = names.length; 0 <= _ref3 ? _l < _ref3 : _l > _ref3; 0 <= _ref3 ? _l++ : _l--) {
+                        _results3.push(_l);
+                    }
+                    return _results3;
+                }.apply(this), function (_this) {
+                    return function (i) {
+                        return callee(names[i], props[i], _this.registry);
+                    };
+                }(this));
+                return new Components.First(resps);
             default:
-                throw new Error('failed to match \'origin\' argument:', origin);
-            }
-        };
-        GraphicalStimulus.prototype.computeCoordinates = function (context, position, nodeWidth, nodeHeight) {
-            var xy, xyoff;
-            if (nodeWidth == null) {
-                nodeWidth = 0;
-            }
-            if (nodeHeight == null) {
-                nodeHeight = 0;
-            }
-            xy = function () {
-                if (position != null) {
-                    return this.layout.computePosition([
-                        context.width(),
-                        context.height()
-                    ], position);
-                } else if (this.spec.x != null && this.spec.y != null) {
-                    return [
-                        this.layout.convertToCoordinate(this.spec.x, context.width()),
-                        this.layout.convertToCoordinate(this.spec.y, context.height())
-                    ];
-                } else {
-                    throw new Error('computeCoordinates: either position or x,y coordinates must be defined');
+                if (registry[name] == null) {
+                    console.log('registry is', registry);
+                    throw new Error('DefaultComponentFactory:make cannot find component in registry named: ', name);
                 }
-            }.call(this);
-            if (this.spec.origin != null) {
-                xyoff = this.xyoffset(this.spec.origin, nodeWidth, nodeHeight);
-                xy[0] = xy[0] + xyoff[0];
-                xy[1] = xy[1] + xyoff[1];
-            }
-            return xy;
-        };
-        GraphicalStimulus.prototype.width = function () {
-            return 0;
-        };
-        GraphicalStimulus.prototype.height = function () {
-            return 0;
-        };
-        GraphicalStimulus.prototype.bounds = function () {
-            return {
-                x: 0,
-                y: 0,
-                width: 0,
-                height: 0
-            };
-        };
-        return GraphicalStimulus;
-    }(exports.Stimulus);
-    exports.KineticStimulus = KineticStimulus = function (_super) {
-        __extends(KineticStimulus, _super);
-        function KineticStimulus() {
-            return KineticStimulus.__super__.constructor.apply(this, arguments);
-        }
-        KineticStimulus.prototype.presentable = function (nodes) {
-            console.log('creating presentable of', nodes);
-            return new KineticDrawable(nodes);
-        };
-        KineticStimulus.nodeSize = function (node) {
-            if (node.getClassName() === 'Group') {
-                console.log('class is group!');
-                return KineticStimulus.groupSize(node);
-            } else {
-                return {
-                    width: node.getWidth(),
-                    height: node.getHeight()
-                };
+                return new registry[name](params);
             }
         };
-        KineticStimulus.nodePosition = function (node) {
-            var xb, yb;
-            if (node.getClassName() === 'Group') {
-                console.log('class is group!');
-                xb = KineticStimulus.groupXBounds(node);
-                yb = KineticStimulus.groupYBounds(node);
-                console.log('xb is', xb);
-                console.log('yb is', yb);
-                return {
-                    x: xb[0],
-                    y: yb[0]
-                };
-            } else {
-                return {
-                    x: node.getX(),
-                    y: node.getY()
-                };
-            }
+        DefaultComponentFactory.prototype.makeStimulus = function (name, params) {
+            return this.make(name, params, this.registry);
         };
-        KineticStimulus.groupSize = function (group) {
-            var xb, yb;
-            xb = this.groupXBounds(group);
-            yb = this.groupYBounds(group);
-            return {
-                width: xb[1] - xb[0],
-                height: yb[1] - yb[0]
-            };
+        DefaultComponentFactory.prototype.makeResponse = function (name, params) {
+            return this.make(name, params, this.registry);
         };
-        KineticStimulus.groupXBounds = function (group) {
-            var children, i, pos, xmax, xmin, _i, _ref;
-            children = group.getChildren();
-            xmin = Number.MAX_VALUE;
-            xmax = -1;
-            for (i = _i = 0, _ref = children.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
-                pos = children[i].getAbsolutePosition();
-                if (pos.x < xmin) {
-                    xmin = pos.x;
-                }
-                if (pos.x + children[i].getWidth() > xmax) {
-                    xmax = pos.x + children[i].getWidth();
-                }
-            }
-            return [
-                xmin,
-                xmax
-            ];
+        DefaultComponentFactory.prototype.makeEvent = function (stim, response) {
+            return new Psy.Event(stim, response);
         };
-        KineticStimulus.groupYBounds = function (group) {
-            var children, i, pos, ymax, ymin, _i, _ref;
-            children = group.getChildren();
-            ymin = Number.MAX_VALUE;
-            ymax = -1;
-            for (i = _i = 0, _ref = children.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
-                pos = children[i].getAbsolutePosition();
-                if (pos.y < ymin) {
-                    ymin = children[i].getY();
-                }
-                if (pos.y + children[i].getHeight() > ymax) {
-                    ymax = pos.y + children[i].getHeight();
-                }
-            }
-            return [
-                ymin,
-                ymax
-            ];
-        };
-        KineticStimulus.groupPosition = function (group) {
-            var children, i, pos, x, y, _i, _ref;
-            children = group.getChildren();
-            if (children.length === 0) {
-                return {
+        DefaultComponentFactory.prototype.makeLayout = function (name, params, context) {
+            switch (name) {
+            case 'Grid':
+                return new Layout.GridLayout(params[0], params[1], {
                     x: 0,
-                    y: 0
-                };
-            } else {
-                x = Number.MAX_VALUE;
-                y = -1;
-                pos = children[i].getAbsolutePosition();
-                for (i = _i = 0, _ref = children.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
-                    if (pos.x < x) {
-                        x = pos.x;
-                    }
-                    if (pos.y < y) {
-                        y = pos.y;
-                    }
-                }
-                return {
-                    x: x + group.getX(),
-                    y: y + group.getY()
-                };
+                    y: 0,
+                    width: context.width(),
+                    height: context.height()
+                });
+            default:
+                return console.log('unrecognized layout', name);
             }
         };
-        return KineticStimulus;
-    }(exports.GraphicalStimulus);
-    exports.Presentable = Presentable = function () {
-        function Presentable() {
-        }
-        Presentable.prototype.present = function (context) {
-        };
-        return Presentable;
-    }();
-    exports.ActionPresentable = ActionPresentable = function (_super) {
-        var _class;
-        __extends(ActionPresentable, _super);
-        function ActionPresentable() {
-            return _class.apply(this, arguments);
-        }
-        _class = ActionPresentable.action;
-        ActionPresentable.prototype.present = function (context) {
-            return this.action.apply(context);
-        };
-        return ActionPresentable;
-    }(exports.Presentable);
-    exports.Drawable = Drawable = function (_super) {
-        __extends(Drawable, _super);
-        function Drawable() {
-            return Drawable.__super__.constructor.apply(this, arguments);
-        }
-        Drawable.prototype.present = function (context) {
-        };
-        Drawable.prototype.x = function () {
-            return 0;
-        };
-        Drawable.prototype.y = function () {
-            return 0;
-        };
-        Drawable.prototype.width = function () {
-            return 0;
-        };
-        Drawable.prototype.height = function () {
-            return 0;
-        };
-        Drawable.prototype.bounds = function () {
-            return {
-                x: this.x(),
-                y: this.y(),
-                width: this.width(),
-                height: this.height()
-            };
-        };
-        return Drawable;
-    }(exports.Presentable);
-    exports.KineticDrawable = KineticDrawable = function (_super) {
-        __extends(KineticDrawable, _super);
-        function KineticDrawable(nodes) {
-            this.nodes = nodes;
-            if (!_.isArray(this.nodes)) {
-                this.nodes = [this.nodes];
-            }
-        }
-        KineticDrawable.prototype.present = function (context, layer) {
-            var node, _i, _len, _ref, _results;
-            console.log('presenting ', this.nodes);
-            _ref = this.nodes;
-            _results = [];
-            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-                node = _ref[_i];
-                if (layer == null) {
-                    _results.push(context.contentLayer.add(node));
-                } else {
-                    console.log('drawing in layer supplied as arg');
-                    _results.push(layer.add(node));
-                }
-            }
-            return _results;
-        };
-        KineticDrawable.prototype.x = function () {
-            var xs;
-            xs = _.map(this.nodes, function (node) {
-                return exports.KineticStimulus.nodePosition(node).x;
-            });
-            return _.min(xs);
-        };
-        KineticDrawable.prototype.y = function () {
-            var ys;
-            ys = _.map(this.nodes, function (node) {
-                return exports.KineticStimulus.nodePosition(node).y;
-            });
-            return _.min(ys);
-        };
-        KineticDrawable.prototype.xmax = function () {
-            var xs;
-            xs = _.map(this.nodes, function (node) {
-                return exports.KineticStimulus.nodePosition(node).x + exports.KineticStimulus.nodeSize(node).width;
-            });
-            return _.max(xs);
-        };
-        KineticDrawable.prototype.ymax = function () {
-            var xs;
-            xs = _.map(this.nodes, function (node) {
-                return exports.KineticStimulus.nodePosition(node).y + exports.KineticStimulus.nodeSize(node).height;
-            });
-            return _.max(xs);
-        };
-        KineticDrawable.prototype.width = function () {
-            return this.xmax() - this.x();
-        };
-        KineticDrawable.prototype.height = function () {
-            return this.ymax() - this.y();
-        };
-        return KineticDrawable;
-    }(exports.Drawable);
-    exports.ContainerDrawable = ContainerDrawable = function (_super) {
-        __extends(ContainerDrawable, _super);
-        function ContainerDrawable(nodes) {
-            this.nodes = nodes;
-            console.log('creating container drawable');
-        }
-        ContainerDrawable.prototype.present = function (context, layer) {
-            var node, _i, _len, _ref, _results;
-            _ref = this.nodes;
-            _results = [];
-            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-                node = _ref[_i];
-                if (!layer) {
-                    _results.push(node.present(context));
-                } else {
-                    _results.push(node.present(context, layer));
-                }
-            }
-            return _results;
-        };
-        return ContainerDrawable;
-    }(exports.Drawable);
-    exports.Response = Response = function (_super) {
-        __extends(Response, _super);
-        function Response() {
-            return Response.__super__.constructor.apply(this, arguments);
-        }
-        Response.prototype.start = function (context) {
-            return this.activate(context);
-        };
-        Response.prototype.activate = function (context) {
-        };
-        return Response;
-    }(exports.Stimulus);
-    exports.ResponseData = ResponseData = function () {
-        function ResponseData(data) {
-            this.data = data;
-        }
-        return ResponseData;
-    }();
+        return DefaultComponentFactory;
+    }(ComponentFactory);
+    exports.DefaultComponentFactory = DefaultComponentFactory;
+    exports.componentFactory = new DefaultComponentFactory();
+    console.log('exports.DefaultComponentFactory', DefaultComponentFactory);
 }.call(this));
 });
-require.define('74', function(module, exports, __dirname, __filename, undefined){
+require.define('73', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var AbsoluteLayout, GridLayout, Layout, computeGridCells, convertPercentageToFraction, convertToCoordinate, isPercentage, isPositionLabel, positionToCoord, toPixels, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -15769,7 +16620,7 @@ require.define('74', function(module, exports, __dirname, __filename, undefined)
             child.__super__ = parent.prototype;
             return child;
         };
-    _ = require('2', module);
+    _ = require('16', module);
     isPercentage = function (perc) {
         return _.isString(perc) && perc.slice(-1) === '%';
     };
@@ -15969,61 +16820,7 @@ require.define('74', function(module, exports, __dirname, __filename, undefined)
     exports.toPixels = toPixels;
 }.call(this));
 });
-require.define('79', function(module, exports, __dirname, __filename, undefined){
-(function () {
-    var Background, ContainerDrawable, GStimulus, Kinetic, KineticDrawable, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
-            for (var key in parent) {
-                if (__hasProp.call(parent, key))
-                    child[key] = parent[key];
-            }
-            function ctor() {
-                this.constructor = child;
-            }
-            ctor.prototype = parent.prototype;
-            child.prototype = new ctor();
-            child.__super__ = parent.prototype;
-            return child;
-        };
-    Kinetic = require('27', module).Kinetic;
-    GStimulus = require('73', module).GraphicalStimulus;
-    KineticDrawable = require('73', module).KineticDrawable;
-    ContainerDrawable = require('73', module).ContainerDrawable;
-    _ = require('2', module);
-    Background = function (_super) {
-        __extends(Background, _super);
-        function Background(stims, fill) {
-            this.stims = stims != null ? stims : [];
-            this.fill = fill != null ? fill : 'white';
-            Background.__super__.constructor.call(this, {}, {});
-            if (!_.isArray(this.stims)) {
-                this.stims = [this.stims];
-            }
-        }
-        Background.prototype.render = function (context) {
-            var background, drawables, stim, _i, _len, _ref;
-            background = new Kinetic.Rect({
-                x: 0,
-                y: 0,
-                width: context.width(),
-                height: context.height(),
-                name: 'background',
-                fill: this.fill
-            });
-            drawables = [];
-            drawables.push(new KineticDrawable(background));
-            _ref = this.stims;
-            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-                stim = _ref[_i];
-                drawables.push(stim.render(context));
-            }
-            return new ContainerDrawable(drawables);
-        };
-        return Background;
-    }(GStimulus);
-    exports.Background = Background;
-}.call(this));
-});
-require.define('83', function(module, exports, __dirname, __filename, undefined){
+require.define('67', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var Background, Bacon, Block, BlockSeq, Coda, DataTable, DefaultComponentFactory, Event, EventData, EventDataLog, Experiment, ExperimentContext, ExperimentState, FeedbackNode, FunctionNode, Kinetic, KineticContext, MockStimFactory, Prelude, Presenter, Q, Response, ResponseData, RunnableNode, StimFactory, Stimulus, TAFFY, Trial, buildCoda, buildEvent, buildPrelude, buildResponse, buildStimulus, buildTrial, createContext, des, functionNode, makeEventSeq, utils, _, __dummySpec, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -16038,18 +16835,18 @@ require.define('83', function(module, exports, __dirname, __filename, undefined)
             child.__super__ = parent.prototype;
             return child;
         };
-    _ = require('2', module);
-    Q = require('9', module);
-    TAFFY = require('23', module).taffy;
-    utils = require('76', module);
-    DataTable = require('77', module).DataTable;
-    Bacon = require('25', module);
-    DefaultComponentFactory = require('122', module).DefaultComponentFactory;
+    _ = require('16', module);
+    Q = require('17', module);
+    TAFFY = require('21', module).taffy;
+    utils = require('69', module);
+    DataTable = require('70', module).DataTable;
+    Bacon = require('22', module);
+    DefaultComponentFactory = require('78', module).DefaultComponentFactory;
     Background = require('79', module).Background;
-    Kinetic = require('27', module).Kinetic;
-    Stimulus = require('73', module).Stimulus;
-    Response = require('73', module).Response;
-    ResponseData = require('73', module).ResponseData;
+    Kinetic = require('15', module).Kinetic;
+    Stimulus = require('72', module).Stimulus;
+    Response = require('72', module).Response;
+    ResponseData = require('72', module).ResponseData;
     exports.EventData = EventData = function () {
         function EventData(name, id, data) {
             this.name = name;
@@ -17025,11 +17822,512 @@ require.define('83', function(module, exports, __dirname, __filename, undefined)
     exports.buildPrelude = buildPrelude;
 }.call(this));
 });
-require.define('77', function(module, exports, __dirname, __filename, undefined){
+require.define('72', function(module, exports, __dirname, __filename, undefined){
+(function () {
+    var ActionPresentable, ContainerDrawable, Drawable, GraphicalStimulus, Kinetic, KineticDrawable, KineticStimulus, Presentable, Response, ResponseData, Stimulus, lay, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+            for (var key in parent) {
+                if (__hasProp.call(parent, key))
+                    child[key] = parent[key];
+            }
+            function ctor() {
+                this.constructor = child;
+            }
+            ctor.prototype = parent.prototype;
+            child.prototype = new ctor();
+            child.__super__ = parent.prototype;
+            return child;
+        };
+    _ = require('16', module);
+    lay = require('73', module);
+    Kinetic = require('15', module);
+    exports.Stimulus = Stimulus = function () {
+        Stimulus.prototype.standardDefaults = {};
+        Stimulus.prototype.defaults = {};
+        function Stimulus(spec) {
+            var _ref;
+            if (spec == null) {
+                spec = {};
+            }
+            this.spec = _.defaults(spec, this.defaults);
+            this.spec = _.defaults(spec, this.standardDefaults);
+            this.spec = _.omit(this.spec, function (value, key) {
+                return value == null;
+            });
+            this.name = this.constructor.name;
+            if (((_ref = this.spec) != null ? _ref.id : void 0) != null) {
+                this.id = this.spec.id;
+            } else {
+                this.id = _.uniqueId('stim_');
+            }
+            this.stopped = false;
+            this.name = this.constructor.name;
+            this.initialize();
+        }
+        Stimulus.prototype.initialize = function () {
+        };
+        Stimulus.prototype.get = function (name) {
+            return this.spec[name];
+        };
+        Stimulus.prototype.set = function (name, value) {
+            return this.spec[name] = value;
+        };
+        Stimulus.prototype.reset = function () {
+            return this.stopped = false;
+        };
+        Stimulus.prototype.render = function (context, layer) {
+        };
+        Stimulus.prototype.stop = function (context) {
+            return this.stopped = true;
+        };
+        return Stimulus;
+    }();
+    exports.GraphicalStimulus = GraphicalStimulus = function (_super) {
+        __extends(GraphicalStimulus, _super);
+        GraphicalStimulus.prototype.standardDefaults = {
+            x: 0,
+            y: 0,
+            origin: 'top-left'
+        };
+        function GraphicalStimulus(spec) {
+            if (spec == null) {
+                spec = {};
+            }
+            if (spec.layout != null) {
+                this.layout = spec.layout;
+            } else {
+                this.layout = new lay.AbsoluteLayout();
+            }
+            this.overlay = false;
+            GraphicalStimulus.__super__.constructor.call(this, spec);
+        }
+        GraphicalStimulus.prototype.drawable = function (knode) {
+            return function (context) {
+                return console.log('GraphicalStimulus: drawable, no op');
+            };
+        };
+        GraphicalStimulus.prototype.toPixels = function (arg, dim) {
+            return lay.toPixels(arg, dim);
+        };
+        GraphicalStimulus.prototype.xyoffset = function (origin, nodeWidth, nodeHeight) {
+            switch (origin) {
+            case 'center':
+                return [
+                    -nodeWidth / 2,
+                    -nodeHeight / 2
+                ];
+            case 'center-left' || 'left-center':
+                return [
+                    0,
+                    -nodeHeight / 2
+                ];
+            case 'center-right' || 'right-center':
+                return [
+                    -nodeWidth,
+                    -nodeHeight / 2
+                ];
+            case 'top-left' || 'left-top':
+                return [
+                    0,
+                    0
+                ];
+            case 'top-right' || 'right-top':
+                return [
+                    -nodeWidth,
+                    0
+                ];
+            case 'top-center' || 'center-top':
+                return [
+                    -nodeWidth / 2,
+                    0
+                ];
+            case 'bottom-left' || 'left-bottom':
+                return [
+                    0,
+                    -nodeHeight
+                ];
+            case 'bottom-right' || 'right-bottom':
+                return [
+                    -nodeWidth,
+                    -nodeHeight
+                ];
+            case 'bottom-center' || 'center-bottom':
+                return [
+                    -nodeWidth / 2,
+                    -nodeHeight
+                ];
+            default:
+                throw new Error('failed to match \'origin\' argument:', origin);
+            }
+        };
+        GraphicalStimulus.prototype.computeCoordinates = function (context, position, nodeWidth, nodeHeight) {
+            var xy, xyoff;
+            if (nodeWidth == null) {
+                nodeWidth = 0;
+            }
+            if (nodeHeight == null) {
+                nodeHeight = 0;
+            }
+            xy = function () {
+                if (position != null) {
+                    return this.layout.computePosition([
+                        context.width(),
+                        context.height()
+                    ], position);
+                } else if (this.spec.x != null && this.spec.y != null) {
+                    return [
+                        this.layout.convertToCoordinate(this.spec.x, context.width()),
+                        this.layout.convertToCoordinate(this.spec.y, context.height())
+                    ];
+                } else {
+                    throw new Error('computeCoordinates: either position or x,y coordinates must be defined');
+                }
+            }.call(this);
+            if (this.spec.origin != null) {
+                xyoff = this.xyoffset(this.spec.origin, nodeWidth, nodeHeight);
+                xy[0] = xy[0] + xyoff[0];
+                xy[1] = xy[1] + xyoff[1];
+            }
+            return xy;
+        };
+        GraphicalStimulus.prototype.width = function () {
+            return 0;
+        };
+        GraphicalStimulus.prototype.height = function () {
+            return 0;
+        };
+        GraphicalStimulus.prototype.bounds = function () {
+            return {
+                x: 0,
+                y: 0,
+                width: 0,
+                height: 0
+            };
+        };
+        return GraphicalStimulus;
+    }(exports.Stimulus);
+    exports.KineticStimulus = KineticStimulus = function (_super) {
+        __extends(KineticStimulus, _super);
+        function KineticStimulus() {
+            return KineticStimulus.__super__.constructor.apply(this, arguments);
+        }
+        KineticStimulus.prototype.presentable = function (nodes) {
+            console.log('creating presentable of', nodes);
+            return new KineticDrawable(nodes);
+        };
+        KineticStimulus.nodeSize = function (node) {
+            if (node.getClassName() === 'Group') {
+                console.log('class is group!');
+                return KineticStimulus.groupSize(node);
+            } else {
+                return {
+                    width: node.getWidth(),
+                    height: node.getHeight()
+                };
+            }
+        };
+        KineticStimulus.nodePosition = function (node) {
+            var xb, yb;
+            if (node.getClassName() === 'Group') {
+                console.log('class is group!');
+                xb = KineticStimulus.groupXBounds(node);
+                yb = KineticStimulus.groupYBounds(node);
+                console.log('xb is', xb);
+                console.log('yb is', yb);
+                return {
+                    x: xb[0],
+                    y: yb[0]
+                };
+            } else {
+                return {
+                    x: node.getX(),
+                    y: node.getY()
+                };
+            }
+        };
+        KineticStimulus.groupSize = function (group) {
+            var xb, yb;
+            xb = this.groupXBounds(group);
+            yb = this.groupYBounds(group);
+            return {
+                width: xb[1] - xb[0],
+                height: yb[1] - yb[0]
+            };
+        };
+        KineticStimulus.groupXBounds = function (group) {
+            var children, i, pos, xmax, xmin, _i, _ref;
+            children = group.getChildren();
+            xmin = Number.MAX_VALUE;
+            xmax = -1;
+            for (i = _i = 0, _ref = children.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+                pos = children[i].getAbsolutePosition();
+                if (pos.x < xmin) {
+                    xmin = pos.x;
+                }
+                if (pos.x + children[i].getWidth() > xmax) {
+                    xmax = pos.x + children[i].getWidth();
+                }
+            }
+            return [
+                xmin,
+                xmax
+            ];
+        };
+        KineticStimulus.groupYBounds = function (group) {
+            var children, i, pos, ymax, ymin, _i, _ref;
+            children = group.getChildren();
+            ymin = Number.MAX_VALUE;
+            ymax = -1;
+            for (i = _i = 0, _ref = children.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+                pos = children[i].getAbsolutePosition();
+                if (pos.y < ymin) {
+                    ymin = children[i].getY();
+                }
+                if (pos.y + children[i].getHeight() > ymax) {
+                    ymax = pos.y + children[i].getHeight();
+                }
+            }
+            return [
+                ymin,
+                ymax
+            ];
+        };
+        KineticStimulus.groupPosition = function (group) {
+            var children, i, pos, x, y, _i, _ref;
+            children = group.getChildren();
+            if (children.length === 0) {
+                return {
+                    x: 0,
+                    y: 0
+                };
+            } else {
+                x = Number.MAX_VALUE;
+                y = -1;
+                pos = children[i].getAbsolutePosition();
+                for (i = _i = 0, _ref = children.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+                    if (pos.x < x) {
+                        x = pos.x;
+                    }
+                    if (pos.y < y) {
+                        y = pos.y;
+                    }
+                }
+                return {
+                    x: x + group.getX(),
+                    y: y + group.getY()
+                };
+            }
+        };
+        return KineticStimulus;
+    }(exports.GraphicalStimulus);
+    exports.Presentable = Presentable = function () {
+        function Presentable() {
+        }
+        Presentable.prototype.present = function (context) {
+        };
+        return Presentable;
+    }();
+    exports.ActionPresentable = ActionPresentable = function (_super) {
+        var _class;
+        __extends(ActionPresentable, _super);
+        function ActionPresentable() {
+            return _class.apply(this, arguments);
+        }
+        _class = ActionPresentable.action;
+        ActionPresentable.prototype.present = function (context) {
+            return this.action.apply(context);
+        };
+        return ActionPresentable;
+    }(exports.Presentable);
+    exports.Drawable = Drawable = function (_super) {
+        __extends(Drawable, _super);
+        function Drawable() {
+            return Drawable.__super__.constructor.apply(this, arguments);
+        }
+        Drawable.prototype.present = function (context) {
+        };
+        Drawable.prototype.x = function () {
+            return 0;
+        };
+        Drawable.prototype.y = function () {
+            return 0;
+        };
+        Drawable.prototype.width = function () {
+            return 0;
+        };
+        Drawable.prototype.height = function () {
+            return 0;
+        };
+        Drawable.prototype.bounds = function () {
+            return {
+                x: this.x(),
+                y: this.y(),
+                width: this.width(),
+                height: this.height()
+            };
+        };
+        return Drawable;
+    }(exports.Presentable);
+    exports.KineticDrawable = KineticDrawable = function (_super) {
+        __extends(KineticDrawable, _super);
+        function KineticDrawable(nodes) {
+            this.nodes = nodes;
+            if (!_.isArray(this.nodes)) {
+                this.nodes = [this.nodes];
+            }
+        }
+        KineticDrawable.prototype.present = function (context, layer) {
+            var node, _i, _len, _ref, _results;
+            console.log('presenting ', this.nodes);
+            _ref = this.nodes;
+            _results = [];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                node = _ref[_i];
+                if (layer == null) {
+                    _results.push(context.contentLayer.add(node));
+                } else {
+                    console.log('drawing in layer supplied as arg');
+                    _results.push(layer.add(node));
+                }
+            }
+            return _results;
+        };
+        KineticDrawable.prototype.x = function () {
+            var xs;
+            xs = _.map(this.nodes, function (node) {
+                return exports.KineticStimulus.nodePosition(node).x;
+            });
+            return _.min(xs);
+        };
+        KineticDrawable.prototype.y = function () {
+            var ys;
+            ys = _.map(this.nodes, function (node) {
+                return exports.KineticStimulus.nodePosition(node).y;
+            });
+            return _.min(ys);
+        };
+        KineticDrawable.prototype.xmax = function () {
+            var xs;
+            xs = _.map(this.nodes, function (node) {
+                return exports.KineticStimulus.nodePosition(node).x + exports.KineticStimulus.nodeSize(node).width;
+            });
+            return _.max(xs);
+        };
+        KineticDrawable.prototype.ymax = function () {
+            var xs;
+            xs = _.map(this.nodes, function (node) {
+                return exports.KineticStimulus.nodePosition(node).y + exports.KineticStimulus.nodeSize(node).height;
+            });
+            return _.max(xs);
+        };
+        KineticDrawable.prototype.width = function () {
+            return this.xmax() - this.x();
+        };
+        KineticDrawable.prototype.height = function () {
+            return this.ymax() - this.y();
+        };
+        return KineticDrawable;
+    }(exports.Drawable);
+    exports.ContainerDrawable = ContainerDrawable = function (_super) {
+        __extends(ContainerDrawable, _super);
+        function ContainerDrawable(nodes) {
+            this.nodes = nodes;
+            console.log('creating container drawable');
+        }
+        ContainerDrawable.prototype.present = function (context, layer) {
+            var node, _i, _len, _ref, _results;
+            _ref = this.nodes;
+            _results = [];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                node = _ref[_i];
+                if (!layer) {
+                    _results.push(node.present(context));
+                } else {
+                    _results.push(node.present(context, layer));
+                }
+            }
+            return _results;
+        };
+        return ContainerDrawable;
+    }(exports.Drawable);
+    exports.Response = Response = function (_super) {
+        __extends(Response, _super);
+        function Response() {
+            return Response.__super__.constructor.apply(this, arguments);
+        }
+        Response.prototype.start = function (context) {
+            return this.activate(context);
+        };
+        Response.prototype.activate = function (context) {
+        };
+        return Response;
+    }(exports.Stimulus);
+    exports.ResponseData = ResponseData = function () {
+        function ResponseData(data) {
+            this.data = data;
+        }
+        return ResponseData;
+    }();
+}.call(this));
+});
+require.define('79', function(module, exports, __dirname, __filename, undefined){
+(function () {
+    var Background, ContainerDrawable, GStimulus, Kinetic, KineticDrawable, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+            for (var key in parent) {
+                if (__hasProp.call(parent, key))
+                    child[key] = parent[key];
+            }
+            function ctor() {
+                this.constructor = child;
+            }
+            ctor.prototype = parent.prototype;
+            child.prototype = new ctor();
+            child.__super__ = parent.prototype;
+            return child;
+        };
+    Kinetic = require('15', module).Kinetic;
+    GStimulus = require('72', module).GraphicalStimulus;
+    KineticDrawable = require('72', module).KineticDrawable;
+    ContainerDrawable = require('72', module).ContainerDrawable;
+    _ = require('16', module);
+    Background = function (_super) {
+        __extends(Background, _super);
+        function Background(stims, fill) {
+            this.stims = stims != null ? stims : [];
+            this.fill = fill != null ? fill : 'white';
+            Background.__super__.constructor.call(this, {}, {});
+            if (!_.isArray(this.stims)) {
+                this.stims = [this.stims];
+            }
+        }
+        Background.prototype.render = function (context) {
+            var background, drawables, stim, _i, _len, _ref;
+            background = new Kinetic.Rect({
+                x: 0,
+                y: 0,
+                width: context.width(),
+                height: context.height(),
+                name: 'background',
+                fill: this.fill
+            });
+            drawables = [];
+            drawables.push(new KineticDrawable(background));
+            _ref = this.stims;
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                stim = _ref[_i];
+                drawables.push(stim.render(context));
+            }
+            return new ContainerDrawable(drawables);
+        };
+        return Background;
+    }(GStimulus);
+    exports.Background = Background;
+}.call(this));
+});
+require.define('70', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var DataTable, utils, _, __hasProp = {}.hasOwnProperty;
-    _ = require('2', module);
-    utils = require('76', module);
+    _ = require('16', module);
+    utils = require('69', module);
     DataTable = function () {
         function DataTable(vars) {
             var key, samelen, value, varlen;
@@ -17405,10 +18703,10 @@ require.define('77', function(module, exports, __dirname, __filename, undefined)
     exports.DataTable = DataTable;
 }.call(this));
 });
-require.define('76', function(module, exports, __dirname, __filename, undefined){
+require.define('69', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var factorial, getTimestamp, swap, _, _ref, _ref1, __slice = [].slice;
-    _ = require('2', module);
+    _ = require('16', module);
     if (typeof window !== 'undefined' && window !== null ? (_ref = window.performance) != null ? _ref.now : void 0 : void 0) {
         getTimestamp = function () {
             return window.performance.now();
@@ -17593,27 +18891,58 @@ require.define('76', function(module, exports, __dirname, __filename, undefined)
     };
 }.call(this));
 });
-require.define('82', function(module, exports, __dirname, __filename, undefined){
+require.define('77', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var KP;
-    exports.Sound = require('84', module).Sound;
-    exports.Confirm = require('85', module).Confirm;
-    exports.First = require('86', module).First;
-    exports.Group = require('87', module).Group;
-    exports.Grid = require('87', module).Grid;
-    KP = require('88', module);
+    exports.Sound = require('80', module).Sound;
+    exports.Confirm = require('81', module).Confirm;
+    exports.First = require('82', module).First;
+    exports.Group = require('83', module).Group;
+    exports.Grid = require('83', module).Grid;
+    KP = require('84', module);
     exports.KeyPress = KP.KeyPress;
     exports.SpaceKey = KP.SpaceKey;
     exports.AnyKey = KP.AnyKey;
-    exports.MousePress = require('89', module).MousePress;
-    exports.Prompt = require('90', module).Prompt;
-    exports.Sequence = require('91', module).Sequence;
-    exports.Timeout = require('92', module).Timeout;
-    exports.Click = require('93', module).Click;
-    exports.Nothing = require('124', module).Nothing;
+    exports.MousePress = require('85', module).MousePress;
+    exports.Prompt = require('86', module).Prompt;
+    exports.Sequence = require('87', module).Sequence;
+    exports.Timeout = require('88', module).Timeout;
+    exports.Click = require('89', module).Click;
+    exports.Nothing = require('90', module).Nothing;
 }.call(this));
 });
-require.define('93', function(module, exports, __dirname, __filename, undefined){
+require.define('90', function(module, exports, __dirname, __filename, undefined){
+(function () {
+    var Nothing, Stimulus, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+            for (var key in parent) {
+                if (__hasProp.call(parent, key))
+                    child[key] = parent[key];
+            }
+            function ctor() {
+                this.constructor = child;
+            }
+            ctor.prototype = parent.prototype;
+            child.prototype = new ctor();
+            child.__super__ = parent.prototype;
+            return child;
+        };
+    Stimulus = require('72', module).Stimulus;
+    Nothing = function (_super) {
+        __extends(Nothing, _super);
+        function Nothing(spec) {
+            if (spec == null) {
+                spec = {};
+            }
+            Nothing.__super__.constructor.call(this, spec);
+        }
+        Nothing.prototype.render = function (context, layer) {
+        };
+        return Nothing;
+    }(Stimulus);
+    exports.Nothing = Nothing;
+}.call(this));
+});
+require.define('89', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var Click, Q, Response, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -17628,8 +18957,8 @@ require.define('93', function(module, exports, __dirname, __filename, undefined)
             child.__super__ = parent.prototype;
             return child;
         };
-    Q = require('9', module);
-    Response = require('73', module).Response;
+    Q = require('17', module);
+    Response = require('72', module).Response;
     Click = function (_super) {
         __extends(Click, _super);
         function Click(refid) {
@@ -17637,15 +18966,17 @@ require.define('93', function(module, exports, __dirname, __filename, undefined)
             Click.__super__.constructor.call(this);
         }
         Click.prototype.activate = function (context) {
-            var deferred, element, _this = this;
+            var deferred, element;
             element = context.stage.get('#' + this.refid);
             if (!element) {
                 throw new Error('cannot find element with id' + this.refid);
             }
             deferred = Q.defer();
-            element.on('click', function (ev) {
-                return deferred.resolve(ev);
-            });
+            element.on('click', function (_this) {
+                return function (ev) {
+                    return deferred.resolve(ev);
+                };
+            }(this));
             return deferred.promise;
         };
         return Click;
@@ -17653,9 +18984,9 @@ require.define('93', function(module, exports, __dirname, __filename, undefined)
     exports.Click = Click;
 }.call(this));
 });
-require.define('92', function(module, exports, __dirname, __filename, undefined){
+require.define('88', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Q, Response, ResponseData, Timeout, utils, _ref, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var Q, Response, ResponseData, Timeout, utils, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -17668,30 +18999,31 @@ require.define('92', function(module, exports, __dirname, __filename, undefined)
             child.__super__ = parent.prototype;
             return child;
         };
-    utils = require('76', module);
-    Q = require('9', module);
-    Response = require('73', module).Response;
-    ResponseData = require('73', module).ResponseData;
+    utils = require('69', module);
+    Q = require('17', module);
+    Response = require('72', module).Response;
+    ResponseData = require('72', module).ResponseData;
     Timeout = function (_super) {
         __extends(Timeout, _super);
         function Timeout() {
-            _ref = Timeout.__super__.constructor.apply(this, arguments);
-            return _ref;
+            return Timeout.__super__.constructor.apply(this, arguments);
         }
         Timeout.prototype.defaults = { duration: 1000 };
         Timeout.prototype.activate = function (context) {
-            var deferred, _this = this;
+            var deferred;
             deferred = Q.defer();
-            utils.doTimer(this.spec.duration, function (diff) {
-                var resp;
-                resp = {
-                    name: 'Timeout',
-                    id: _this.id,
-                    timeElapsed: diff,
-                    timeRequested: _this.spec.duration
+            utils.doTimer(this.spec.duration, function (_this) {
+                return function (diff) {
+                    var resp;
+                    resp = {
+                        name: 'Timeout',
+                        id: _this.id,
+                        timeElapsed: diff,
+                        timeRequested: _this.spec.duration
+                    };
+                    return deferred.resolve(new ResponseData(resp));
                 };
-                return deferred.resolve(new ResponseData(resp));
-            });
+            }(this));
             return deferred.promise;
         };
         return Timeout;
@@ -17699,7 +19031,7 @@ require.define('92', function(module, exports, __dirname, __filename, undefined)
     exports.Timeout = Timeout;
 }.call(this));
 });
-require.define('91', function(module, exports, __dirname, __filename, undefined){
+require.define('87', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var Presentable, Q, Sequence, Stimulus, Timeout, utils, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -17714,12 +19046,12 @@ require.define('91', function(module, exports, __dirname, __filename, undefined)
             child.__super__ = parent.prototype;
             return child;
         };
-    Stimulus = require('73', module).Stimulus;
-    Timeout = require('92', module).Timeout;
-    Presentable = require('73', module).Presentable;
-    Q = require('9', module);
-    utils = require('76', module);
-    _ = require('2', module);
+    Stimulus = require('72', module).Stimulus;
+    Timeout = require('88', module).Timeout;
+    Presentable = require('72', module).Presentable;
+    Q = require('17', module);
+    utils = require('69', module);
+    _ = require('16', module);
     Sequence = function (_super) {
         __extends(Sequence, _super);
         function Sequence(stims, soa, clear, times) {
@@ -17799,9 +19131,9 @@ require.define('91', function(module, exports, __dirname, __filename, undefined)
     exports.Sequence = Sequence;
 }.call(this));
 });
-require.define('90', function(module, exports, __dirname, __filename, undefined){
+require.define('86', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Prompt, Q, Response, utils, _ref, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var Prompt, Q, Response, utils, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -17814,14 +19146,13 @@ require.define('90', function(module, exports, __dirname, __filename, undefined)
             child.__super__ = parent.prototype;
             return child;
         };
-    utils = require('76', module);
-    Q = require('9', module);
-    Response = require('73', module).Response;
+    utils = require('69', module);
+    Q = require('17', module);
+    Response = require('72', module).Response;
     Prompt = function (_super) {
         __extends(Prompt, _super);
         function Prompt() {
-            _ref = Prompt.__super__.constructor.apply(this, arguments);
-            return _ref;
+            return Prompt.__super__.constructor.apply(this, arguments);
         }
         Prompt.prototype.defaults = {
             title: 'Prompt',
@@ -17830,19 +19161,21 @@ require.define('90', function(module, exports, __dirname, __filename, undefined)
             theme: 'vex-theme-wireframe'
         };
         Prompt.prototype.activate = function (context) {
-            var deferred, promise, _this = this;
+            var deferred, promise;
             deferred = Q.defer();
             promise = Q.delay(this.spec.delay);
-            promise.then(function (f) {
-                return vex.dialog.prompt({
-                    message: _this.spec.title,
-                    placeholder: _this.spec.defaultValue,
-                    className: 'vex-theme-wireframe',
-                    callback: function (value) {
-                        return deferred.resolve(value);
-                    }
-                });
-            });
+            promise.then(function (_this) {
+                return function (f) {
+                    return vex.dialog.prompt({
+                        message: _this.spec.title,
+                        placeholder: _this.spec.defaultValue,
+                        className: 'vex-theme-wireframe',
+                        callback: function (value) {
+                            return deferred.resolve(value);
+                        }
+                    });
+                };
+            }(this));
             return deferred.promise;
         };
         return Prompt;
@@ -17850,9 +19183,9 @@ require.define('90', function(module, exports, __dirname, __filename, undefined)
     exports.Prompt = Prompt;
 }.call(this));
 });
-require.define('89', function(module, exports, __dirname, __filename, undefined){
+require.define('85', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var MousePress, Q, Response, ResponseData, utils, _ref, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var MousePress, Q, Response, ResponseData, utils, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -17865,35 +19198,36 @@ require.define('89', function(module, exports, __dirname, __filename, undefined)
             child.__super__ = parent.prototype;
             return child;
         };
-    Q = require('9', module);
-    Response = require('73', module).Response;
-    ResponseData = require('73', module).ResponseData;
-    utils = require('76', module);
+    Q = require('17', module);
+    Response = require('72', module).Response;
+    ResponseData = require('72', module).ResponseData;
+    utils = require('69', module);
     MousePress = function (_super) {
         __extends(MousePress, _super);
         function MousePress() {
-            _ref = MousePress.__super__.constructor.apply(this, arguments);
-            return _ref;
+            return MousePress.__super__.constructor.apply(this, arguments);
         }
         MousePress.prototype.activate = function (context) {
-            var deferred, mouse, myname, _this = this;
+            var deferred, mouse, myname;
             this.startTime = utils.getTimestamp();
             myname = this.name;
             deferred = Q.defer();
             mouse = context.mousepressStream();
-            mouse.stream.take(1).onValue(function (event) {
-                var resp, timestamp;
-                timestamp = utils.getTimestamp();
-                mouse.stop();
-                resp = {
-                    name: myname,
-                    id: _this.id,
-                    KeyTime: timestamp,
-                    RT: timestamp - _this.startTime,
-                    Accuracy: Acc
+            mouse.stream.take(1).onValue(function (_this) {
+                return function (event) {
+                    var resp, timestamp;
+                    timestamp = utils.getTimestamp();
+                    mouse.stop();
+                    resp = {
+                        name: myname,
+                        id: _this.id,
+                        KeyTime: timestamp,
+                        RT: timestamp - _this.startTime,
+                        Accuracy: Acc
+                    };
+                    return deferred.resolve(new ResponseData(resp));
                 };
-                return deferred.resolve(new ResponseData(resp));
-            });
+            }(this));
             return deferred.promise;
         };
         return MousePress;
@@ -17901,7 +19235,7 @@ require.define('89', function(module, exports, __dirname, __filename, undefined)
     exports.MousePress = MousePress;
 }.call(this));
 });
-require.define('88', function(module, exports, __dirname, __filename, undefined){
+require.define('84', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var AnyKey, KeyPress, KeyResponse, Q, Response, ResponseData, SpaceKey, i, keyTable, utils, _, _i, _j, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -17916,11 +19250,11 @@ require.define('88', function(module, exports, __dirname, __filename, undefined)
             child.__super__ = parent.prototype;
             return child;
         };
-    Q = require('9', module);
-    Response = require('73', module).Response;
-    ResponseData = require('73', module).ResponseData;
-    utils = require('76', module);
-    _ = require('2', module);
+    Q = require('17', module);
+    Response = require('72', module).Response;
+    ResponseData = require('72', module).ResponseData;
+    utils = require('69', module);
+    _ = require('16', module);
     keyTable = {
         8: 'backspace',
         9: 'tab',
@@ -18103,7 +19437,7 @@ require.define('88', function(module, exports, __dirname, __filename, undefined)
     exports.AnyKey = AnyKey;
 }.call(this));
 });
-require.define('87', function(module, exports, __dirname, __filename, undefined){
+require.define('83', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var ContainerDrawable, Grid, Group, Stimulus, layout, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -18118,9 +19452,9 @@ require.define('87', function(module, exports, __dirname, __filename, undefined)
             child.__super__ = parent.prototype;
             return child;
         };
-    Stimulus = require('73', module).Stimulus;
-    ContainerDrawable = require('73', module).ContainerDrawable;
-    layout = require('74', module);
+    Stimulus = require('72', module).Stimulus;
+    ContainerDrawable = require('72', module).ContainerDrawable;
+    layout = require('73', module);
     Group = function (_super) {
         __extends(Group, _super);
         function Group(stims, layout) {
@@ -18173,7 +19507,7 @@ require.define('87', function(module, exports, __dirname, __filename, undefined)
     exports.Grid = Grid;
 }.call(this));
 });
-require.define('86', function(module, exports, __dirname, __filename, undefined){
+require.define('82', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var First, Q, Response, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -18188,9 +19522,9 @@ require.define('86', function(module, exports, __dirname, __filename, undefined)
             child.__super__ = parent.prototype;
             return child;
         };
-    _ = require('2', module);
-    Q = require('9', module);
-    Response = require('73', module).Response;
+    _ = require('16', module);
+    Q = require('17', module);
+    Response = require('72', module).Response;
     First = function (_super) {
         __extends(First, _super);
         function First(responses) {
@@ -18198,21 +19532,23 @@ require.define('86', function(module, exports, __dirname, __filename, undefined)
             First.__super__.constructor.call(this, {});
         }
         First.prototype.activate = function (context) {
-            var deferred, _done, _this = this;
+            var deferred, _done;
             console.log('activating first');
             _done = false;
             deferred = Q.defer();
-            _.forEach(this.responses, function (resp) {
-                return resp.activate(context).then(function (obj) {
-                    if (!_done) {
-                        console.log('resolving response', obj);
-                        deferred.resolve(obj);
-                        return _done = true;
-                    } else {
-                        return console.log('not resolving, already done');
-                    }
-                });
-            });
+            _.forEach(this.responses, function (_this) {
+                return function (resp) {
+                    return resp.activate(context).then(function (obj) {
+                        if (!_done) {
+                            console.log('resolving response', obj);
+                            deferred.resolve(obj);
+                            return _done = true;
+                        } else {
+                            return console.log('not resolving, already done');
+                        }
+                    });
+                };
+            }(this));
             return deferred.promise;
         };
         return First;
@@ -18220,9 +19556,9 @@ require.define('86', function(module, exports, __dirname, __filename, undefined)
     exports.First = First;
 }.call(this));
 });
-require.define('85', function(module, exports, __dirname, __filename, undefined){
+require.define('81', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Confirm, Q, Response, _ref, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var Confirm, Q, Response, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -18235,13 +19571,12 @@ require.define('85', function(module, exports, __dirname, __filename, undefined)
             child.__super__ = parent.prototype;
             return child;
         };
-    Q = require('9', module);
-    Response = require('73', module).Response;
+    Q = require('17', module);
+    Response = require('72', module).Response;
     Confirm = function (_super) {
         __extends(Confirm, _super);
         function Confirm() {
-            _ref = Confirm.__super__.constructor.apply(this, arguments);
-            return _ref;
+            return Confirm.__super__.constructor.apply(this, arguments);
         }
         Confirm.prototype.defaults = {
             message: '',
@@ -18250,20 +19585,22 @@ require.define('85', function(module, exports, __dirname, __filename, undefined)
             theme: 'vex-theme-wireframe'
         };
         Confirm.prototype.activate = function (context) {
-            var deferred, promise, _this = this;
+            var deferred, promise;
             console.log('activating confirm dialog');
             deferred = Q.defer();
             promise = Q.delay(this.spec.delay);
-            promise.then(function (f) {
-                console.log('rendering confirm dialog');
-                return vex.dialog.confirm({
-                    message: _this.spec.message,
-                    className: _this.spec.theme,
-                    callback: function (value) {
-                        return deferred.resolve(value);
-                    }
-                });
-            });
+            promise.then(function (_this) {
+                return function (f) {
+                    console.log('rendering confirm dialog');
+                    return vex.dialog.confirm({
+                        message: _this.spec.message,
+                        className: _this.spec.theme,
+                        callback: function (value) {
+                            return deferred.resolve(value);
+                        }
+                    });
+                };
+            }(this));
             return deferred.promise;
         };
         return Confirm;
@@ -18271,7 +19608,7 @@ require.define('85', function(module, exports, __dirname, __filename, undefined)
     exports.Confirm = Confirm;
 }.call(this));
 });
-require.define('84', function(module, exports, __dirname, __filename, undefined){
+require.define('80', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var Sound, Stimulus, buzz, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -18286,8 +19623,8 @@ require.define('84', function(module, exports, __dirname, __filename, undefined)
             child.__super__ = parent.prototype;
             return child;
         };
-    Stimulus = require('73', module).Stimulus;
-    buzz = require('11', module);
+    Stimulus = require('72', module).Stimulus;
+    buzz = require('35', module);
     Sound = function (_super) {
         __extends(Sound, _super);
         Sound.prototype.defaults = { url: 'http://www.centraloutdoors.com/mp3/sheep/sheep.wav' };
@@ -18306,7 +19643,7 @@ require.define('84', function(module, exports, __dirname, __filename, undefined)
     exports.Sound = Sound;
 }.call(this));
 });
-require.define('81', function(module, exports, __dirname, __filename, undefined){
+require.define('76', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var Drawable, GStimulus, HMixResp, HMixStim, Html, HtmlMixin, HtmlResponse, HtmlStimulus, Mixen, Response, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -18321,10 +19658,10 @@ require.define('81', function(module, exports, __dirname, __filename, undefined)
             child.__super__ = parent.prototype;
             return child;
         };
-    GStimulus = require('73', module).GraphicalStimulus;
-    Drawable = require('73', module).Drawable;
-    Response = require('73', module).Response;
-    Mixen = require('31', module);
+    GStimulus = require('72', module).GraphicalStimulus;
+    Drawable = require('72', module).Drawable;
+    Response = require('72', module).Response;
+    Mixen = require('36', module);
     HtmlMixin = function () {
         HtmlMixin.prototype.tag = 'div';
         HtmlMixin.prototype.div = function () {
@@ -18409,20 +19746,20 @@ require.define('81', function(module, exports, __dirname, __filename, undefined)
     exports.HtmlStimulus = HtmlStimulus;
     exports.HtmlResponse = HtmlResponse;
     Html = {};
-    Html.HtmlButton = require('94', module).HtmlButton;
-    Html.HtmlLink = require('95', module).HtmlLink;
-    Html.HtmlLabel = require('96', module).HtmlLabel;
-    Html.HtmlIcon = require('97', module).HtmlIcon;
-    Html.Instructions = require('98', module).Instructions;
-    Html.Markdown = require('99', module).Markdown;
-    Html.Message = require('100', module).Message;
-    Html.Page = require('101', module).Page;
+    Html.HtmlButton = require('91', module).HtmlButton;
+    Html.HtmlLink = require('92', module).HtmlLink;
+    Html.HtmlLabel = require('93', module).HtmlLabel;
+    Html.HtmlIcon = require('94', module).HtmlIcon;
+    Html.Instructions = require('95', module).Instructions;
+    Html.Markdown = require('96', module).Markdown;
+    Html.Message = require('97', module).Message;
+    Html.Page = require('98', module).Page;
     Html.HtmlResponse = HtmlResponse;
     Html.HtmlStimulus = HtmlStimulus;
     exports.Html = Html;
 }.call(this));
 });
-require.define('101', function(module, exports, __dirname, __filename, undefined){
+require.define('98', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var HtmlStimulus, Page, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -18437,7 +19774,7 @@ require.define('101', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    HtmlStimulus = require('81', module).HtmlStimulus;
+    HtmlStimulus = require('76', module).HtmlStimulus;
     Page = function (_super) {
         __extends(Page, _super);
         Page.prototype.defaults = { html: '<p>HTML Page</p>' };
@@ -18453,7 +19790,7 @@ require.define('101', function(module, exports, __dirname, __filename, undefined
     exports.Page = Page;
 }.call(this));
 });
-require.define('100', function(module, exports, __dirname, __filename, undefined){
+require.define('97', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var Message, html, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -18468,7 +19805,7 @@ require.define('100', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    html = require('81', module);
+    html = require('76', module);
     Message = function (_super) {
         __extends(Message, _super);
         Message.prototype.defaults = {
@@ -18496,7 +19833,7 @@ require.define('100', function(module, exports, __dirname, __filename, undefined
     exports.Message = Message;
 }.call(this));
 });
-require.define('99', function(module, exports, __dirname, __filename, undefined){
+require.define('96', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var Markdown, html, marked, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -18511,9 +19848,9 @@ require.define('99', function(module, exports, __dirname, __filename, undefined)
             child.__super__ = parent.prototype;
             return child;
         };
-    html = require('81', module);
-    marked = require('40', module);
-    _ = require('2', module);
+    html = require('76', module);
+    marked = require('45', module);
+    _ = require('16', module);
     Markdown = function (_super) {
         __extends(Markdown, _super);
         function Markdown(spec) {
@@ -18552,7 +19889,7 @@ require.define('99', function(module, exports, __dirname, __filename, undefined)
     exports.Markdown = Markdown;
 }.call(this));
 });
-require.define('98', function(module, exports, __dirname, __filename, undefined){
+require.define('95', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var Instructions, Markdown, Q, html, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -18567,10 +19904,10 @@ require.define('98', function(module, exports, __dirname, __filename, undefined)
             child.__super__ = parent.prototype;
             return child;
         };
-    html = require('81', module);
-    Q = require('9', module);
-    Markdown = require('99', module).Markdown;
-    _ = require('2', module);
+    html = require('76', module);
+    Q = require('17', module);
+    Markdown = require('96', module).Markdown;
+    _ = require('16', module);
     Instructions = function (_super) {
         __extends(Instructions, _super);
         function Instructions(spec) {
@@ -18625,27 +19962,30 @@ require.define('98', function(module, exports, __dirname, __filename, undefined)
             return this.el.append(this.menu);
         };
         Instructions.prototype.render = function (context, layer) {
-            var _this = this;
-            this.next.click(function (e) {
-                if (_this.currentPage < _this.pages.length - 1) {
-                    _this.items[_this.currentPage].removeClass('active');
-                    _this.currentPage += 1;
-                    _this.items[_this.currentPage].addClass('active');
-                    _this.updateEl(_this.currentPage);
-                    return _this.render(context);
-                } else {
-                    return _this.deferred.resolve(0);
-                }
-            });
-            this.back.click(function (e) {
-                if (_this.currentPage > 0) {
-                    _this.items[_this.currentPage].removeClass('active');
-                    _this.currentPage -= 1;
-                    _this.items[_this.currentPage].addClass('active');
-                    _this.updateEl(_this.currentPage);
-                    return _this.render(context);
-                }
-            });
+            this.next.click(function (_this) {
+                return function (e) {
+                    if (_this.currentPage < _this.pages.length - 1) {
+                        _this.items[_this.currentPage].removeClass('active');
+                        _this.currentPage += 1;
+                        _this.items[_this.currentPage].addClass('active');
+                        _this.updateEl(_this.currentPage);
+                        return _this.render(context);
+                    } else {
+                        return _this.deferred.resolve(0);
+                    }
+                };
+            }(this));
+            this.back.click(function (_this) {
+                return function (e) {
+                    if (_this.currentPage > 0) {
+                        _this.items[_this.currentPage].removeClass('active');
+                        _this.currentPage -= 1;
+                        _this.items[_this.currentPage].addClass('active');
+                        _this.updateEl(_this.currentPage);
+                        return _this.render(context);
+                    }
+                };
+            }(this));
             if (this.currentPage > 0) {
                 this.back.removeClass('disabled');
             }
@@ -18657,7 +19997,7 @@ require.define('98', function(module, exports, __dirname, __filename, undefined)
     exports.Instructions = Instructions;
 }.call(this));
 });
-require.define('97', function(module, exports, __dirname, __filename, undefined){
+require.define('94', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var HtmlIcon, html, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -18672,7 +20012,7 @@ require.define('97', function(module, exports, __dirname, __filename, undefined)
             child.__super__ = parent.prototype;
             return child;
         };
-    html = require('81', module);
+    html = require('76', module);
     HtmlIcon = function (_super) {
         __extends(HtmlIcon, _super);
         HtmlIcon.prototype.defaults = {
@@ -18693,7 +20033,7 @@ require.define('97', function(module, exports, __dirname, __filename, undefined)
     exports.HtmlIcon = HtmlIcon;
 }.call(this));
 });
-require.define('96', function(module, exports, __dirname, __filename, undefined){
+require.define('93', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var HtmlLabel, html, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -18708,7 +20048,7 @@ require.define('96', function(module, exports, __dirname, __filename, undefined)
             child.__super__ = parent.prototype;
             return child;
         };
-    html = require('81', module);
+    html = require('76', module);
     HtmlLabel = function (_super) {
         __extends(HtmlLabel, _super);
         HtmlLabel.prototype.defaults = {
@@ -18733,7 +20073,7 @@ require.define('96', function(module, exports, __dirname, __filename, undefined)
     exports.HtmlLabel = HtmlLabel;
 }.call(this));
 });
-require.define('95', function(module, exports, __dirname, __filename, undefined){
+require.define('92', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var HtmlLink, html, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -18748,7 +20088,7 @@ require.define('95', function(module, exports, __dirname, __filename, undefined)
             child.__super__ = parent.prototype;
             return child;
         };
-    html = require('81', module);
+    html = require('76', module);
     HtmlLink = function (_super) {
         __extends(HtmlLink, _super);
         HtmlLink.prototype.defaults = { label: 'link' };
@@ -18765,7 +20105,7 @@ require.define('95', function(module, exports, __dirname, __filename, undefined)
     exports.HtmlLink = HtmlLink;
 }.call(this));
 });
-require.define('94', function(module, exports, __dirname, __filename, undefined){
+require.define('91', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var HtmlButton, html, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -18780,7 +20120,7 @@ require.define('94', function(module, exports, __dirname, __filename, undefined)
             child.__super__ = parent.prototype;
             return child;
         };
-    html = require('81', module);
+    html = require('76', module);
     HtmlButton = function (_super) {
         __extends(HtmlButton, _super);
         HtmlButton.prototype.defaults = {
@@ -18801,28 +20141,188 @@ require.define('94', function(module, exports, __dirname, __filename, undefined)
     exports.HtmlButton = HtmlButton;
 }.call(this));
 });
-require.define('80', function(module, exports, __dirname, __filename, undefined){
+require.define('75', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var Canvas;
     Canvas = {};
-    Canvas.Arrow = require('102', module).Arrow;
+    Canvas.Arrow = require('99', module).Arrow;
     Canvas.Background = require('79', module).Background;
-    Canvas.Blank = require('103', module).Blank;
-    Canvas.Circle = require('104', module).Circle;
-    Canvas.Clear = require('105', module).Clear;
-    Canvas.FixationCross = require('106', module).FixationCross;
-    Canvas.CanvasBorder = require('107', module).CanvasBorder;
-    Canvas.GridLines = require('108', module).GridLines;
-    Canvas.Picture = require('109', module).Picture;
-    Canvas.Rectangle = require('110', module).Rectangle;
-    Canvas.StartButton = require('111', module).StartButton;
-    Canvas.Text = require('112', module).Text;
-    Canvas.TextInput = require('113', module).TextInput;
-    Canvas.LabeledElement = require('126', module).LabeledElement;
+    Canvas.Blank = require('100', module).Blank;
+    Canvas.Circle = require('101', module).Circle;
+    Canvas.Clear = require('102', module).Clear;
+    Canvas.FixationCross = require('103', module).FixationCross;
+    Canvas.CanvasBorder = require('104', module).CanvasBorder;
+    Canvas.GridLines = require('105', module).GridLines;
+    Canvas.Picture = require('106', module).Picture;
+    Canvas.Rectangle = require('107', module).Rectangle;
+    Canvas.StartButton = require('108', module).StartButton;
+    Canvas.Text = require('109', module).Text;
+    Canvas.TextInput = require('110', module).TextInput;
+    Canvas.LabeledElement = require('111', module).LabeledElement;
     exports.Canvas = Canvas;
 }.call(this));
 });
-require.define('113', function(module, exports, __dirname, __filename, undefined){
+require.define('111', function(module, exports, __dirname, __filename, undefined){
+(function () {
+    var Kinetic, LabeledElement, StimResp, Text, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+            for (var key in parent) {
+                if (__hasProp.call(parent, key))
+                    child[key] = parent[key];
+            }
+            function ctor() {
+                this.constructor = child;
+            }
+            ctor.prototype = parent.prototype;
+            child.prototype = new ctor();
+            child.__super__ = parent.prototype;
+            return child;
+        };
+    Kinetic = require('15', module).Kinetic;
+    Text = require('112', module).Text;
+    StimResp = require('72', module);
+    LabeledElement = function (_super) {
+        __extends(LabeledElement, _super);
+        LabeledElement.prototype.defaults = {
+            position: 'below',
+            content: 'Label',
+            align: 'center',
+            gap: 10,
+            fontSize: 32,
+            fill: 'black',
+            fontFamily: 'Arial'
+        };
+        function LabeledElement(element, spec) {
+            this.element = element;
+            if (spec == null) {
+                spec = {};
+            }
+            LabeledElement.__super__.constructor.call(this, spec);
+        }
+        LabeledElement.prototype.render = function (context) {
+            var target;
+            target = this.element.render(context);
+            this.text = new Kinetic.Text({
+                x: 0,
+                y: 0,
+                text: this.spec.content,
+                fontSize: this.spec.fontSize,
+                fill: this.spec.fill,
+                align: this.spec.align,
+                width: target.width(),
+                fontFamily: this.spec.fontFamily,
+                padding: 2
+            });
+            console.log('labeled text', this.text.getPosition());
+            console.log('labeled target width:', target.width());
+            console.log('labeled target height:', target.height());
+            switch (this.spec.position) {
+            case 'below':
+                this.text.setPosition({
+                    x: target.x(),
+                    y: target.y() + target.height() + this.spec.gap
+                });
+                break;
+            case 'above':
+                this.text.setPosition({
+                    x: target.x(),
+                    y: target.y() - this.text.getTextHeight()
+                });
+                break;
+            case 'left':
+                this.text.setPosition({
+                    x: target.x() - this.text.getTextWidth() - this.spec.gap,
+                    y: target.y()
+                });
+                break;
+            case 'right':
+                this.text.setPosition({
+                    x: target.x() + target.width() + this.spec.gap,
+                    y: target.y()
+                });
+            }
+            return new StimResp.ContainerDrawable([
+                target,
+                new StimResp.KineticDrawable(this.text)
+            ]);
+        };
+        return LabeledElement;
+    }(StimResp.Stimulus);
+    exports.LabeledElement = LabeledElement;
+}.call(this));
+});
+require.define('112', function(module, exports, __dirname, __filename, undefined){
+(function () {
+    var KStimulus, Kinetic, Text, layout, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+            for (var key in parent) {
+                if (__hasProp.call(parent, key))
+                    child[key] = parent[key];
+            }
+            function ctor() {
+                this.constructor = child;
+            }
+            ctor.prototype = parent.prototype;
+            child.prototype = new ctor();
+            child.__super__ = parent.prototype;
+            return child;
+        };
+    layout = require('73', module);
+    Kinetic = require('15', module).Kinetic;
+    _ = require('16', module);
+    KStimulus = require('72', module).KineticStimulus;
+    Text = function (_super) {
+        __extends(Text, _super);
+        Text.prototype.defaults = {
+            content: 'Text',
+            x: 5,
+            y: 5,
+            width: null,
+            fill: 'black',
+            fontSize: 40,
+            fontFamily: 'Arial',
+            align: 'center',
+            position: null
+        };
+        function Text(spec) {
+            if (spec == null) {
+                spec = {};
+            }
+            if (spec.content != null && _.isArray(spec.content)) {
+                spec.content = spec.content.join(' \n ');
+                if (spec.lineHeight == null) {
+                    spec.lineHeight = 2;
+                }
+            }
+            Text.__super__.constructor.call(this, spec);
+        }
+        Text.prototype.initialize = function () {
+            return this.text = new Kinetic.Text({
+                x: 0,
+                y: 0,
+                text: this.spec.content,
+                fontSize: this.spec.fontSize,
+                fontFamily: this.spec.fontFamily,
+                fill: this.spec.fill,
+                lineHeight: this.spec.lineHeight || 1,
+                width: this.spec.width,
+                listening: false,
+                align: this.spec.align
+            });
+        };
+        Text.prototype.render = function (context, layer) {
+            var coords;
+            coords = this.computeCoordinates(context, this.spec.position, this.text.getWidth(), this.text.getHeight());
+            this.text.setPosition({
+                x: coords[0],
+                y: coords[1]
+            });
+            return this.presentable(this.text);
+        };
+        return Text;
+    }(KStimulus);
+    exports.Text = Text;
+}.call(this));
+});
+require.define('110', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var KStimulus, Kinetic, TextInput, utils, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -18837,9 +20337,9 @@ require.define('113', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    utils = require('76', module);
-    Kinetic = require('27', module).Kinetic;
-    KStimulus = require('73', module).KineticStimulus;
+    utils = require('69', module);
+    Kinetic = require('15', module).Kinetic;
+    KStimulus = require('72', module).KineticStimulus;
     TextInput = function (_super) {
         __extends(TextInput, _super);
         TextInput.prototype.defaults = {
@@ -18976,7 +20476,7 @@ require.define('113', function(module, exports, __dirname, __filename, undefined
     exports.TextInput = TextInput;
 }.call(this));
 });
-require.define('112', function(module, exports, __dirname, __filename, undefined){
+require.define('109', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var KStimulus, Kinetic, Text, layout, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -18991,10 +20491,10 @@ require.define('112', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    layout = require('74', module);
-    Kinetic = require('27', module).Kinetic;
-    _ = require('2', module);
-    KStimulus = require('73', module).KineticStimulus;
+    layout = require('73', module);
+    Kinetic = require('15', module).Kinetic;
+    _ = require('16', module);
+    KStimulus = require('72', module).KineticStimulus;
     Text = function (_super) {
         __extends(Text, _super);
         Text.prototype.defaults = {
@@ -19048,7 +20548,7 @@ require.define('112', function(module, exports, __dirname, __filename, undefined
     exports.Text = Text;
 }.call(this));
 });
-require.define('111', function(module, exports, __dirname, __filename, undefined){
+require.define('108', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var KStimulus, Kinetic, StartButton, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -19063,8 +20563,8 @@ require.define('111', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    Kinetic = require('27', module).Kinetic;
-    KStimulus = require('73', module).KineticStimulus;
+    Kinetic = require('15', module).Kinetic;
+    KStimulus = require('72', module).KineticStimulus;
     StartButton = function (_super) {
         __extends(StartButton, _super);
         function StartButton() {
@@ -19110,7 +20610,7 @@ require.define('111', function(module, exports, __dirname, __filename, undefined
     exports.StartButton = StartButton;
 }.call(this));
 });
-require.define('110', function(module, exports, __dirname, __filename, undefined){
+require.define('107', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var KStimulus, Kinetic, Rectangle, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -19125,8 +20625,8 @@ require.define('110', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    Kinetic = require('27', module).Kinetic;
-    KStimulus = require('73', module).KineticStimulus;
+    Kinetic = require('15', module).Kinetic;
+    KStimulus = require('72', module).KineticStimulus;
     Rectangle = function (_super) {
         __extends(Rectangle, _super);
         Rectangle.prototype.defaults = {
@@ -19164,7 +20664,7 @@ require.define('110', function(module, exports, __dirname, __filename, undefined
     exports.Rectangle = Rectangle;
 }.call(this));
 });
-require.define('109', function(module, exports, __dirname, __filename, undefined){
+require.define('106', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var KStimulus, Kinetic, Picture, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -19179,8 +20679,8 @@ require.define('109', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    Kinetic = require('27', module).Kinetic;
-    KStimulus = require('73', module).KineticStimulus;
+    Kinetic = require('15', module).Kinetic;
+    KStimulus = require('72', module).KineticStimulus;
     Picture = function (_super) {
         __extends(Picture, _super);
         Picture.prototype.defaults = {
@@ -19216,7 +20716,7 @@ require.define('109', function(module, exports, __dirname, __filename, undefined
     exports.Picture = Picture;
 }.call(this));
 });
-require.define('108', function(module, exports, __dirname, __filename, undefined){
+require.define('105', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var GridLines, KStimulus, Kinetic, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -19231,8 +20731,8 @@ require.define('108', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    Kinetic = require('27', module).Kinetic;
-    KStimulus = require('73', module).KineticStimulus;
+    Kinetic = require('15', module).Kinetic;
+    KStimulus = require('72', module).KineticStimulus;
     GridLines = function (_super) {
         __extends(GridLines, _super);
         GridLines.prototype.defaults = {
@@ -19302,7 +20802,7 @@ require.define('108', function(module, exports, __dirname, __filename, undefined
     exports.GridLines = GridLines;
 }.call(this));
 });
-require.define('107', function(module, exports, __dirname, __filename, undefined){
+require.define('104', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var CanvasBorder, KStimulus, Kinetic, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -19317,8 +20817,8 @@ require.define('107', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    Kinetic = require('27', module).Kinetic;
-    KStimulus = require('73', module).KineticStimulus;
+    Kinetic = require('15', module).Kinetic;
+    KStimulus = require('72', module).KineticStimulus;
     CanvasBorder = function (_super) {
         __extends(CanvasBorder, _super);
         CanvasBorder.prototype.defaults = {
@@ -19348,7 +20848,7 @@ require.define('107', function(module, exports, __dirname, __filename, undefined
     exports.CanvasBorder = CanvasBorder;
 }.call(this));
 });
-require.define('106', function(module, exports, __dirname, __filename, undefined){
+require.define('103', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var FixationCross, KStimulus, Kinetic, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -19363,8 +20863,8 @@ require.define('106', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    Kinetic = require('27', module).Kinetic;
-    KStimulus = require('73', module).KineticStimulus;
+    Kinetic = require('15', module).Kinetic;
+    KStimulus = require('72', module).KineticStimulus;
     FixationCross = function (_super) {
         __extends(FixationCross, _super);
         FixationCross.prototype.defaults = {
@@ -19408,7 +20908,7 @@ require.define('106', function(module, exports, __dirname, __filename, undefined
     exports.FixationCross = FixationCross;
 }.call(this));
 });
-require.define('105', function(module, exports, __dirname, __filename, undefined){
+require.define('102', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var ActionPresentable, Clear, GStimulus, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -19423,8 +20923,8 @@ require.define('105', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    GStimulus = require('73', module).GraphicalStimulus;
-    ActionPresentable = require('73', module).ActionPresentable;
+    GStimulus = require('72', module).GraphicalStimulus;
+    ActionPresentable = require('72', module).ActionPresentable;
     Clear = function (_super) {
         __extends(Clear, _super);
         function Clear() {
@@ -19440,7 +20940,7 @@ require.define('105', function(module, exports, __dirname, __filename, undefined
     exports.Clear = Clear;
 }.call(this));
 });
-require.define('104', function(module, exports, __dirname, __filename, undefined){
+require.define('101', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var Circle, KDrawable, KStimulus, Kinetic, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -19455,9 +20955,9 @@ require.define('104', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    Kinetic = require('27', module).Kinetic;
-    KStimulus = require('73', module).KineticStimulus;
-    KDrawable = require('73', module).KineticDrawable;
+    Kinetic = require('15', module).Kinetic;
+    KStimulus = require('72', module).KineticStimulus;
+    KDrawable = require('72', module).KineticDrawable;
     Circle = function (_super) {
         __extends(Circle, _super);
         Circle.prototype.defaults = {
@@ -19517,7 +21017,7 @@ require.define('104', function(module, exports, __dirname, __filename, undefined
     exports.Circle = Circle;
 }.call(this));
 });
-require.define('103', function(module, exports, __dirname, __filename, undefined){
+require.define('100', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var Blank, KStimulus, Kinetic, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -19532,8 +21032,8 @@ require.define('103', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    Kinetic = require('27', module).Kinetic;
-    KStimulus = require('73', module).KineticStimulus;
+    Kinetic = require('15', module).Kinetic;
+    KStimulus = require('72', module).KineticStimulus;
     Blank = function (_super) {
         __extends(Blank, _super);
         function Blank() {
@@ -19560,7 +21060,7 @@ require.define('103', function(module, exports, __dirname, __filename, undefined
     exports.Blank = Blank;
 }.call(this));
 });
-require.define('102', function(module, exports, __dirname, __filename, undefined){
+require.define('99', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var Arrow, KStimulus, Kinetic, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -19575,8 +21075,8 @@ require.define('102', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    KStimulus = require('73', module).KineticStimulus;
-    Kinetic = require('27', module).Kinetic;
+    KStimulus = require('72', module).KineticStimulus;
+    Kinetic = require('15', module).Kinetic;
     Arrow = function (_super) {
         __extends(Arrow, _super);
         Arrow.prototype.defaults = {
@@ -19671,7 +21171,7 @@ require.define('102', function(module, exports, __dirname, __filename, undefined
     exports.Arrow = Arrow;
 }.call(this));
 });
-require.define('117', function(module, exports, __dirname, __filename, undefined){
+require.define('74', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var ArrayIterator, BlockStructure, CellTable, ConditionSet, DataTable, DependentFactorNode, ExpDesign, Factor, FactorNode, FactorSetNode, FactorSpec, ItemNode, ItemSetNode, Iterator, SamplerNode, TaskNode, TrialList, VarSpec, csv, sampler, trimWhiteSpace, utils, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -19686,11 +21186,11 @@ require.define('117', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    _ = require('2', module);
-    utils = require('76', module);
-    DataTable = require('77', module).DataTable;
-    csv = require('120', module);
-    sampler = require('116', module);
+    _ = require('16', module);
+    utils = require('69', module);
+    DataTable = require('70', module).DataTable;
+    csv = require('18', module);
+    sampler = require('71', module);
     exports.Factor = Factor = function (_super) {
         __extends(Factor, _super);
         Factor.asFactor = function (arr) {
@@ -20409,9 +21909,9 @@ require.define('117', function(module, exports, __dirname, __filename, undefined
     }();
 }.call(this));
 });
-require.define('116', function(module, exports, __dirname, __filename, undefined){
+require.define('71', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var CombinatoricSampler, ConditionalSampler, DataTable, ExhaustiveSampler, GridSampler, MatchSampler, ReplacementSampler, Sampler, UniformSampler, utils, _, _ref, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var CombinatoricSampler, ConditionalSampler, DataTable, ExhaustiveSampler, GridSampler, MatchSampler, ReplacementSampler, Sampler, UniformSampler, utils, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -20424,9 +21924,9 @@ require.define('116', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         }, __slice = [].slice;
-    utils = require('76', module);
-    _ = require('2', module);
-    DataTable = require('77', module).DataTable;
+    utils = require('69', module);
+    _ = require('16', module);
+    DataTable = require('70', module).DataTable;
     Sampler = function () {
         function Sampler(items) {
             var _i, _ref, _results;
@@ -20481,8 +21981,7 @@ require.define('116', function(module, exports, __dirname, __filename, undefined
     exports.ReplacementSampler = ReplacementSampler = function (_super) {
         __extends(ReplacementSampler, _super);
         function ReplacementSampler() {
-            _ref = ReplacementSampler.__super__.constructor.apply(this, arguments);
-            return _ref;
+            return ReplacementSampler.__super__.constructor.apply(this, arguments);
         }
         ReplacementSampler.prototype.sampleFrom = function (items, n) {
             return utils.sample(items, n, true);
@@ -20590,9 +22089,9 @@ require.define('116', function(module, exports, __dirname, __filename, undefined
             _results = [];
             for (i = _i = 0; 0 <= n ? _i < n : _i > n; i = 0 <= n ? ++_i : --_i) {
                 xs = function () {
-                    var _j, _ref1, _results1;
+                    var _j, _ref, _results1;
                     _results1 = [];
-                    for (j = _j = 0, _ref1 = this.samplers.length; 0 <= _ref1 ? _j < _ref1 : _j > _ref1; j = 0 <= _ref1 ? ++_j : --_j) {
+                    for (j = _j = 0, _ref = this.samplers.length; 0 <= _ref ? _j < _ref : _j > _ref; j = 0 <= _ref ? ++_j : --_j) {
                         _results1.push(this.samplers[j].take(1));
                     }
                     return _results1;
@@ -20615,9 +22114,9 @@ require.define('116', function(module, exports, __dirname, __filename, undefined
             });
             console.log('rows:', this.grid.nrow());
             this.tuples = function () {
-                var _i, _ref1, _results;
+                var _i, _ref, _results;
                 _results = [];
-                for (i = _i = 0, _ref1 = this.grid.nrow(); 0 <= _ref1 ? _i < _ref1 : _i > _ref1; i = 0 <= _ref1 ? ++_i : --_i) {
+                for (i = _i = 0, _ref = this.grid.nrow(); 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
                     _results.push(_.values(this.grid.record(i)));
                 }
                 return _results;
@@ -20634,9 +22133,9 @@ require.define('116', function(module, exports, __dirname, __filename, undefined
             var ctable, i, indices, itemSets, j, keySet, levs, record;
             ctable = this.factorSpec.conditionTable;
             keySet = function () {
-                var _i, _ref1, _results;
+                var _i, _ref, _results;
                 _results = [];
-                for (i = _i = 0, _ref1 = ctable.nrow(); 0 <= _ref1 ? _i < _ref1 : _i > _ref1; i = 0 <= _ref1 ? ++_i : --_i) {
+                for (i = _i = 0, _ref = ctable.nrow(); 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
                     record = ctable.record(i);
                     levs = _.values(record);
                     _results.push(_.reduce(levs, function (a, b) {
@@ -20647,9 +22146,9 @@ require.define('116', function(module, exports, __dirname, __filename, undefined
             }();
             console.log(keySet);
             itemSets = function () {
-                var _i, _ref1, _results;
+                var _i, _ref, _results;
                 _results = [];
-                for (i = _i = 0, _ref1 = ctable.nrow(); 0 <= _ref1 ? _i < _ref1 : _i > _ref1; i = 0 <= _ref1 ? ++_i : --_i) {
+                for (i = _i = 0, _ref = ctable.nrow(); 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
                     record = ctable.record(i);
                     indices = this.itemMap.whichRow(record);
                     _results.push(function () {
@@ -20668,16 +22167,16 @@ require.define('116', function(module, exports, __dirname, __filename, undefined
             return _.zipObject(keySet, itemSets);
         };
         function ConditionalSampler(items, itemMap, factorSpec) {
-            var key, value, _ref1;
+            var key, value, _ref;
             this.items = items;
             this.itemMap = itemMap;
             this.factorSpec = factorSpec;
             this.keyMap = this.makeItemSubsets();
             this.conditions = _.keys(this.keyMap);
             this.samplerSet = {};
-            _ref1 = this.keyMap;
-            for (key in _ref1) {
-                value = _ref1[key];
+            _ref = this.keyMap;
+            for (key in _ref) {
+                value = _ref[key];
                 this.samplerSet[key] = new ExhaustiveSampler(value);
             }
         }
@@ -20699,7 +22198,7 @@ require.define('116', function(module, exports, __dirname, __filename, undefined
     }(Sampler);
 }.call(this));
 });
-require.define('115', function(module, exports, __dirname, __filename, undefined){
+require.define('68', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var Base, DotSet, Kinetic, RandomDotMotion, x, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -20714,9 +22213,9 @@ require.define('115', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    Base = require('73', module);
-    _ = require('2', module);
-    Kinetic = require('27', module);
+    Base = require('72', module);
+    _ = require('16', module);
+    Kinetic = require('15', module);
     DotSet = function () {
         DotSet.randomDelta = function (distance) {
             var rads;
@@ -20748,7 +22247,6 @@ require.define('115', function(module, exports, __dirname, __filename, undefined
             return squareDist <= Math.pow(radius, 2);
         };
         function DotSet(ndots, nparts, coherence) {
-            var _this = this;
             this.ndots = ndots;
             this.nparts = nparts != null ? nparts : 3;
             if (coherence == null) {
@@ -20760,21 +22258,23 @@ require.define('115', function(module, exports, __dirname, __filename, undefined
                 0,
                 1,
                 2
-            ], function (i) {
-                var _i, _ref, _results;
-                return _.map(function () {
-                    _results = [];
-                    for (var _i = 0, _ref = _this.dotsPerSet; 0 <= _ref ? _i < _ref : _i > _ref; 0 <= _ref ? _i++ : _i--) {
-                        _results.push(_i);
-                    }
-                    return _results;
-                }.apply(this), function (d) {
-                    return [
-                        Math.random(),
-                        Math.random()
-                    ];
-                });
-            });
+            ], function (_this) {
+                return function (i) {
+                    var _i, _ref, _results;
+                    return _.map(function () {
+                        _results = [];
+                        for (var _i = 0, _ref = _this.dotsPerSet; 0 <= _ref ? _i < _ref : _i > _ref; 0 <= _ref ? _i++ : _i--) {
+                            _results.push(_i);
+                        }
+                        return _results;
+                    }.apply(this), function (d) {
+                        return [
+                            Math.random(),
+                            Math.random()
+                        ];
+                    });
+                };
+            }(this));
         }
         DotSet.prototype.getDotPartition = function (i) {
             return this.dotSets[i];
@@ -20882,7 +22382,7 @@ require.define('115', function(module, exports, __dirname, __filename, undefined
             return _results;
         };
         RandomDotMotion.prototype.render = function (context, layer) {
-            var i, nodeSets, _i, _ref, _this = this;
+            var i, nodeSets, _i, _ref;
             this.groups = function () {
                 var _i, _ref, _results;
                 _results = [];
@@ -20899,33 +22399,35 @@ require.define('115', function(module, exports, __dirname, __filename, undefined
                 this.displayInitialDots(nodeSets[i], this.groups[i]);
             }
             layer.draw();
-            this.anim = new Kinetic.Animation(function (frame) {
-                var curset, dx, part, xy, _j, _ref1, _results;
-                dx = _this.dotSet.nextFrame(_this.coherence, _this.dotSpeed, 180);
-                part = _this.dotSet.frameNum % _this.partitions;
-                curset = nodeSets[part];
-                _results = [];
-                for (i = _j = 0, _ref1 = curset.length; 0 <= _ref1 ? _j < _ref1 : _j > _ref1; i = 0 <= _ref1 ? ++_j : --_j) {
-                    xy = dx[i];
-                    xy = [
-                        xy[0] * _this.apRadius,
-                        xy[1] * _this.apRadius
-                    ];
-                    console.log(xy);
-                    curset[i].setPosition(xy);
-                    if (!DotSet.inCircle(0.5 * _this.apRadius, 0.5 * _this.apRadius, _this.apRadius / 2, xy[0], xy[1])) {
-                        _results.push(curset[i].hide());
-                    } else {
-                        _results.push(curset[i].show());
+            this.anim = new Kinetic.Animation(function (_this) {
+                return function (frame) {
+                    var curset, dx, part, xy, _j, _ref1, _results;
+                    dx = _this.dotSet.nextFrame(_this.coherence, _this.dotSpeed, 180);
+                    part = _this.dotSet.frameNum % _this.partitions;
+                    curset = nodeSets[part];
+                    _results = [];
+                    for (i = _j = 0, _ref1 = curset.length; 0 <= _ref1 ? _j < _ref1 : _j > _ref1; i = 0 <= _ref1 ? ++_j : --_j) {
+                        xy = dx[i];
+                        xy = [
+                            xy[0] * _this.apRadius,
+                            xy[1] * _this.apRadius
+                        ];
+                        console.log(xy);
+                        curset[i].setPosition(xy);
+                        if (!DotSet.inCircle(0.5 * _this.apRadius, 0.5 * _this.apRadius, _this.apRadius / 2, xy[0], xy[1])) {
+                            _results.push(curset[i].hide());
+                        } else {
+                            _results.push(curset[i].show());
+                        }
                     }
-                }
-                return _results;
-            }, layer);
+                    return _results;
+                };
+            }(this), layer);
             layer.draw();
             return this.anim.start();
         };
         RandomDotMotion.prototype.render2 = function (context, layer) {
-            var i, nodeSets, _i, _ref, _this = this;
+            var i, nodeSets, _i, _ref;
             this.layers = function () {
                 var _i, _ref, _results;
                 _results = [];
@@ -20941,22 +22443,24 @@ require.define('115', function(module, exports, __dirname, __filename, undefined
             for (i = _i = 0, _ref = this.partitions; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
                 this.displayInitialDots(nodeSets[i], this.layers[i]);
             }
-            this.anim = new Kinetic.Animation(function (frame) {
-                var curset, dx, part, xy, _j, _ref1;
-                dx = _this.dotSet.nextFrame(_this.coherence, _this.dotSpeed, 180);
-                part = _this.dotSet.frameNum % _this.partitions;
-                curset = nodeSets[part];
-                for (i = _j = 0, _ref1 = curset.length; 0 <= _ref1 ? _j < _ref1 : _j > _ref1; i = 0 <= _ref1 ? ++_j : --_j) {
-                    xy = dx[i];
-                    xy = [
-                        xy[0] * _this.apRadius,
-                        xy[1] * _this.apRadius
-                    ];
-                    console.log(xy);
-                    curset[i].setPosition(xy);
-                }
-                return _this.layers[part].draw();
-            });
+            this.anim = new Kinetic.Animation(function (_this) {
+                return function (frame) {
+                    var curset, dx, part, xy, _j, _ref1;
+                    dx = _this.dotSet.nextFrame(_this.coherence, _this.dotSpeed, 180);
+                    part = _this.dotSet.frameNum % _this.partitions;
+                    curset = nodeSets[part];
+                    for (i = _j = 0, _ref1 = curset.length; 0 <= _ref1 ? _j < _ref1 : _j > _ref1; i = 0 <= _ref1 ? ++_j : --_j) {
+                        xy = dx[i];
+                        xy = [
+                            xy[0] * _this.apRadius,
+                            xy[1] * _this.apRadius
+                        ];
+                        console.log(xy);
+                        curset[i].setPosition(xy);
+                    }
+                    return _this.layers[part].draw();
+                };
+            }(this));
             layer.draw();
             return this.anim.start();
         };
@@ -20970,21 +22474,21 @@ require.define('115', function(module, exports, __dirname, __filename, undefined
     console.log('NEXT', x.nextFrame(0.5, 0.01, 180));
 }.call(this));
 });
-require.define('114', function(module, exports, __dirname, __filename, undefined){
+require.define('66', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var AbsoluteLayout, Background, Bacon, Base, GridLayout, Kinetic, KineticStimFactory, Layout, Q, Response, Stimulus, disableBrowserBack, doTimer, getTimestamp, input, lay, li, marked, renderable, ul, utils, _, _ref;
-    Bacon = require('25', module).Bacon;
-    Kinetic = require('27', module);
-    _ = require('2', module);
-    Q = require('9', module);
-    marked = require('40', module);
-    utils = require('76', module);
-    lay = require('74', module);
-    Base = require('73', module);
+    Bacon = require('22', module).Bacon;
+    Kinetic = require('15', module);
+    _ = require('16', module);
+    Q = require('17', module);
+    marked = require('45', module);
+    utils = require('69', module);
+    lay = require('73', module);
+    Base = require('72', module);
     Stimulus = Base.Stimulus;
     Response = Base.Response;
-    Background = require('119', module).Background;
-    _ref = require('60', module), renderable = _ref.renderable, ul = _ref.ul, li = _ref.li, input = _ref.input;
+    Background = require('113', module).Background;
+    _ref = require('61', module), renderable = _ref.renderable, ul = _ref.ul, li = _ref.li, input = _ref.input;
     Layout = lay.Layout;
     AbsoluteLayout = lay.AbsoluteLayout;
     GridLayout = lay.GridLayout;
@@ -21009,7 +22513,7 @@ require.define('114', function(module, exports, __dirname, __filename, undefined
     }();
 }.call(this));
 });
-require.define('119', function(module, exports, __dirname, __filename, undefined){
+require.define('113', function(module, exports, __dirname, __filename, undefined){
 (function () {
     var Background, ContainerDrawable, GStimulus, Kinetic, KineticDrawable, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
@@ -21024,11 +22528,11 @@ require.define('119', function(module, exports, __dirname, __filename, undefined
             child.__super__ = parent.prototype;
             return child;
         };
-    Kinetic = require('27', module).Kinetic;
-    GStimulus = require('73', module).GraphicalStimulus;
-    KineticDrawable = require('73', module).KineticDrawable;
-    ContainerDrawable = require('73', module).ContainerDrawable;
-    _ = require('2', module);
+    Kinetic = require('15', module).Kinetic;
+    GStimulus = require('72', module).GraphicalStimulus;
+    KineticDrawable = require('72', module).KineticDrawable;
+    ContainerDrawable = require('72', module).ContainerDrawable;
+    _ = require('16', module);
     Background = function (_super) {
         __extends(Background, _super);
         function Background(stims, fill) {
@@ -21063,1059 +22567,7 @@ require.define('119', function(module, exports, __dirname, __filename, undefined
     exports.Background = Background;
 }.call(this));
 });
-require.define('120', function(module, exports, __dirname, __filename, undefined){
-RegExp.escape = function (s) {
-    return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-};
-(function (undefined) {
-    'use strict';
-    var $;
-    if (typeof jQuery !== 'undefined' && jQuery) {
-        $ = jQuery;
-    } else {
-        $ = {};
-    }
-    $.csv = {
-        defaults: {
-            separator: ',',
-            delimiter: '"',
-            headers: true
-        },
-        hooks: {
-            castToScalar: function (value, state) {
-                var hasDot = /\./;
-                if (isNaN(value)) {
-                    return value;
-                } else {
-                    if (hasDot.test(value)) {
-                        return parseFloat(value);
-                    } else {
-                        var integer = parseInt(value);
-                        if (isNaN(integer)) {
-                            return null;
-                        } else {
-                            return integer;
-                        }
-                    }
-                }
-            }
-        },
-        parsers: {
-            parse: function (csv, options) {
-                var separator = options.separator;
-                var delimiter = options.delimiter;
-                if (!options.state.rowNum) {
-                    options.state.rowNum = 1;
-                }
-                if (!options.state.colNum) {
-                    options.state.colNum = 1;
-                }
-                var data = [];
-                var entry = [];
-                var state = 0;
-                var value = '';
-                var exit = false;
-                function endOfEntry() {
-                    state = 0;
-                    value = '';
-                    if (options.start && options.state.rowNum < options.start) {
-                        entry = [];
-                        options.state.rowNum++;
-                        options.state.colNum = 1;
-                        return;
-                    }
-                    if (options.onParseEntry === undefined) {
-                        data.push(entry);
-                    } else {
-                        var hookVal = options.onParseEntry(entry, options.state);
-                        if (hookVal !== false) {
-                            data.push(hookVal);
-                        }
-                    }
-                    entry = [];
-                    if (options.end && options.state.rowNum >= options.end) {
-                        exit = true;
-                    }
-                    options.state.rowNum++;
-                    options.state.colNum = 1;
-                }
-                function endOfValue() {
-                    if (options.onParseValue === undefined) {
-                        entry.push(value);
-                    } else {
-                        var hook = options.onParseValue(value, options.state);
-                        if (hook !== false) {
-                            entry.push(hook);
-                        }
-                    }
-                    value = '';
-                    state = 0;
-                    options.state.colNum++;
-                }
-                var escSeparator = RegExp.escape(separator);
-                var escDelimiter = RegExp.escape(delimiter);
-                var match = /(D|S|\r\n|\n|\r|[^DS\r\n]+)/;
-                var matchSrc = match.source;
-                matchSrc = matchSrc.replace(/S/g, escSeparator);
-                matchSrc = matchSrc.replace(/D/g, escDelimiter);
-                match = RegExp(matchSrc, 'gm');
-                csv.replace(match, function (m0) {
-                    if (exit) {
-                        return;
-                    }
-                    switch (state) {
-                    case 0:
-                        if (m0 === separator) {
-                            value += '';
-                            endOfValue();
-                            break;
-                        }
-                        if (m0 === delimiter) {
-                            state = 1;
-                            break;
-                        }
-                        if (/^(\r\n|\n|\r)$/.test(m0)) {
-                            endOfValue();
-                            endOfEntry();
-                            break;
-                        }
-                        value += m0;
-                        state = 3;
-                        break;
-                    case 1:
-                        if (m0 === delimiter) {
-                            state = 2;
-                            break;
-                        }
-                        value += m0;
-                        state = 1;
-                        break;
-                    case 2:
-                        if (m0 === delimiter) {
-                            value += m0;
-                            state = 1;
-                            break;
-                        }
-                        if (m0 === separator) {
-                            endOfValue();
-                            break;
-                        }
-                        if (/^(\r\n|\n|\r)$/.test(m0)) {
-                            endOfValue();
-                            endOfEntry();
-                            break;
-                        }
-                        throw new Error('CSVDataError: Illegal State [Row:' + options.state.rowNum + '][Col:' + options.state.colNum + ']');
-                    case 3:
-                        if (m0 === separator) {
-                            endOfValue();
-                            break;
-                        }
-                        if (/^(\r\n|\n|\r)$/.test(m0)) {
-                            endOfValue();
-                            endOfEntry();
-                            break;
-                        }
-                        if (m0 === delimiter) {
-                            throw new Error('CSVDataError: Illegal Quote [Row:' + options.state.rowNum + '][Col:' + options.state.colNum + ']');
-                        }
-                        throw new Error('CSVDataError: Illegal Data [Row:' + options.state.rowNum + '][Col:' + options.state.colNum + ']');
-                    default:
-                        throw new Error('CSVDataError: Unknown State [Row:' + options.state.rowNum + '][Col:' + options.state.colNum + ']');
-                    }
-                });
-                if (entry.length !== 0) {
-                    endOfValue();
-                    endOfEntry();
-                }
-                return data;
-            },
-            splitLines: function (csv, options) {
-                var separator = options.separator;
-                var delimiter = options.delimiter;
-                if (!options.state.rowNum) {
-                    options.state.rowNum = 1;
-                }
-                var entries = [];
-                var state = 0;
-                var entry = '';
-                var exit = false;
-                function endOfLine() {
-                    state = 0;
-                    if (options.start && options.state.rowNum < options.start) {
-                        entry = '';
-                        options.state.rowNum++;
-                        return;
-                    }
-                    if (options.onParseEntry === undefined) {
-                        entries.push(entry);
-                    } else {
-                        var hookVal = options.onParseEntry(entry, options.state);
-                        if (hookVal !== false) {
-                            entries.push(hookVal);
-                        }
-                    }
-                    entry = '';
-                    if (options.end && options.state.rowNum >= options.end) {
-                        exit = true;
-                    }
-                    options.state.rowNum++;
-                }
-                var escSeparator = RegExp.escape(separator);
-                var escDelimiter = RegExp.escape(delimiter);
-                var match = /(D|S|\n|\r|[^DS\r\n]+)/;
-                var matchSrc = match.source;
-                matchSrc = matchSrc.replace(/S/g, escSeparator);
-                matchSrc = matchSrc.replace(/D/g, escDelimiter);
-                match = RegExp(matchSrc, 'gm');
-                csv.replace(match, function (m0) {
-                    if (exit) {
-                        return;
-                    }
-                    switch (state) {
-                    case 0:
-                        if (m0 === separator) {
-                            entry += m0;
-                            state = 0;
-                            break;
-                        }
-                        if (m0 === delimiter) {
-                            entry += m0;
-                            state = 1;
-                            break;
-                        }
-                        if (m0 === '\n') {
-                            endOfLine();
-                            break;
-                        }
-                        if (/^\r$/.test(m0)) {
-                            break;
-                        }
-                        entry += m0;
-                        state = 3;
-                        break;
-                    case 1:
-                        if (m0 === delimiter) {
-                            entry += m0;
-                            state = 2;
-                            break;
-                        }
-                        entry += m0;
-                        state = 1;
-                        break;
-                    case 2:
-                        var prevChar = entry.substr(entry.length - 1);
-                        if (m0 === delimiter && prevChar === delimiter) {
-                            entry += m0;
-                            state = 1;
-                            break;
-                        }
-                        if (m0 === separator) {
-                            entry += m0;
-                            state = 0;
-                            break;
-                        }
-                        if (m0 === '\n') {
-                            endOfLine();
-                            break;
-                        }
-                        if (m0 === '\r') {
-                            break;
-                        }
-                        throw new Error('CSVDataError: Illegal state [Row:' + options.state.rowNum + ']');
-                    case 3:
-                        if (m0 === separator) {
-                            entry += m0;
-                            state = 0;
-                            break;
-                        }
-                        if (m0 === '\n') {
-                            endOfLine();
-                            break;
-                        }
-                        if (m0 === '\r') {
-                            break;
-                        }
-                        if (m0 === delimiter) {
-                            throw new Error('CSVDataError: Illegal quote [Row:' + options.state.rowNum + ']');
-                        }
-                        throw new Error('CSVDataError: Illegal state [Row:' + options.state.rowNum + ']');
-                    default:
-                        throw new Error('CSVDataError: Unknown state [Row:' + options.state.rowNum + ']');
-                    }
-                });
-                if (entry !== '') {
-                    endOfLine();
-                }
-                return entries;
-            },
-            parseEntry: function (csv, options) {
-                var separator = options.separator;
-                var delimiter = options.delimiter;
-                if (!options.state.rowNum) {
-                    options.state.rowNum = 1;
-                }
-                if (!options.state.colNum) {
-                    options.state.colNum = 1;
-                }
-                var entry = [];
-                var state = 0;
-                var value = '';
-                function endOfValue() {
-                    if (options.onParseValue === undefined) {
-                        entry.push(value);
-                    } else {
-                        var hook = options.onParseValue(value, options.state);
-                        if (hook !== false) {
-                            entry.push(hook);
-                        }
-                    }
-                    value = '';
-                    state = 0;
-                    options.state.colNum++;
-                }
-                if (!options.match) {
-                    var escSeparator = RegExp.escape(separator);
-                    var escDelimiter = RegExp.escape(delimiter);
-                    var match = /(D|S|\n|\r|[^DS\r\n]+)/;
-                    var matchSrc = match.source;
-                    matchSrc = matchSrc.replace(/S/g, escSeparator);
-                    matchSrc = matchSrc.replace(/D/g, escDelimiter);
-                    options.match = RegExp(matchSrc, 'gm');
-                }
-                csv.replace(options.match, function (m0) {
-                    switch (state) {
-                    case 0:
-                        if (m0 === separator) {
-                            value += '';
-                            endOfValue();
-                            break;
-                        }
-                        if (m0 === delimiter) {
-                            state = 1;
-                            break;
-                        }
-                        if (m0 === '\n' || m0 === '\r') {
-                            break;
-                        }
-                        value += m0;
-                        state = 3;
-                        break;
-                    case 1:
-                        if (m0 === delimiter) {
-                            state = 2;
-                            break;
-                        }
-                        value += m0;
-                        state = 1;
-                        break;
-                    case 2:
-                        if (m0 === delimiter) {
-                            value += m0;
-                            state = 1;
-                            break;
-                        }
-                        if (m0 === separator) {
-                            endOfValue();
-                            break;
-                        }
-                        if (m0 === '\n' || m0 === '\r') {
-                            break;
-                        }
-                        throw new Error('CSVDataError: Illegal State [Row:' + options.state.rowNum + '][Col:' + options.state.colNum + ']');
-                    case 3:
-                        if (m0 === separator) {
-                            endOfValue();
-                            break;
-                        }
-                        if (m0 === '\n' || m0 === '\r') {
-                            break;
-                        }
-                        if (m0 === delimiter) {
-                            throw new Error('CSVDataError: Illegal Quote [Row:' + options.state.rowNum + '][Col:' + options.state.colNum + ']');
-                        }
-                        throw new Error('CSVDataError: Illegal Data [Row:' + options.state.rowNum + '][Col:' + options.state.colNum + ']');
-                    default:
-                        throw new Error('CSVDataError: Unknown State [Row:' + options.state.rowNum + '][Col:' + options.state.colNum + ']');
-                    }
-                });
-                endOfValue();
-                return entry;
-            }
-        },
-        helpers: {
-            collectPropertyNames: function (objects) {
-                var o, propName, props = [];
-                for (o in objects) {
-                    for (propName in objects[o]) {
-                        if (objects[o].hasOwnProperty(propName) && props.indexOf(propName) < 0 && typeof objects[o][propName] !== 'function') {
-                            props.push(propName);
-                        }
-                    }
-                }
-                return props;
-            }
-        },
-        toArray: function (csv, options, callback) {
-            var options = options !== undefined ? options : {};
-            var config = {};
-            config.callback = callback !== undefined && typeof callback === 'function' ? callback : false;
-            config.separator = 'separator' in options ? options.separator : $.csv.defaults.separator;
-            config.delimiter = 'delimiter' in options ? options.delimiter : $.csv.defaults.delimiter;
-            var state = options.state !== undefined ? options.state : {};
-            var options = {
-                    delimiter: config.delimiter,
-                    separator: config.separator,
-                    onParseEntry: options.onParseEntry,
-                    onParseValue: options.onParseValue,
-                    state: state
-                };
-            var entry = $.csv.parsers.parseEntry(csv, options);
-            if (!config.callback) {
-                return entry;
-            } else {
-                config.callback('', entry);
-            }
-        },
-        toArrays: function (csv, options, callback) {
-            var options = options !== undefined ? options : {};
-            var config = {};
-            config.callback = callback !== undefined && typeof callback === 'function' ? callback : false;
-            config.separator = 'separator' in options ? options.separator : $.csv.defaults.separator;
-            config.delimiter = 'delimiter' in options ? options.delimiter : $.csv.defaults.delimiter;
-            var data = [];
-            var options = {
-                    delimiter: config.delimiter,
-                    separator: config.separator,
-                    onParseEntry: options.onParseEntry,
-                    onParseValue: options.onParseValue,
-                    start: options.start,
-                    end: options.end,
-                    state: {
-                        rowNum: 1,
-                        colNum: 1
-                    }
-                };
-            data = $.csv.parsers.parse(csv, options);
-            if (!config.callback) {
-                return data;
-            } else {
-                config.callback('', data);
-            }
-        },
-        toObjects: function (csv, options, callback) {
-            var options = options !== undefined ? options : {};
-            var config = {};
-            config.callback = callback !== undefined && typeof callback === 'function' ? callback : false;
-            config.separator = 'separator' in options ? options.separator : $.csv.defaults.separator;
-            config.delimiter = 'delimiter' in options ? options.delimiter : $.csv.defaults.delimiter;
-            config.headers = 'headers' in options ? options.headers : $.csv.defaults.headers;
-            options.start = 'start' in options ? options.start : 1;
-            if (config.headers) {
-                options.start++;
-            }
-            if (options.end && config.headers) {
-                options.end++;
-            }
-            var lines = [];
-            var data = [];
-            var options = {
-                    delimiter: config.delimiter,
-                    separator: config.separator,
-                    onParseEntry: options.onParseEntry,
-                    onParseValue: options.onParseValue,
-                    start: options.start,
-                    end: options.end,
-                    state: {
-                        rowNum: 1,
-                        colNum: 1
-                    },
-                    match: false,
-                    transform: options.transform
-                };
-            var headerOptions = {
-                    delimiter: config.delimiter,
-                    separator: config.separator,
-                    start: 1,
-                    end: 1,
-                    state: {
-                        rowNum: 1,
-                        colNum: 1
-                    }
-                };
-            var headerLine = $.csv.parsers.splitLines(csv, headerOptions);
-            var headers = $.csv.toArray(headerLine[0], options);
-            var lines = $.csv.parsers.splitLines(csv, options);
-            options.state.colNum = 1;
-            if (headers) {
-                options.state.rowNum = 2;
-            } else {
-                options.state.rowNum = 1;
-            }
-            for (var i = 0, len = lines.length; i < len; i++) {
-                var entry = $.csv.toArray(lines[i], options);
-                var object = {};
-                for (var j in headers) {
-                    object[headers[j]] = entry[j];
-                }
-                if (options.transform !== undefined) {
-                    data.push(options.transform.call(undefined, object));
-                } else {
-                    data.push(object);
-                }
-                options.state.rowNum++;
-            }
-            if (!config.callback) {
-                return data;
-            } else {
-                config.callback('', data);
-            }
-        },
-        fromArrays: function (arrays, options, callback) {
-            var options = options !== undefined ? options : {};
-            var config = {};
-            config.callback = callback !== undefined && typeof callback === 'function' ? callback : false;
-            config.separator = 'separator' in options ? options.separator : $.csv.defaults.separator;
-            config.delimiter = 'delimiter' in options ? options.delimiter : $.csv.defaults.delimiter;
-            var output = '', line, lineValues, i, j;
-            for (i = 0; i < arrays.length; i++) {
-                line = arrays[i];
-                lineValues = [];
-                for (j = 0; j < line.length; j++) {
-                    var strValue = line[j] === undefined || line[j] === null ? '' : line[j].toString();
-                    if (strValue.indexOf(config.delimiter) > -1) {
-                        strValue = strValue.replace(config.delimiter, config.delimiter + config.delimiter);
-                    }
-                    var escMatcher = '\n|\r|S|D';
-                    escMatcher = escMatcher.replace('S', config.separator);
-                    escMatcher = escMatcher.replace('D', config.delimiter);
-                    if (strValue.search(escMatcher) > -1) {
-                        strValue = config.delimiter + strValue + config.delimiter;
-                    }
-                    lineValues.push(strValue);
-                }
-                output += lineValues.join(config.separator) + '\r\n';
-            }
-            if (!config.callback) {
-                return output;
-            } else {
-                config.callback('', output);
-            }
-        },
-        fromObjects: function (objects, options, callback) {
-            var options = options !== undefined ? options : {};
-            var config = {};
-            config.callback = callback !== undefined && typeof callback === 'function' ? callback : false;
-            config.separator = 'separator' in options ? options.separator : $.csv.defaults.separator;
-            config.delimiter = 'delimiter' in options ? options.delimiter : $.csv.defaults.delimiter;
-            config.headers = 'headers' in options ? options.headers : $.csv.defaults.headers;
-            config.sortOrder = 'sortOrder' in options ? options.sortOrder : 'declare';
-            config.manualOrder = 'manualOrder' in options ? options.manualOrder : [];
-            config.transform = options.transform;
-            if (typeof config.manualOrder === 'string') {
-                config.manualOrder = $.csv.toArray(config.manualOrder, config);
-            }
-            if (config.transform !== undefined) {
-                var origObjects = objects;
-                objects = [];
-                var i;
-                for (i = 0; i < origObjects.length; i++) {
-                    objects.push(config.transform.call(undefined, origObjects[i]));
-                }
-            }
-            var props = $.csv.helpers.collectPropertyNames(objects);
-            if (config.sortOrder === 'alpha') {
-                props.sort();
-            }
-            if (config.manualOrder.length > 0) {
-                var propsManual = [].concat(config.manualOrder);
-                var p;
-                for (p = 0; p < props.length; p++) {
-                    if (propsManual.indexOf(props[p]) < 0) {
-                        propsManual.push(props[p]);
-                    }
-                }
-                props = propsManual;
-            }
-            var o, p, line, output = [], propName;
-            if (config.headers) {
-                output.push(props);
-            }
-            for (o = 0; o < objects.length; o++) {
-                line = [];
-                for (p = 0; p < props.length; p++) {
-                    propName = props[p];
-                    if (propName in objects[o] && typeof objects[o][propName] !== 'function') {
-                        line.push(objects[o][propName]);
-                    } else {
-                        line.push('');
-                    }
-                }
-                output.push(line);
-            }
-            return $.csv.fromArrays(output, options, config.callback);
-        }
-    };
-    $.csvEntry2Array = $.csv.toArray;
-    $.csv2Array = $.csv.toArrays;
-    $.csv2Dictionary = $.csv.toObjects;
-    if (typeof module !== 'undefined' && module.exports) {
-        module.exports = $.csv;
-    }
-}.call(this));
-});
-require.define('122', function(module, exports, __dirname, __filename, undefined){
-(function () {
-    var Canvas, ComponentFactory, Components, DefaultComponentFactory, Html, Layout, Psy, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
-            for (var key in parent) {
-                if (__hasProp.call(parent, key))
-                    child[key] = parent[key];
-            }
-            function ctor() {
-                this.constructor = child;
-            }
-            ctor.prototype = parent.prototype;
-            child.prototype = new ctor();
-            child.__super__ = parent.prototype;
-            return child;
-        };
-    _ = require('2', module);
-    Canvas = require('80', module).Canvas;
-    Html = require('81', module).Html;
-    Components = require('82', module);
-    Psy = require('83', module);
-    Layout = require('74', module);
-    ComponentFactory = function () {
-        function ComponentFactory(context) {
-            this.context = context;
-        }
-        ComponentFactory.prototype.buildStimulus = function (spec) {
-            var params, stimType;
-            stimType = _.keys(spec)[0];
-            params = _.values(spec)[0];
-            return this.makeStimulus(stimType, params);
-        };
-        ComponentFactory.prototype.buildResponse = function (spec) {
-            var params, responseType;
-            responseType = _.keys(spec)[0];
-            params = _.values(spec)[0];
-            return this.makeResponse(responseType, params);
-        };
-        ComponentFactory.prototype.buildEvent = function (spec) {
-            var response, responseSpec, stim, stimSpec;
-            if (spec.Next == null) {
-                console.log('error building event with spec: ', spec);
-                throw new Error('Event specification does not contain \'Next\' element');
-            }
-            stimSpec = _.omit(spec, 'Next');
-            responseSpec = _.pick(spec, 'Next');
-            stim = this.buildStimulus(stimSpec);
-            response = this.buildResponse(responseSpec.Next);
-            return this.makeEvent(stim, response);
-        };
-        ComponentFactory.prototype.make = function (name, params, registry) {
-            throw new Error('unimplemented', name, params, registry);
-        };
-        ComponentFactory.prototype.makeStimulus = function (name, params) {
-            throw new Error('unimplemented', name, params);
-        };
-        ComponentFactory.prototype.makeResponse = function (name, params) {
-            throw new Error('unimplemented', name, params);
-        };
-        ComponentFactory.prototype.makeEvent = function (stim, response) {
-            throw new Error('unimplemented', stim, response);
-        };
-        ComponentFactory.prototype.makeLayout = function (name, params, context) {
-            throw new Error('unimplemented', name, params, context);
-        };
-        return ComponentFactory;
-    }();
-    exports.ComponentFactory = ComponentFactory;
-    DefaultComponentFactory = function (_super) {
-        __extends(DefaultComponentFactory, _super);
-        function DefaultComponentFactory() {
-            this.registry = _.merge(Components, Canvas, Html);
-        }
-        DefaultComponentFactory.prototype.make = function (name, params, registry) {
-            var callee, layoutName, layoutParams, names, props, resps, stims, _i, _j, _k, _l, _ref, _ref1, _ref2, _ref3, _results, _results1, _results2, _results3;
-            callee = arguments.callee;
-            console.log('making', name);
-            switch (name) {
-            case 'Group':
-                console.log('building group');
-                names = _.map(params.stims, function (stim) {
-                    return _.keys(stim)[0];
-                });
-                props = _.map(params.stims, function (stim) {
-                    return _.values(stim)[0];
-                });
-                stims = _.map(function () {
-                    _results = [];
-                    for (var _i = 0, _ref = names.length; 0 <= _ref ? _i < _ref : _i > _ref; 0 <= _ref ? _i++ : _i--) {
-                        _results.push(_i);
-                    }
-                    return _results;
-                }.apply(this), function (_this) {
-                    return function (i) {
-                        return callee(names[i], props[i], _this.registry);
-                    };
-                }(this));
-                if (params.layout != null) {
-                    layoutName = _.keys(params.layout)[0];
-                    layoutParams = _.values(params.layout)[0];
-                    return new Components.Group(stims, this.makeLayout(layoutName, layoutParams, context));
-                } else {
-                    return new Components.Group(stims);
-                }
-                break;
-            case 'Grid':
-                names = _.map(params.stims, function (stim) {
-                    return _.keys(stim)[0];
-                });
-                props = _.map(params.stims, function (stim) {
-                    return _.values(stim)[0];
-                });
-                stims = _.map(function () {
-                    _results1 = [];
-                    for (var _j = 0, _ref1 = names.length; 0 <= _ref1 ? _j < _ref1 : _j > _ref1; 0 <= _ref1 ? _j++ : _j--) {
-                        _results1.push(_j);
-                    }
-                    return _results1;
-                }.apply(this), function (_this) {
-                    return function (i) {
-                        return callee(names[i], props[i], _this.registry);
-                    };
-                }(this));
-                return new Components.Grid(stims, params.rows || 3, params.columns || 3, params.bounds || null);
-            case 'Background':
-                console.log('building background', params);
-                names = _.keys(params);
-                props = _.values(params);
-                console.log('names', names);
-                console.log('props', props);
-                stims = _.map(function () {
-                    _results2 = [];
-                    for (var _k = 0, _ref2 = names.length; 0 <= _ref2 ? _k < _ref2 : _k > _ref2; 0 <= _ref2 ? _k++ : _k--) {
-                        _results2.push(_k);
-                    }
-                    return _results2;
-                }.apply(this), function (_this) {
-                    return function (i) {
-                        return callee(names[i], props[i], _this.registry);
-                    };
-                }(this));
-                return new Canvas.Background(stims);
-            case 'First':
-                names = _.keys(params);
-                props = _.values(params);
-                resps = _.map(function () {
-                    _results3 = [];
-                    for (var _l = 0, _ref3 = names.length; 0 <= _ref3 ? _l < _ref3 : _l > _ref3; 0 <= _ref3 ? _l++ : _l--) {
-                        _results3.push(_l);
-                    }
-                    return _results3;
-                }.apply(this), function (_this) {
-                    return function (i) {
-                        return callee(names[i], props[i], _this.registry);
-                    };
-                }(this));
-                return new Components.First(resps);
-            default:
-                if (registry[name] == null) {
-                    console.log('registry is', registry);
-                    throw new Error('DefaultComponentFactory:make cannot find component in registry named: ', name);
-                }
-                return new registry[name](params);
-            }
-        };
-        DefaultComponentFactory.prototype.makeStimulus = function (name, params) {
-            return this.make(name, params, this.registry);
-        };
-        DefaultComponentFactory.prototype.makeResponse = function (name, params) {
-            return this.make(name, params, this.registry);
-        };
-        DefaultComponentFactory.prototype.makeEvent = function (stim, response) {
-            return new Psy.Event(stim, response);
-        };
-        DefaultComponentFactory.prototype.makeLayout = function (name, params, context) {
-            switch (name) {
-            case 'Grid':
-                return new Layout.GridLayout(params[0], params[1], {
-                    x: 0,
-                    y: 0,
-                    width: context.width(),
-                    height: context.height()
-                });
-            default:
-                return console.log('unrecognized layout', name);
-            }
-        };
-        return DefaultComponentFactory;
-    }(ComponentFactory);
-    exports.DefaultComponentFactory = DefaultComponentFactory;
-    exports.componentFactory = new DefaultComponentFactory();
-    console.log('exports.DefaultComponentFactory', DefaultComponentFactory);
-}.call(this));
-});
-require.define('123', function(module, exports, __dirname, __filename, undefined){
-(function () {
-    var divide_list, get_type, __slice = [].slice;
-    get_type = function (varable) {
-        var as_string;
-        as_string = Object.prototype.toString.call(varable);
-        return as_string.slice(1, -1).split(' ')[1].toLowerCase();
-    };
-    divide_list = function (stack, long_list) {
-        var keys;
-        if (long_list.length > 0) {
-            if (get_type(long_list[0]) === 'object') {
-                keys = Object.keys(long_list[0]);
-                keys.forEach(function (key) {
-                    return stack.push({
-                        pattern: key,
-                        result: long_list[0][key]
-                    });
-                });
-                return divide_list(stack, long_list.slice(1));
-            } else {
-                stack.push({
-                    pattern: long_list[0],
-                    result: long_list[1]
-                });
-                return divide_list(stack, long_list.slice(2));
-            }
-        } else {
-            return stack;
-        }
-    };
-    exports.match = function () {
-        var choices, chosen, data, possible, sure;
-        data = arguments[0], choices = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-        possible = divide_list([], choices).filter(function (solution) {
-            var the_type;
-            the_type = get_type(solution.pattern);
-            if (solution.pattern === void 0) {
-                return true;
-            } else if (the_type === 'regexp') {
-                if (get_type(data) === 'string') {
-                    return data.match(solution.pattern);
-                } else {
-                    return false;
-                }
-            } else if (the_type === 'function') {
-                return solution.pattern(data);
-            } else {
-                return data === solution.pattern;
-            }
-        });
-        sure = possible.filter(function (solution) {
-            return solution.pattern != null;
-        });
-        chosen = sure.length > 0 ? sure[0] : possible[0];
-        if (chosen != null) {
-            if (get_type(chosen.result) === 'function') {
-                return chosen.result(data);
-            } else {
-                return chosen.result;
-            }
-        } else {
-            return chosen;
-        }
-    };
-}.call(this));
-});
-require.define('124', function(module, exports, __dirname, __filename, undefined){
-(function () {
-    var Nothing, Stimulus, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
-            for (var key in parent) {
-                if (__hasProp.call(parent, key))
-                    child[key] = parent[key];
-            }
-            function ctor() {
-                this.constructor = child;
-            }
-            ctor.prototype = parent.prototype;
-            child.prototype = new ctor();
-            child.__super__ = parent.prototype;
-            return child;
-        };
-    Stimulus = require('73', module).Stimulus;
-    Nothing = function (_super) {
-        __extends(Nothing, _super);
-        function Nothing(spec) {
-            if (spec == null) {
-                spec = {};
-            }
-            Nothing.__super__.constructor.call(this, spec);
-        }
-        Nothing.prototype.render = function (context, layer) {
-        };
-        return Nothing;
-    }(Stimulus);
-    exports.Nothing = Nothing;
-}.call(this));
-});
-require.define('126', function(module, exports, __dirname, __filename, undefined){
-(function () {
-    var Kinetic, LabeledElement, StimResp, Text, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
-            for (var key in parent) {
-                if (__hasProp.call(parent, key))
-                    child[key] = parent[key];
-            }
-            function ctor() {
-                this.constructor = child;
-            }
-            ctor.prototype = parent.prototype;
-            child.prototype = new ctor();
-            child.__super__ = parent.prototype;
-            return child;
-        };
-    Kinetic = require('27', module).Kinetic;
-    Text = require('127', module).Text;
-    StimResp = require('73', module);
-    LabeledElement = function (_super) {
-        __extends(LabeledElement, _super);
-        LabeledElement.prototype.defaults = {
-            position: 'below',
-            content: 'Label',
-            align: 'center',
-            gap: 10,
-            fontSize: 32,
-            fill: 'black',
-            fontFamily: 'Arial'
-        };
-        function LabeledElement(element, spec) {
-            this.element = element;
-            if (spec == null) {
-                spec = {};
-            }
-            LabeledElement.__super__.constructor.call(this, spec);
-        }
-        LabeledElement.prototype.render = function (context) {
-            var target;
-            target = this.element.render(context);
-            this.text = new Kinetic.Text({
-                x: 0,
-                y: 0,
-                text: this.spec.content,
-                fontSize: this.spec.fontSize,
-                fill: this.spec.fill,
-                align: this.spec.align,
-                width: target.width(),
-                fontFamily: this.spec.fontFamily,
-                padding: 2
-            });
-            console.log('labeled text', this.text.getPosition());
-            console.log('labeled target width:', target.width());
-            console.log('labeled target height:', target.height());
-            switch (this.spec.position) {
-            case 'below':
-                this.text.setPosition({
-                    x: target.x(),
-                    y: target.y() + target.height() + this.spec.gap
-                });
-                break;
-            case 'above':
-                this.text.setPosition({
-                    x: target.x(),
-                    y: target.y() - this.text.getTextHeight()
-                });
-                break;
-            case 'left':
-                this.text.setPosition({
-                    x: target.x() - this.text.getTextWidth() - this.spec.gap,
-                    y: target.y()
-                });
-                break;
-            case 'right':
-                this.text.setPosition({
-                    x: target.x() + target.width() + this.spec.gap,
-                    y: target.y()
-                });
-            }
-            return new StimResp.ContainerDrawable([
-                target,
-                new StimResp.KineticDrawable(this.text)
-            ]);
-        };
-        return LabeledElement;
-    }(StimResp.Stimulus);
-    exports.LabeledElement = LabeledElement;
-}.call(this));
-});
-require.define('127', function(module, exports, __dirname, __filename, undefined){
-(function () {
-    var KStimulus, Kinetic, Text, layout, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
-            for (var key in parent) {
-                if (__hasProp.call(parent, key))
-                    child[key] = parent[key];
-            }
-            function ctor() {
-                this.constructor = child;
-            }
-            ctor.prototype = parent.prototype;
-            child.prototype = new ctor();
-            child.__super__ = parent.prototype;
-            return child;
-        };
-    layout = require('74', module);
-    Kinetic = require('27', module).Kinetic;
-    _ = require('2', module);
-    KStimulus = require('73', module).KineticStimulus;
-    Text = function (_super) {
-        __extends(Text, _super);
-        Text.prototype.defaults = {
-            content: 'Text',
-            x: 5,
-            y: 5,
-            width: null,
-            fill: 'black',
-            fontSize: 40,
-            fontFamily: 'Arial',
-            align: 'center',
-            position: null
-        };
-        function Text(spec) {
-            if (spec == null) {
-                spec = {};
-            }
-            if (spec.content != null && _.isArray(spec.content)) {
-                spec.content = spec.content.join(' \n ');
-                if (spec.lineHeight == null) {
-                    spec.lineHeight = 2;
-                }
-            }
-            Text.__super__.constructor.call(this, spec);
-        }
-        Text.prototype.initialize = function () {
-            return this.text = new Kinetic.Text({
-                x: 0,
-                y: 0,
-                text: this.spec.content,
-                fontSize: this.spec.fontSize,
-                fontFamily: this.spec.fontFamily,
-                fill: this.spec.fill,
-                lineHeight: this.spec.lineHeight || 1,
-                width: this.spec.width,
-                listening: false,
-                align: this.spec.align
-            });
-        };
-        Text.prototype.render = function (context, layer) {
-            var coords;
-            coords = this.computeCoordinates(context, this.spec.position, this.text.getWidth(), this.text.getHeight());
-            this.text.setPosition({
-                x: coords[0],
-                y: coords[1]
-            });
-            return this.presentable(this.text);
-        };
-        return Text;
-    }(KStimulus);
-    exports.Text = Text;
-}.call(this));
-});
-return require('55');
+return require('65');
 })((function() {
   var loading = {};
   var files = {};
@@ -22172,4 +22624,4 @@ return require('55');
 
   return inner;
 })()));
-//# sourceMappingURL=psycloud.js.map
+//# sourceMappingURL=undefined
