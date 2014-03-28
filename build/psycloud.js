@@ -10031,7 +10031,7 @@ require.define('65', function(module, exports, __dirname, __filename, undefined)
 });
 require.define('78', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Canvas, ComponentFactory, Components, DefaultComponentFactory, Html, Layout, Psy, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var Canvas, ComponentFactory, Components, DefaultComponentFactory, Html, Layout, Psy, didyoumean, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -10045,6 +10045,8 @@ require.define('78', function(module, exports, __dirname, __filename, undefined)
             return child;
         };
     _ = require('16', module);
+    didyoumean = require('122', module);
+    didyoumean.caseSensitive = true;
     Canvas = require('75', module).Canvas;
     Html = require('76', module).Html;
     Components = require('77', module);
@@ -10068,6 +10070,7 @@ require.define('78', function(module, exports, __dirname, __filename, undefined)
         };
         ComponentFactory.prototype.buildEvent = function (spec) {
             var response, responseSpec, stim, stimSpec;
+            console.log('building event', spec);
             if (spec.Next == null) {
                 console.log('error building event with spec: ', spec);
                 throw new Error('Event specification does not contain \'Next\' element');
@@ -10151,11 +10154,8 @@ require.define('78', function(module, exports, __dirname, __filename, undefined)
                 }(this));
                 return new Components.Grid(stims, params.rows || 3, params.columns || 3, params.bounds || null);
             case 'Background':
-                console.log('building background', params);
                 names = _.keys(params);
                 props = _.values(params);
-                console.log('names', names);
-                console.log('props', props);
                 stims = _.map(function () {
                     _results2 = [];
                     for (var _k = 0, _ref2 = names.length; 0 <= _ref2 ? _k < _ref2 : _k > _ref2; 0 <= _ref2 ? _k++ : _k--) {
@@ -10185,13 +10185,13 @@ require.define('78', function(module, exports, __dirname, __filename, undefined)
                 return new Components.First(resps);
             default:
                 if (registry[name] == null) {
-                    console.log('registry is', registry);
-                    throw new Error('DefaultComponentFactory:make cannot find component in registry named: ', name);
+                    throw new Error('DefaultComponentFactory: cannot find component named: ' + name + '-- did you mean? ' + didyoumean(name, _.keys(registry)) + '?');
                 }
                 return new registry[name](params);
             }
         };
         DefaultComponentFactory.prototype.makeStimulus = function (name, params) {
+            console.log('making stimulus', name, 'with params', params);
             return this.make(name, params, this.registry);
         };
         DefaultComponentFactory.prototype.makeResponse = function (name, params) {
@@ -10437,7 +10437,7 @@ require.define('73', function(module, exports, __dirname, __filename, undefined)
 });
 require.define('67', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Background, Bacon, Block, BlockSeq, Coda, DataTable, DefaultComponentFactory, Event, EventData, EventDataLog, Experiment, ExperimentContext, ExperimentState, FeedbackNode, FunctionNode, Kinetic, KineticContext, MockStimFactory, Prelude, Presenter, Q, Response, ResponseData, RunnableNode, StimFactory, Stimulus, TAFFY, Trial, buildCoda, buildEvent, buildPrelude, buildResponse, buildStimulus, buildTrial, createContext, des, functionNode, makeEventSeq, utils, _, __dummySpec, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var Background, Bacon, Block, BlockSeq, Coda, DataTable, DefaultComponentFactory, Event, EventData, EventDataLog, Experiment, ExperimentContext, ExperimentState, FeedbackNode, FunctionNode, Kinetic, KineticContext, MockStimFactory, Prelude, Presenter, Q, Response, ResponseData, RunnableNode, StateMachine, StimFactory, Stimulus, TAFFY, Trial, buildCoda, buildEvent, buildPrelude, buildResponse, buildStimulus, buildTrial, createContext, des, functionNode, makeEventSeq, utils, _, __dummySpec, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -10462,6 +10462,7 @@ require.define('67', function(module, exports, __dirname, __filename, undefined)
     Stimulus = require('72', module).Stimulus;
     Response = require('72', module).Response;
     ResponseData = require('72', module).ResponseData;
+    StateMachine = require('121', module);
     exports.EventData = EventData = function () {
         function EventData(name, id, data) {
             this.name = name;
@@ -11235,6 +11236,7 @@ require.define('67', function(module, exports, __dirname, __filename, undefined)
             _results = [];
             for (key in eventSpec) {
                 value = eventSpec[key];
+                console.log('building event', key, ', ', value);
                 _results.push(context.stimFactory.buildEvent(value));
             }
             return _results;
@@ -11284,26 +11286,32 @@ require.define('67', function(module, exports, __dirname, __filename, undefined)
             this.display = display;
             this.context = context;
             this.trialBuilder = this.display.Trial;
-            this.prelude = this.display.Prelude != null ? buildPrelude(this.display.Prelude.Events, this.context) : buildPrelude(__dummySpec.Events, this.context);
+            console.log('trialBuilder', this.trialBuilder);
+            this.prelude = this.display.Prelude != null ? (console.log('building prelude'), buildPrelude(this.display.Prelude.Events, this.context)) : (console.log('dummy prelude'), buildPrelude(__dummySpec.Events, this.context));
             this.coda = this.display.Coda != null ? buildCoda(this.display.Coda.Events, this.context) : (console.log('building dummy coda'), buildCoda(__dummySpec.Events, this.context));
         }
         Presenter.prototype.start = function () {
             var args, block, record, trialNum, trialSpec, trials;
+            console.log('Presenter.start');
             this.blockList = new BlockSeq(function () {
                 var _i, _len, _ref, _results;
                 _ref = this.trialList.blocks;
                 _results = [];
                 for (_i = 0, _len = _ref.length; _i < _len; _i++) {
                     block = _ref[_i];
+                    console.log('building block', block);
                     trials = function () {
                         var _j, _ref1, _results1;
                         _results1 = [];
                         for (trialNum = _j = 0, _ref1 = block.length; 0 <= _ref1 ? _j < _ref1 : _j > _ref1; trialNum = 0 <= _ref1 ? ++_j : --_j) {
+                            console.log('building trial', trialNum);
                             record = _.clone(block[trialNum]);
                             args = {};
                             args.trial = record;
                             args.screen = this.context.screenInfo();
+                            console.log('args', args);
                             trialSpec = this.trialBuilder.apply(args);
+                            console.log('building trial spec', trialSpec, 'with record', record);
                             _results1.push(buildTrial(trialSpec.Events, record, this.context, trialSpec.Feedback, trialSpec.Background));
                         }
                         return _results1;
@@ -12270,18 +12278,22 @@ require.define('70', function(module, exports, __dirname, __filename, undefined)
         };
         DataTable.prototype.replicate = function (nreps) {
             var name, out, value;
-            out = {};
-            for (name in this) {
-                if (!__hasProp.call(this, name))
-                    continue;
-                value = this[name];
-                out[name] = _.flatten(_.times(nreps, function (_this) {
-                    return function (n) {
-                        return value;
-                    };
-                }(this)));
+            if (nreps < 1) {
+                throw new Error('DataTable.replicate: nreps must be greater than or equal to 1');
+            } else {
+                out = {};
+                for (name in this) {
+                    if (!__hasProp.call(this, name))
+                        continue;
+                    value = this[name];
+                    out[name] = _.flatten(_.times(nreps, function (_this) {
+                        return function (n) {
+                            return value;
+                        };
+                    }(this)));
+                }
+                return new DataTable(out);
             }
-            return new DataTable(out);
         };
         DataTable.prototype.bindcol = function (name, column) {
             if (column.length !== this.nrow()) {
@@ -15181,6 +15193,7 @@ require.define('74', function(module, exports, __dirname, __filename, undefined)
         function CellTable(parents) {
             var fac;
             this.parents = parents;
+            console.log('building cell table parents', this.parents);
             this.parentNames = function () {
                 var _i, _len, _ref, _results;
                 _ref = this.parents;
@@ -15205,6 +15218,7 @@ require.define('74', function(module, exports, __dirname, __filename, undefined)
                 return _results;
             }.call(this);
             this.factorSet = _.zipObject(this.parentNames, this.levels);
+            console.log('expanding table', this.factorSet);
             this.table = DataTable.expand(this.factorSet);
         }
         CellTable.prototype.names = function () {
@@ -15286,7 +15300,11 @@ require.define('74', function(module, exports, __dirname, __filename, undefined)
     }();
     FactorNode = FactorNode = function () {
         FactorNode.build = function (name, spec) {
-            return new FactorNode(name, spec.levels);
+            if (spec.levels == null && _.isArray(spec)) {
+                return new FactorNode(name, spec);
+            } else {
+                return new FactorNode(name, spec.levels);
+            }
         };
         function FactorNode(name, levels) {
             this.name = name;
@@ -15337,15 +15355,19 @@ require.define('74', function(module, exports, __dirname, __filename, undefined)
     exports.FactorSetNode = FactorSetNode = function () {
         FactorSetNode.build = function (spec) {
             var fnodes, key, value;
+            console.log('building', spec);
             fnodes = function () {
                 var _results;
                 _results = [];
                 for (key in spec) {
                     value = spec[key];
+                    console.log('key is', key);
+                    console.log('value is', value);
                     _results.push(exports.FactorNode.build(key, value));
                 }
                 return _results;
             }();
+            console.log('fnodes', fnodes);
             return new FactorSetNode(fnodes);
         };
         function FactorSetNode(factors) {
@@ -15358,6 +15380,7 @@ require.define('74', function(module, exports, __dirname, __filename, undefined)
             for (i = _i = 0, _ref = this.factorNames.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
                 this.varmap[this.factorNames[i]] = this.factors[i];
             }
+            console.log('constructing cell table of', this.factors);
             this.cellTable = new CellTable(this.factors);
             this.name = this.cellTable.name;
         }
@@ -16493,11 +16516,16 @@ require.define('114', function(module, exports, __dirname, __filename, undefined
     utils = require('69', module);
     TrailsA = function (_super) {
         __extends(TrailsA, _super);
-        function TrailsA() {
-            TrailsA.__super__.constructor.call(this);
-            this.circleRadius = 25;
-            this.minDist = this.circleRadius * 4;
-            this.npoints = 25;
+        TrailsA.prototype.defaults = {
+            npoints: 25,
+            circleRadius: 25,
+            circleFill: 'blue'
+        };
+        function TrailsA(spec) {
+            TrailsA.__super__.constructor.call(this, spec);
+            this.minDist = this.spec.circleRadius * 4;
+            this.circleRadius = this.spec.circleRadius;
+            this.npoints = this.spec.npoints;
             this.maxIter = 100;
         }
         TrailsA.prototype.layoutPoints = function (context) {
@@ -16551,10 +16579,8 @@ require.define('114', function(module, exports, __dirname, __filename, undefined
             }.apply(this);
             first = remaining[0];
             remaining.splice(first, 1);
-            path = [];
-            indices = [];
-            path.push(pts[first]);
-            indices.push(first);
+            path = [pts[first]];
+            indices = [first];
             for (_j = 0, _len = remaining.length; _j < _len; _j++) {
                 index = remaining[_j];
                 insAt = this.minPathLength(path, pts[index]);
@@ -16568,14 +16594,18 @@ require.define('114', function(module, exports, __dirname, __filename, undefined
             return circle.on('click', function () {
                 var pts;
                 if (this.attrs.id === 'circle_'.concat(outer.pathIndex + 1)) {
-                    this.fill('khaki');
+                    if (outer.pathIndex === outer.npoints - 1) {
+                        this.fill('red');
+                        setTimeout(function () {
+                            return outer.emit('trail_completed');
+                        }, 200);
+                    } else {
+                        this.fill('khaki');
+                    }
                     outer.emit('trail_move', {
                         index: outer.pathIndex,
                         node_id: this.attrs.id
                     });
-                    if (outer.pathIndex === outer.npoints - 1) {
-                        outer.emit('trail_completed');
-                    }
                     if (outer.pathIndex === 0) {
                         outer.path.points([
                             this.getPosition().x,
@@ -16598,7 +16628,7 @@ require.define('114', function(module, exports, __dirname, __filename, undefined
             var circle, i, label, onPresent, outer, point, _i, _len, _ref;
             this.points = this.orderPoints(this.layoutPoints(context));
             this.path = new Kinetic.Line({
-                stroke: 'black',
+                stroke: 'khaki',
                 strokeWidth: 2
             });
             this.pathIndex = 0;
@@ -16606,13 +16636,25 @@ require.define('114', function(module, exports, __dirname, __filename, undefined
             _ref = this.points;
             for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
                 point = _ref[i];
-                circle = new Kinetic.Circle({
-                    x: point[0],
-                    y: point[1],
-                    radius: this.circleRadius,
-                    fill: 'blue',
-                    id: 'circle_' + (i + 1)
-                });
+                if (i === 0) {
+                    circle = new Kinetic.Circle({
+                        x: point[0],
+                        y: point[1],
+                        radius: this.circleRadius,
+                        fill: this.spec.circleFill,
+                        stroke: 'khaki',
+                        strokeWidth: 2,
+                        id: 'circle_' + (i + 1)
+                    });
+                } else {
+                    circle = new Kinetic.Circle({
+                        x: point[0],
+                        y: point[1],
+                        radius: this.circleRadius,
+                        fill: this.spec.circleFill,
+                        id: 'circle_' + (i + 1)
+                    });
+                }
                 this.addCircleListener(circle);
                 label = new Kinetic.Text({
                     x: point[0],
@@ -23573,6 +23615,288 @@ require.define('120', function(module, exports, __dirname, __filename, undefined
     }(Response);
     exports.Receiver = Receiver;
 }.call(this));
+});
+require.define('121', function(module, exports, __dirname, __filename, undefined){
+(function () {
+    var StateMachine = {
+            VERSION: '2.3.2',
+            Result: {
+                SUCCEEDED: 1,
+                NOTRANSITION: 2,
+                CANCELLED: 3,
+                PENDING: 4
+            },
+            Error: {
+                INVALID_TRANSITION: 100,
+                PENDING_TRANSITION: 200,
+                INVALID_CALLBACK: 300
+            },
+            WILDCARD: '*',
+            ASYNC: 'async',
+            create: function (cfg, target) {
+                var initial = typeof cfg.initial == 'string' ? { state: cfg.initial } : cfg.initial;
+                var terminal = cfg.terminal || cfg['final'];
+                var fsm = target || cfg.target || {};
+                var events = cfg.events || [];
+                var callbacks = cfg.callbacks || {};
+                var map = {};
+                var add = function (e) {
+                    var from = e.from instanceof Array ? e.from : e.from ? [e.from] : [StateMachine.WILDCARD];
+                    map[e.name] = map[e.name] || {};
+                    for (var n = 0; n < from.length; n++)
+                        map[e.name][from[n]] = e.to || from[n];
+                };
+                if (initial) {
+                    initial.event = initial.event || 'startup';
+                    add({
+                        name: initial.event,
+                        from: 'none',
+                        to: initial.state
+                    });
+                }
+                for (var n = 0; n < events.length; n++)
+                    add(events[n]);
+                for (var name in map) {
+                    if (map.hasOwnProperty(name))
+                        fsm[name] = StateMachine.buildEvent(name, map[name]);
+                }
+                for (var name in callbacks) {
+                    if (callbacks.hasOwnProperty(name))
+                        fsm[name] = callbacks[name];
+                }
+                fsm.current = 'none';
+                fsm.is = function (state) {
+                    return state instanceof Array ? state.indexOf(this.current) >= 0 : this.current === state;
+                };
+                fsm.can = function (event) {
+                    return !this.transition && (map[event].hasOwnProperty(this.current) || map[event].hasOwnProperty(StateMachine.WILDCARD));
+                };
+                fsm.cannot = function (event) {
+                    return !this.can(event);
+                };
+                fsm.error = cfg.error || function (name, from, to, args, error, msg, e) {
+                    throw e || msg;
+                };
+                fsm.isFinished = function () {
+                    return this.is(terminal);
+                };
+                if (initial && !initial.defer)
+                    fsm[initial.event]();
+                return fsm;
+            },
+            doCallback: function (fsm, func, name, from, to, args) {
+                if (func) {
+                    try {
+                        return func.apply(fsm, [
+                            name,
+                            from,
+                            to
+                        ].concat(args));
+                    } catch (e) {
+                        return fsm.error(name, from, to, args, StateMachine.Error.INVALID_CALLBACK, 'an exception occurred in a caller-provided callback function', e);
+                    }
+                }
+            },
+            beforeAnyEvent: function (fsm, name, from, to, args) {
+                return StateMachine.doCallback(fsm, fsm['onbeforeevent'], name, from, to, args);
+            },
+            afterAnyEvent: function (fsm, name, from, to, args) {
+                return StateMachine.doCallback(fsm, fsm['onafterevent'] || fsm['onevent'], name, from, to, args);
+            },
+            leaveAnyState: function (fsm, name, from, to, args) {
+                return StateMachine.doCallback(fsm, fsm['onleavestate'], name, from, to, args);
+            },
+            enterAnyState: function (fsm, name, from, to, args) {
+                return StateMachine.doCallback(fsm, fsm['onenterstate'] || fsm['onstate'], name, from, to, args);
+            },
+            changeState: function (fsm, name, from, to, args) {
+                return StateMachine.doCallback(fsm, fsm['onchangestate'], name, from, to, args);
+            },
+            beforeThisEvent: function (fsm, name, from, to, args) {
+                return StateMachine.doCallback(fsm, fsm['onbefore' + name], name, from, to, args);
+            },
+            afterThisEvent: function (fsm, name, from, to, args) {
+                return StateMachine.doCallback(fsm, fsm['onafter' + name] || fsm['on' + name], name, from, to, args);
+            },
+            leaveThisState: function (fsm, name, from, to, args) {
+                return StateMachine.doCallback(fsm, fsm['onleave' + from], name, from, to, args);
+            },
+            enterThisState: function (fsm, name, from, to, args) {
+                return StateMachine.doCallback(fsm, fsm['onenter' + to] || fsm['on' + to], name, from, to, args);
+            },
+            beforeEvent: function (fsm, name, from, to, args) {
+                if (false === StateMachine.beforeThisEvent(fsm, name, from, to, args) || false === StateMachine.beforeAnyEvent(fsm, name, from, to, args))
+                    return false;
+            },
+            afterEvent: function (fsm, name, from, to, args) {
+                StateMachine.afterThisEvent(fsm, name, from, to, args);
+                StateMachine.afterAnyEvent(fsm, name, from, to, args);
+            },
+            leaveState: function (fsm, name, from, to, args) {
+                var specific = StateMachine.leaveThisState(fsm, name, from, to, args), general = StateMachine.leaveAnyState(fsm, name, from, to, args);
+                if (false === specific || false === general)
+                    return false;
+                else if (StateMachine.ASYNC === specific || StateMachine.ASYNC === general)
+                    return StateMachine.ASYNC;
+            },
+            enterState: function (fsm, name, from, to, args) {
+                StateMachine.enterThisState(fsm, name, from, to, args);
+                StateMachine.enterAnyState(fsm, name, from, to, args);
+            },
+            buildEvent: function (name, map) {
+                return function () {
+                    var from = this.current;
+                    var to = map[from] || map[StateMachine.WILDCARD] || from;
+                    var args = Array.prototype.slice.call(arguments);
+                    if (this.transition)
+                        return this.error(name, from, to, args, StateMachine.Error.PENDING_TRANSITION, 'event ' + name + ' inappropriate because previous transition did not complete');
+                    if (this.cannot(name))
+                        return this.error(name, from, to, args, StateMachine.Error.INVALID_TRANSITION, 'event ' + name + ' inappropriate in current state ' + this.current);
+                    if (false === StateMachine.beforeEvent(this, name, from, to, args))
+                        return StateMachine.Result.CANCELLED;
+                    if (from === to) {
+                        StateMachine.afterEvent(this, name, from, to, args);
+                        return StateMachine.Result.NOTRANSITION;
+                    }
+                    var fsm = this;
+                    this.transition = function () {
+                        fsm.transition = null;
+                        fsm.current = to;
+                        StateMachine.enterState(fsm, name, from, to, args);
+                        StateMachine.changeState(fsm, name, from, to, args);
+                        StateMachine.afterEvent(fsm, name, from, to, args);
+                        return StateMachine.Result.SUCCEEDED;
+                    };
+                    this.transition.cancel = function () {
+                        fsm.transition = null;
+                        StateMachine.afterEvent(fsm, name, from, to, args);
+                    };
+                    var leave = StateMachine.leaveState(this, name, from, to, args);
+                    if (false === leave) {
+                        this.transition = null;
+                        return StateMachine.Result.CANCELLED;
+                    } else if (StateMachine.ASYNC === leave) {
+                        return StateMachine.Result.PENDING;
+                    } else {
+                        if (this.transition)
+                            return this.transition();
+                    }
+                };
+            }
+        };
+    if (typeof exports !== 'undefined') {
+        if (typeof module !== 'undefined' && module.exports) {
+            exports = module.exports = StateMachine;
+        }
+        exports.StateMachine = StateMachine;
+    } else if (typeof define === 'function' && define.amd) {
+        define(function (require) {
+            return StateMachine;
+        });
+    } else if (window) {
+        window.StateMachine = StateMachine;
+    }
+}());
+});
+require.define('122', function(module, exports, __dirname, __filename, undefined){
+(function () {
+    'use strict';
+    function didYouMean(str, list, key) {
+        if (!str)
+            return null;
+        if (!didYouMean.caseSensitive) {
+            str = str.toLowerCase();
+        }
+        var thresholdRelative = didYouMean.threshold === null ? null : didYouMean.threshold * str.length, thresholdAbsolute = didYouMean.thresholdAbsolute, winningVal;
+        if (thresholdRelative !== null && thresholdAbsolute !== null)
+            winningVal = Math.min(thresholdRelative, thresholdAbsolute);
+        else if (thresholdRelative !== null)
+            winningVal = thresholdRelative;
+        else if (thresholdAbsolute !== null)
+            winningVal = thresholdAbsolute;
+        else
+            winningVal = null;
+        var winner, candidate, val, i, len = list.length;
+        for (i = 0; i < len; i++) {
+            candidate = list[i];
+            if (key)
+                candidate = candidate[key];
+            if (!candidate)
+                continue;
+            if (!didYouMean.caseSensitive) {
+                candidate = candidate.toLowerCase();
+            }
+            val = getEditDistance(str, candidate, winningVal);
+            if (winningVal === null || val < winningVal) {
+                winningVal = val;
+                if (key && didYouMean.returnWinningObject)
+                    winner = list[i];
+                else
+                    winner = candidate;
+                if (didYouMean.returnFirstMatch)
+                    return winner;
+            }
+        }
+        return winner || didYouMean.nullResultValue;
+    }
+    ;
+    didYouMean.threshold = 0.4;
+    didYouMean.thresholdAbsolute = 20;
+    didYouMean.caseSensitive = false;
+    didYouMean.nullResultValue = null;
+    didYouMean.returnWinningObject = null;
+    didYouMean.returnFirstMatch = false;
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = didYouMean;
+    } else {
+        window.didYouMean = didYouMean;
+    }
+    var MAX_INT = Math.pow(2, 32) - 1;
+    function getEditDistance(a, b, max) {
+        max = max || max === 0 ? max : MAX_INT;
+        var lena = a.length;
+        var lenb = b.length;
+        if (lena === 0)
+            return Math.min(max + 1, lenb);
+        if (lenb === 0)
+            return Math.min(max + 1, lena);
+        if (Math.abs(lena - lenb) > max)
+            return max + 1;
+        var matrix = [], i, j, colMin, minJ, maxJ;
+        for (i = 0; i <= lenb; i++) {
+            matrix[i] = [i];
+        }
+        for (j = 0; j <= lena; j++) {
+            matrix[0][j] = j;
+        }
+        for (i = 1; i <= lenb; i++) {
+            colMin = MAX_INT;
+            minJ = 1;
+            if (i > max)
+                minJ = i - max;
+            maxJ = lenb + 1;
+            if (maxJ > max + i)
+                maxJ = max + i;
+            for (j = 1; j <= lena; j++) {
+                if (j < minJ || j > maxJ) {
+                    matrix[i][j] = max + 1;
+                } else {
+                    if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
+                    }
+                }
+                if (matrix[i][j] < colMin)
+                    colMin = matrix[i][j];
+            }
+            if (colMin > max)
+                return max + 1;
+        }
+        return matrix[lenb][lena];
+    }
+    ;
+}());
 });
 return require('65');
 })((function() {
