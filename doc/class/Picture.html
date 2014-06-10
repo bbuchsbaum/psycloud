@@ -45,13 +45,27 @@
     <pre><code class='coffeescript'>{
   url: &quot;http:&#47;&#47;www.html5canvastutorials.com&#47;demos&#47;assets&#47;yoda.jpg&quot;,
   x: 0,
-  y: 0
+  y: 0,
+  stroke: null,
+  strokeWidth: 0,
+  position: null
 }</code></pre>
     
   </dd>
 </dl>
       <h2>Instance Method Summary</h2>
       <ul class='summary'>
+  <li>
+    <span class='signature'>
+      <a href='#initialize-dynamic'>
+        #
+(void)
+<b>initialize</b><span>()</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
   <li>
     <span class='signature'>
       <a href='#render-dynamic'>
@@ -73,11 +87,103 @@
 <b>constructor</b><span>(spec = {})</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>Construct a new Picture.</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>spec</span>
+      <span class='type'>
+        (
+          <tt>Object</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>component parameters </span>
+    </li>
+  </ul>
+  <h3>
+    Options Hash:
+    (options):
+  </h3>
+  <ul class='options'>
+    <li>
+      <span class='name'>x</span>
+      <span class='type'>
+        (
+          <tt>Int</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>the x coordinate </span>
+    </li>
+    <li>
+      <span class='name'>y</span>
+      <span class='type'>
+        (
+          <tt>Int</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>the y coordinate </span>
+    </li>
+    <li>
+      <span class='name'>stroke</span>
+      <span class='type'>
+        (
+          <tt>Int</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>the color of the border (optional) </span>
+    </li>
+    <li>
+      <span class='name'>width</span>
+      <span class='type'>
+        (
+          <tt>Int</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>the width of the border stroke </span>
+    </li>
+    <li>
+      <span class='name'>position</span>
+      <span class='type'>
+        (
+          <tt>String</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>the position constraint </span>
+    </li>
+    <li>
+      <span class='name'>url</span>
+      <span class='type'>
+        (
+          <tt>String</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>the url of the image </span>
+    </li>
+  </ul>
+</div>
   </div>
 </div>
       <h2>Instance Method Details</h2>
       <div class='methods'>
+  <div class='method_details'>
+    <p class='signature' id='initialize-dynamic'>
+      #
+(void)
+<b>initialize</b><span>()</span>
+      <br>
+    </p>
+    
+  </div>
   <div class='method_details'>
     <p class='signature' id='render-dynamic'>
       #
@@ -90,11 +196,11 @@
 </div>
     </div>
     <div id='footer'>
-  March 05, 14 06:46:43 by
+  June 07, 14 06:47:22 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>
-  2.0.6
+  2.0.9
   &#10034;
   Press H to see the keyboard shortcuts
   &#10034;

@@ -33,6 +33,39 @@
       <ul class='summary'>
   <li>
     <span class='signature'>
+      <a href='#set-dynamic'>
+        #
+(void)
+<b>set</b><span>(name, value)</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#get-dynamic'>
+        #
+(void)
+<b>get</b><span>(name)</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#update-dynamic'>
+        #
+(void)
+<b>update</b><span>(name, fun)</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
       <a href='#updateState-dynamic'>
         #
 (void)
@@ -55,10 +88,10 @@
   </li>
   <li>
     <span class='signature'>
-      <a href='#handleValue-dynamic'>
+      <a href='#handleResponse-dynamic'>
         #
 (void)
-<b>handleValue</b><span>(arg)</span>
+<b>handleResponse</b><span>(arg)</span>
       </a>
     </span>
     <span class='desc'>
@@ -196,6 +229,28 @@
         #
 (void)
 <b>showEvent</b><span>(event)</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#findByID-dynamic'>
+        #
+(void)
+<b>findByID</b><span>(id)</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#findByName-dynamic'>
+        #
+(void)
+<b>findByName</b><span>(name)</span>
       </a>
     </span>
     <span class='desc'>
@@ -349,6 +404,33 @@
       <h2>Instance Method Details</h2>
       <div class='methods'>
   <div class='method_details'>
+    <p class='signature' id='set-dynamic'>
+      #
+(void)
+<b>set</b><span>(name, value)</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='get-dynamic'>
+      #
+(void)
+<b>get</b><span>(name)</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='update-dynamic'>
+      #
+(void)
+<b>update</b><span>(name, fun)</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
     <p class='signature' id='updateState-dynamic'>
       #
 (void)
@@ -367,10 +449,10 @@
     
   </div>
   <div class='method_details'>
-    <p class='signature' id='handleValue-dynamic'>
+    <p class='signature' id='handleResponse-dynamic'>
       #
 (void)
-<b>handleValue</b><span>(arg)</span>
+<b>handleResponse</b><span>(arg)</span>
       <br>
     </p>
     
@@ -489,6 +571,24 @@
     
   </div>
   <div class='method_details'>
+    <p class='signature' id='findByID-dynamic'>
+      #
+(void)
+<b>findByID</b><span>(id)</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='findByName-dynamic'>
+      #
+(void)
+<b>findByName</b><span>(name)</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
     <p class='signature' id='showStimulus-dynamic'>
       #
 (void)
@@ -599,11 +699,11 @@
 </div>
     </div>
     <div id='footer'>
-  March 05, 14 06:46:43 by
+  June 07, 14 06:47:22 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>
-  2.0.6
+  2.0.9
   &#10034;
   Press H to see the keyboard shortcuts
   &#10034;

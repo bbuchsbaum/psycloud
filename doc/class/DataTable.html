@@ -72,7 +72,18 @@
       <a href='#rbind-static'>
         .
 (void)
-<b>rbind</b><span>(tab1, tab2, union = false)</span>
+<b>rbind</b><span>(others...)</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#rbind2-static'>
+        .
+(void)
+<b>rbind2</b><span>(tab1, tab2, union = false)</span>
       </a>
     </span>
     <span class='desc'>
@@ -116,6 +127,17 @@
     </span>
     <span class='desc'>
       print the contents of the table record by record 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#splitBy-dynamic'>
+        #
+(void)
+<b>splitBy</b><span>(fac)</span>
+      </a>
+    </span>
+    <span class='desc'>
     </span>
   </li>
   <li>
@@ -190,6 +212,28 @@
         #
 (void)
 <b>colnames</b><span>()</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#rows-dynamic'>
+        #
+(void)
+<b>rows</b><span>()</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#mapRows-dynamic'>
+        #
+(void)
+<b>mapRows</b><span>(fun)</span>
       </a>
     </span>
     <span class='desc'>
@@ -280,7 +324,9 @@
     <li>
       <span class='name'>records</span>
       <span class='type'>
-        (<tt>Array</tt>)
+        (
+          <tt>Array</tt>
+        )
       </span>
       &mdash;
       <span class='desc'>the records used to construct the rows of the table </span>
@@ -288,7 +334,9 @@
     <li>
       <span class='name'>union</span>
       <span class='type'>
-        (<tt>Boolean</tt>)
+        (
+          <tt>Boolean</tt>
+        )
       </span>
       &mdash;
       <span class='desc'>take the union of all record keys </span>
@@ -309,7 +357,16 @@
     <p class='signature' id='rbind-static'>
       .
 (void)
-<b>rbind</b><span>(tab1, tab2, union = false)</span>
+<b>rbind</b><span>(others...)</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='rbind2-static'>
+      .
+(void)
+<b>rbind2</b><span>(tab1, tab2, union = false)</span>
       <br>
     </p>
     <div class='docstring'>
@@ -321,7 +378,9 @@
     <li>
       <span class='name'>tab1</span>
       <span class='type'>
-        (<tt>DataTable</tt>)
+        (
+          <tt><a href='../class/DataTable.html'>DataTable</a></tt>
+        )
       </span>
       &mdash;
       <span class='desc'>the first table </span>
@@ -329,7 +388,9 @@
     <li>
       <span class='name'>tab2</span>
       <span class='type'>
-        (<tt>DataTable</tt>)
+        (
+          <tt><a href='../class/DataTable.html'>DataTable</a></tt>
+        )
       </span>
       &mdash;
       <span class='desc'>the second table </span>
@@ -337,7 +398,9 @@
     <li>
       <span class='name'>union</span>
       <span class='type'>
-        (<tt>Boolean</tt>)
+        (
+          <tt>Boolean</tt>
+        )
       </span>
       &mdash;
       <span class='desc'>if true take the union of all variables, other take intersection </span>
@@ -365,7 +428,9 @@
     <li>
       <span class='name'>tab1</span>
       <span class='type'>
-        (<tt>DataTable</tt>)
+        (
+          <tt><a href='../class/DataTable.html'>DataTable</a></tt>
+        )
       </span>
       &mdash;
       <span class='desc'>the first table </span>
@@ -373,7 +438,9 @@
     <li>
       <span class='name'>tab2</span>
       <span class='type'>
-        (<tt>DataTable</tt>)
+        (
+          <tt><a href='../class/DataTable.html'>DataTable</a></tt>
+        )
       </span>
       &mdash;
       <span class='desc'>the second table </span>
@@ -397,7 +464,9 @@
     <li>
       <span class='name'>vars</span>
       <span class='type'>
-        (<tt>Object</tt>)
+        (
+          <tt>Object</tt>
+        )
       </span>
       &mdash;
       <span class='desc'>a set of variables indexed by key </span>
@@ -405,7 +474,9 @@
     <li>
       <span class='name'>unique</span>
       <span class='type'>
-        (<tt>Boolean</tt>)
+        (
+          <tt>Boolean</tt>
+        )
       </span>
       &mdash;
       <span class='desc'>ensure that all elements in any of the variables are distinct before expanding </span>
@@ -413,7 +484,9 @@
     <li>
       <span class='name'>nreps</span>
       <span class='type'>
-        (<tt>Integer</tt>)
+        (
+          <tt>Integer</tt>
+        )
       </span>
       &mdash;
       <span class='desc'>if greater than 1 the table will be replicated <em>nreps</em> times </span>
@@ -437,7 +510,9 @@
     <li>
       <span class='name'>vars</span>
       <span class='type'>
-        (<tt>Object</tt>)
+        (
+          <tt>Object</tt>
+        )
       </span>
       &mdash;
       <span class='desc'>a named set of column variables </span>
@@ -460,6 +535,15 @@
 </div>
 <div class='tags'>
 </div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='splitBy-dynamic'>
+      #
+(void)
+<b>splitBy</b><span>(fac)</span>
+      <br>
+    </p>
+    
   </div>
   <div class='method_details'>
     <p class='signature' id='dropColumn-dynamic'>
@@ -525,6 +609,24 @@
     
   </div>
   <div class='method_details'>
+    <p class='signature' id='rows-dynamic'>
+      #
+(void)
+<b>rows</b><span>()</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='mapRows-dynamic'>
+      #
+(void)
+<b>mapRows</b><span>(fun)</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
     <p class='signature' id='toRecordArray-dynamic'>
       #
 (void)
@@ -581,11 +683,11 @@
 </div>
     </div>
     <div id='footer'>
-  March 05, 14 06:46:43 by
+  June 07, 14 06:47:22 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>
-  2.0.6
+  2.0.9
   &#10034;
   Press H to see the keyboard shortcuts
   &#10034;

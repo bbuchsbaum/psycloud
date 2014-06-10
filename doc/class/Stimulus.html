@@ -28,10 +28,17 @@
           <td>Defined in:</td>
           <td>src&#47;stimresp.coffee</td>
         </tr>
+        <tr>
+          <td>Inherits:</td>
+          <td>
+            exports.Component
+          </td>
+        </tr>
       </table>
       <h2>Direct Known Subclasses</h2>
       <p class='children'>
-        <a href='../class/Group.html'>Group</a>
+        <a href='../class/Consent.html'>Consent</a>
+        <a href='../class/Container.html'>Container</a>
         <a href='../class/Nothing.html'>Nothing</a>
         <a href='../class/Sequence.html'>Sequence</a>
         <a href='../class/Sound.html'>Sound</a>
@@ -43,15 +50,9 @@
     =
   </dt>
   <dd>
-    <pre><code class='coffeescript'>{}</code></pre>
-    
-  </dd>
-  <dt id='defaults-variable'>
-    defaults
-    =
-  </dt>
-  <dd>
-    <pre><code class='coffeescript'>{}</code></pre>
+    <pre><code class='coffeescript'>{
+  react: {}
+}</code></pre>
     
   </dd>
 </dl>
@@ -63,6 +64,28 @@
         #
 (void)
 <b>initialize</b><span>()</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#initReactions-dynamic'>
+        #
+(void)
+<b>initReactions</b><span>(self)</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#addReaction-dynamic'>
+        #
+(void)
+<b>addReaction</b><span>(name, fun, selector)</span>
       </a>
     </span>
     <span class='desc'>
@@ -114,6 +137,17 @@
   </li>
   <li>
     <span class='signature'>
+      <a href='#start-dynamic'>
+        #
+(void)
+<b>start</b><span>(context)</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
       <a href='#stop-dynamic'>
         #
 (void)
@@ -143,6 +177,24 @@
       #
 (void)
 <b>initialize</b><span>()</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='initReactions-dynamic'>
+      #
+(void)
+<b>initReactions</b><span>(self)</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='addReaction-dynamic'>
+      #
+(void)
+<b>addReaction</b><span>(name, fun, selector)</span>
       <br>
     </p>
     
@@ -184,6 +236,15 @@
     
   </div>
   <div class='method_details'>
+    <p class='signature' id='start-dynamic'>
+      #
+(void)
+<b>start</b><span>(context)</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
     <p class='signature' id='stop-dynamic'>
       #
 (void)
@@ -195,11 +256,11 @@
 </div>
     </div>
     <div id='footer'>
-  March 05, 14 06:46:43 by
+  June 07, 14 06:47:22 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>
-  2.0.6
+  2.0.9
   &#10034;
   Press H to see the keyboard shortcuts
   &#10034;

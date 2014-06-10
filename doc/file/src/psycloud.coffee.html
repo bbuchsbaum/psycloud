@@ -82,21 +82,17 @@
     <pre><code class='coffeescript'>require(&quot;.&#47;components&#47;canvas&#47;background&quot;)</code></pre>
     
   </dd>
-  <dt id='Kinetic-variable'>
-    Kinetic
-    =
-  </dt>
-  <dd>
-    <pre><code class='coffeescript'>require(&quot;..&#47;jslibs&#47;kinetic&quot;)</code></pre>
-    
-  </dd>
   <dt id='Stimulus-variable'>
     Stimulus
     =
   </dt>
   <dd>
     <pre><code class='coffeescript'>require(&quot;.&#47;stimresp&quot;)</code></pre>
-    
+    <div class='docstring'>
+  <p>Kinetic = require(&quot;../jslibs/kinetic&quot;).Kinetic</p>
+</div>
+<div class='tags'>
+</div>
   </dd>
   <dt id='Response-variable'>
     Response
@@ -112,6 +108,14 @@
   </dt>
   <dd>
     <pre><code class='coffeescript'>require(&quot;.&#47;stimresp&quot;)</code></pre>
+    
+  </dd>
+  <dt id='STRIP_COMMENTS-variable'>
+    STRIP_COMMENTS
+    =
+  </dt>
+  <dd>
+    <pre><code class='coffeescript'>&#47;((\&#47;\&#47;.*$)|(\&#47;\*[\s\S]*?\*\&#47;))&#47;g</code></pre>
     
   </dd>
   <dt id='exports.RunnableNode-variable'>
@@ -165,62 +169,6 @@
     <pre><code class='coffeescript'>[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;, &#39;e&#39;, &#39;d&#39;, &#39;f&#39;, &#39;g&#39;, &#39;h&#39;, &#39;i&#39;, &#39;j&#39;, &#39;k&#39;, &#39;l&#39;, &#39;m&#39;, &#39;n&#39;, &#39;o&#39;, &#39;p&#39;, &#39;q&#39;, &#39;r&#39;, &#39;s&#39;, &#39;t&#39;, &#39;u&#39;, &#39;v&#39;, &#39;w&#39;, &#39;x&#39;, &#39;y&#39;, &#39;z&#39;]</code></pre>
     
   </dd>
-  <dt id='des-variable'>
-    des
-    =
-  </dt>
-  <dd>
-    <pre><code class='coffeescript'>{
-  Design: {
-    Blocks: [
-      [
-        {
-          a: 1,
-          b: 2,
-          c: 3,
-          a: 2,
-          b: 3,
-          c: 4
-        }
-      ], [
-        {
-          a: 5,
-          b: 7,
-          c: 6,
-          a: 5,
-          b: 7,
-          c: 6
-        }
-      ]
-    ]
-  }
-}</code></pre>
-    
-  </dd>
-  <dt id='exports.buildStimulus-variable'>
-    exports.buildStimulus
-    =
-  </dt>
-  <dd>
-    <pre><code class='coffeescript'>buildStimulus</code></pre>
-    
-  </dd>
-  <dt id='exports.buildResponse-variable'>
-    exports.buildResponse
-    =
-  </dt>
-  <dd>
-    <pre><code class='coffeescript'>buildResponse</code></pre>
-    
-  </dd>
-  <dt id='exports.buildEvent-variable'>
-    exports.buildEvent
-    =
-  </dt>
-  <dd>
-    <pre><code class='coffeescript'>buildEvent</code></pre>
-    
-  </dd>
   <dt id='exports.buildTrial-variable'>
     exports.buildTrial
     =
@@ -242,6 +190,17 @@
       <ul class='summary'>
   <li>
     <span class='signature'>
+      <a href='#getParamNames-'>
+        ~
+(void)
+<b>getParamNames</b><span>(func)</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
       <a href='#functionNode-'>
         ~
 (void)
@@ -257,39 +216,6 @@
         ~
 (void)
 <b>createContext</b><span>(id = &quot;container&quot;)</span>
-      </a>
-    </span>
-    <span class='desc'>
-    </span>
-  </li>
-  <li>
-    <span class='signature'>
-      <a href='#buildStimulus-'>
-        ~
-(void)
-<b>buildStimulus</b><span>(spec, context)</span>
-      </a>
-    </span>
-    <span class='desc'>
-    </span>
-  </li>
-  <li>
-    <span class='signature'>
-      <a href='#buildResponse-'>
-        ~
-(void)
-<b>buildResponse</b><span>(spec, context)</span>
-      </a>
-    </span>
-    <span class='desc'>
-    </span>
-  </li>
-  <li>
-    <span class='signature'>
-      <a href='#buildEvent-'>
-        ~
-(void)
-<b>buildEvent</b><span>(spec, context)</span>
       </a>
     </span>
     <span class='desc'>
@@ -343,6 +269,15 @@
       <h2>Method Details</h2>
       <div class='methods'>
   <div class='method_details'>
+    <p class='signature' id='getParamNames-'>
+      ~
+(void)
+<b>getParamNames</b><span>(func)</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
     <p class='signature' id='functionNode-'>
       ~
 (void)
@@ -356,33 +291,6 @@
       ~
 (void)
 <b>createContext</b><span>(id = &quot;container&quot;)</span>
-      <br>
-    </p>
-    
-  </div>
-  <div class='method_details'>
-    <p class='signature' id='buildStimulus-'>
-      ~
-(void)
-<b>buildStimulus</b><span>(spec, context)</span>
-      <br>
-    </p>
-    
-  </div>
-  <div class='method_details'>
-    <p class='signature' id='buildResponse-'>
-      ~
-(void)
-<b>buildResponse</b><span>(spec, context)</span>
-      <br>
-    </p>
-    
-  </div>
-  <div class='method_details'>
-    <p class='signature' id='buildEvent-'>
-      ~
-(void)
-<b>buildEvent</b><span>(spec, context)</span>
       <br>
     </p>
     
@@ -426,11 +334,11 @@
 </div>
     </div>
     <div id='footer'>
-  March 05, 14 06:46:43 by
+  June 07, 14 06:47:22 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>
-  2.0.6
+  2.0.9
   &#10034;
   Press H to see the keyboard shortcuts
   &#10034;
