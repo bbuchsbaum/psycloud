@@ -3,9 +3,7 @@ Q = require("q")
 TAFFY = require("taffydb").taffy
 utils = require("./utils")
 DataTable = require("./datatable").DataTable
-#Bacon = require("./lib/Bacon").Bacon
 Bacon = require("baconjs")
-#KineticStimFactory = require("./elements").KineticStimFactory
 DefaultComponentFactory = require("./factory").DefaultComponentFactory
 Background = require("./components/canvas/background").Background
 #Kinetic = require("../jslibs/kinetic").Kinetic
@@ -13,7 +11,6 @@ Stimulus = require("./stimresp").Stimulus
 Response = require("./stimresp").Response
 ResponseData = require("./stimresp").ResponseData
 props = require("pathval")
-#StateMachine = require("../jslibs/state-machine")
 
 
 STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/g
@@ -42,9 +39,6 @@ class Error extends Iteratee
 class Cont extends Iteratee
   # cont = input -> iteratee
   constructor: (@cont) ->
-
-
-
 
 
 
@@ -96,6 +90,7 @@ exports.StimFactory =
     buildEvent: (spec, context) ->
       if not spec.Next?
         throw new Error("Event specification does not contain 'Next' element")
+
       stimSpec = _.omit(spec, "Next")
       responseSpec = _.pick(spec, "Next")
 
@@ -128,10 +123,38 @@ exports.MockStimFactory =
 
 
 
+class TrialEnumerator
 
-# TrialEnumerator
-# next: (context) -> trial ... a runnable trial
-#
+
+  next: (context) ->
+
+
+class StaticTrialEnumerator extends TrialEnumerator
+
+  constructor: (@trialList) ->
+    @index = 0
+
+  next: (context) ->
+    len = @trialList.length
+    if @index < @len
+      @trialList[@index]
+      @index = @index + 1
+
+    else throw new Error("TrialEnumerator: illegal index: #{index} for list of trial of length #{len}")
+
+  hasNext: -> @index < @trialList.length
+
+
+class DynamicTrialEnumerator extends TrialEnumerator
+  constructor: (@generator, @maxTrials=10000) ->
+    @index = 0
+
+  next: (context) ->
+    @index = @index + 1
+    if (@index < @maxTrials)
+      @generator(context)
+
+  hasNext: -> @index < @maxTrials
 
 class RunnableNode
 
@@ -535,16 +558,20 @@ exports.ExperimentContext =
       @exState
 
     pushData: (data, withState=true) ->
+      console.log("pushing data", data)
+      console.log("state", @exState.toRecord())
       if withState
         record = _.extend(@exState.toRecord(), data)
       else
         record = data
 
+      console.log("record", record)
       @userData.insert(record)
 
     handleResponse: (arg) ->
       if arg? and arg instanceof ResponseData
         @responseQueue.push(arg)
+        console.log("pushing response", arg.data)
         @pushData(arg.data)
 
 
@@ -564,9 +591,11 @@ exports.ExperimentContext =
       {
         width: @width()
         height: @height()
+
         offset:
           x: @offsetX()
           y: @offsetY()
+
         center:
           x: @centerX()
           y: @centerY()

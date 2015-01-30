@@ -19,7 +19,7 @@
 
   fnode = Psy.FactorSetNode.build(factorSet);
 
-  this.trials = fnode.trialList(5, 5);
+  this.trials = fnode.trialList(1, 1);
 
   console.log("psy match");
 
@@ -43,6 +43,9 @@
 
   window.display = {
     Display: {
+      Define: {
+        datalog: []
+      },
       Prelude: {
         Events: {
           1: {
@@ -148,10 +151,22 @@
             }
           },
           Feedback: function() {
-            var _ref;
+            var dlog, event, _ref;
+            console.log("INSIDE feedback!");
+            console.log(this.context.trialData());
+            console.log(this.context.trialData().get());
+            console.log(this.context.trialData().filter({
+              id: "answer"
+            }).get());
+            dlog = this.context.get("datalog");
+            event = this.context.trialData().filter({
+              id: "answer"
+            }).get()[0];
+            dlog.push(_.pick(event, ["RT", "accuracy", "trialNumber", "keyChar"]));
+            console.log("datalog: ", dlog);
             return {
               Text: {
-                content: ((_ref = this.answer) != null ? _ref.Accuracy : void 0) ? "C" : "X",
+                content: ((_ref = this.answer) != null ? _ref.accuracy : void 0) ? "C" : "X",
                 fontSize: 400,
                 position: "center",
                 origin: "center"
@@ -164,12 +179,44 @@
             };
           }
         };
+      },
+      Coda: {
+        Events: {
+          1: {
+            Text: {
+              position: "center",
+              origin: "center",
+              content: "The End",
+              fontSize: 200
+            },
+            Next: {
+              Timeout: {
+                duration: 5000
+              }
+            }
+          }
+        }
       }
     }
   };
 
   pres = new Psy.Presenter(trials, display.Display, context);
 
-  pres.start();
+  pres.start().then((function(_this) {
+    return function() {
+      var dat;
+      console.log("DONE!!");
+      dat = {
+        Header: {
+          id: 10001,
+          date: Date(),
+          task: "flanker"
+        },
+        Data: pres.context.get("datalog")
+      };
+      console.log(dat);
+      return console.log($);
+    };
+  })(this));
 
 }).call(this);

@@ -14,8 +14,8 @@ factorSet =
 
 fnode = Psy.FactorSetNode.build(factorSet)
 
-# create 5 blocks of trials with 5 complete replications per block
-@trials = fnode.trialList(5, 5)
+# create 2 blocks of trials with 2 complete replications per block
+@trials = fnode.trialList(1, 1)
 
 # add a column to design called 'num' that contains the odd or even numerals
 #@trials = @trials.bind ((record) =>
@@ -46,6 +46,10 @@ console.log("psy match", )
 
 window.display =
   Display:
+
+    Define:
+      datalog: []
+
 
     Prelude:
       Events:
@@ -147,28 +151,63 @@ window.display =
               timeout: 1000
 
       Feedback: ->
+        console.log("INSIDE feedback!")
+        console.log(@context.trialData())
+        console.log(@context.trialData().get())
+        console.log(@context.trialData().filter({id: "answer"}).get())
+
+        dlog = @context.get("datalog")
+        event = @context.trialData().filter({id: "answer"}).get()[0]
+        dlog.push(_.pick(event, ["RT", "accuracy", "trialNumber", "keyChar"]))
+        console.log("datalog: ", dlog)
+
+
         Text:
-          content: if @answer?.Accuracy then "C" else "X"
+          content: if @answer?.accuracy then "C" else "X"
           fontSize: 400
           position: "center"
           origin: "center"
         Next:
           Timeout:
             duration: 200
-    #Coda:
-    #  Events:
-    #    1:
-    #      Text:
-    #        position: "center"
-    #        origin: "center"
-    #        content: "The End"
-    #        fontSize: 200
-    #
-    #      Next:
-    #        Timeout: duration: 5000
+    Coda:
+      Events:
+        1:
+          Text:
+            position: "center"
+            origin: "center"
+            content: "The End"
+            fontSize: 200
+
+          Next:
+            Timeout: duration: 5000
+
+
 
 
 
 
 pres = new Psy.Presenter(trials, display.Display, context)
-pres.start()
+pres.start().then( =>
+  console.log("DONE!!")
+
+  dat = {
+    Header:
+      id: 10001
+      date: Date()
+      task: "flanker"
+    Data: pres.context.get("datalog")
+
+
+  }
+
+  console.log(dat)
+  console.log($)
+
+  #$.ajax({
+  #  type: "POST",
+  #  url: "/results",
+  #  data: dat,
+  #  dataType: "json"
+  #})
+)

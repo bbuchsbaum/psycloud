@@ -28,6 +28,7 @@ _ = Psy._
 
 
 
+
 factorSet =
   flanker:
     levels: ["congruent", "incongruent"]
@@ -89,7 +90,6 @@ window.display =
 
     Block:
       Start: ->
-        console.log("START BLOCK")
         Text:
           position: "center"
           origin: "center"
@@ -107,7 +107,7 @@ window.display =
           AnyKey: ""
 
     Trial: ->
-      arrowLen = 175
+      arrowLen = 150
 
       Background:
         Blank:

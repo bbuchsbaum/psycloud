@@ -179,7 +179,11 @@ _ = Psy._
       "Centered 100px circle": makeTrial(new Canvas.Circle({position: "center", radius: 100, origin: "center", fill: "green"}), SpaceKey)
       "Position Test": makeTrial(new Psy.Group(
         for org in ["top-left", "top-right", "top-center", "center-left", "center-right", "center", "bottom-left", "bottom-right", "bottom-center"]
-          new Canvas.Circle({position: org, radius: 50, origin: "center", fill: '#'+(Math.random()*0xFFFFFF<<0).toString(16)})
+          new Canvas.Circle({position: org, radius: 25, origin: "center", fill: '#'+(Math.random()*0xFFFFFF<<0).toString(16)})
+      ), SpaceKey)
+      "Origin Test at 100,100": makeTrial(new Psy.Group(
+        for org in ["top-left", "top-right", "top-center", "center-left", "center-right", "center", "bottom-left", "bottom-right", "bottom-center"]
+          new Canvas.Circle({x:100, y:100, radius: 50, origin: org, fill: '#'+(Math.random()*0xFFFFFF<<0).toString(16)})
       ), SpaceKey)
       "Row of Circles": makeTrial(new Psy.Grid(
         for col in [0...3]
@@ -191,6 +195,8 @@ _ = Psy._
         , 3, 1, { x: 200, y: 200, width: 300, height: 300 }), SpaceKey)
 
 
+
+
     Arrow:
       "Default Arrow": makeTrial(new Canvas.Arrow(), SpaceKey)
       "Blue Arrow, length 200": makeTrial(new Canvas.Arrow({length: 200, fill: "blue"}), SpaceKey)
@@ -198,9 +204,12 @@ _ = Psy._
       "Arrow Origin Test": makeTrial(new Psy.Group(
         _.flatten(for org, index in ["top-left", "center", "bottom-right"]
           clrs = ["red", "blue", "green"]
-          [new Canvas.Arrow({x:200, y:200, origin: org, length: 200, origin: org, fill: clrs[index]}), new Canvas.Circle({x: 200 * index, y:200 * index, fill: "black", radius: 5})])
+          [new Canvas.Arrow({x:200, y:200, origin: org, length: 200, origin: org, fill: clrs[index]}), new Canvas.Circle({x: 200 * index, y:200 * index, origin: "center", fill: "black", radius: 5})])
       ), SpaceKey)
 
+      "180 Reversed": makeTrial(new Psy.Group(
+        [new Canvas.Arrow({x:400, y:400, direction: "left", origin: "center", length: 200, fill: "black"}), new Canvas.Arrow({x:400, y:500, direction: "right", origin: "center", length: 200, fill: "black"})]
+        ), SpaceKey)
 
       "Rotating Arrow": makeTrial(new Psy.Sequence(
         for i in [0 .. 360] by 2

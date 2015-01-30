@@ -461,8 +461,24 @@
             org = _ref[_i];
             _results.push(new Canvas.Circle({
               position: org,
-              radius: 50,
+              radius: 25,
               origin: "center",
+              fill: '#' + (Math.random() * 0xFFFFFF << 0).toString(16)
+            }));
+          }
+          return _results;
+        })()), SpaceKey),
+        "Origin Test at 100,100": makeTrial(new Psy.Group((function() {
+          var _i, _len, _ref, _results;
+          _ref = ["top-left", "top-right", "top-center", "center-left", "center-right", "center", "bottom-left", "bottom-right", "bottom-center"];
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            org = _ref[_i];
+            _results.push(new Canvas.Circle({
+              x: 100,
+              y: 100,
+              radius: 50,
+              origin: org,
               fill: '#' + (Math.random() * 0xFFFFFF << 0).toString(16)
             }));
           }
@@ -533,6 +549,7 @@
               }), new Canvas.Circle({
                 x: 200 * index,
                 y: 200 * index,
+                origin: "center",
                 fill: "black",
                 radius: 5
               })
@@ -540,6 +557,23 @@
           }
           return _results;
         })())), SpaceKey),
+        "180 Reversed": makeTrial(new Psy.Group([
+          new Canvas.Arrow({
+            x: 400,
+            y: 400,
+            direction: "left",
+            origin: "center",
+            length: 200,
+            fill: "black"
+          }), new Canvas.Arrow({
+            x: 400,
+            y: 500,
+            direction: "right",
+            origin: "center",
+            length: 200,
+            fill: "black"
+          })
+        ]), SpaceKey),
         "Rotating Arrow": makeTrial(new Psy.Sequence((function() {
           var _i, _results;
           _results = [];

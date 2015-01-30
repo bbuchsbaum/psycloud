@@ -9765,7 +9765,7 @@ require.define('73', function(module, exports, __dirname, __filename, undefined)
 });
 require.define('67', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Background, Bacon, Block, BlockSeq, Coda, DataTable, DefaultComponentFactory, Event, EventData, EventDataLog, ExperimentContext, ExperimentState, FeedbackNode, FunctionNode, KineticContext, MockStimFactory, Prelude, Presenter, Q, Response, ResponseData, RunnableNode, STRIP_COMMENTS, StimFactory, Stimulus, TAFFY, Trial, buildCoda, buildPrelude, buildTrial, createContext, functionNode, getParamNames, makeEventSeq, props, utils, _, __dummySpec, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var Background, Bacon, Block, BlockSeq, Coda, Cont, DataTable, DefaultComponentFactory, Done, DynamicTrialEnumerator, Error, Event, EventData, EventDataLog, ExperimentContext, ExperimentState, FeedbackNode, FunctionNode, Input, Iteratee, KineticContext, MockStimFactory, Prelude, Presenter, Q, Response, ResponseData, RunnableNode, STRIP_COMMENTS, StaticTrialEnumerator, StimFactory, Stimulus, TAFFY, Trial, TrialEnumerator, buildCoda, buildPrelude, buildTrial, createContext, functionNode, getParamNames, makeEventSeq, props, utils, _, __dummySpec, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -9800,6 +9800,41 @@ require.define('67', function(module, exports, __dirname, __filename, undefined)
         }
         return result;
     };
+    Input = function () {
+        function Input() {
+        }
+        Input.EOF = new Input();
+        Input.EMPTY = new Input();
+        return Input;
+    }();
+    Iteratee = function () {
+        function Iteratee() {
+        }
+        return Iteratee;
+    }();
+    Done = function (_super) {
+        __extends(Done, _super);
+        function Done(a, remaining) {
+            this.a = a;
+            this.remaining = remaining;
+        }
+        return Done;
+    }(Iteratee);
+    Error = function (_super) {
+        __extends(Error, _super);
+        function Error(msg, input) {
+            this.msg = msg;
+            this.input = input;
+        }
+        return Error;
+    }(Iteratee);
+    Cont = function (_super) {
+        __extends(Cont, _super);
+        function Cont(cont) {
+            this.cont = cont;
+        }
+        return Cont;
+    }(Iteratee);
     exports.EventData = EventData = function () {
         function EventData(name, id, data) {
             this.name = name;
@@ -9899,6 +9934,52 @@ require.define('67', function(module, exports, __dirname, __filename, undefined)
         };
         return MockStimFactory;
     }(exports.StimFactory);
+    TrialEnumerator = function () {
+        function TrialEnumerator() {
+        }
+        TrialEnumerator.prototype.next = function (context) {
+        };
+        return TrialEnumerator;
+    }();
+    StaticTrialEnumerator = function (_super) {
+        __extends(StaticTrialEnumerator, _super);
+        function StaticTrialEnumerator(trialList) {
+            this.trialList = trialList;
+            this.index = 0;
+        }
+        StaticTrialEnumerator.prototype.next = function (context) {
+            var len;
+            len = this.trialList.length;
+            if (this.index < this.len) {
+                this.trialList[this.index];
+                return this.index = this.index + 1;
+            } else {
+                throw new Error('TrialEnumerator: illegal index: ' + index + ' for list of trial of length ' + len);
+            }
+        };
+        StaticTrialEnumerator.prototype.hasNext = function () {
+            return this.index < this.trialList.length;
+        };
+        return StaticTrialEnumerator;
+    }(TrialEnumerator);
+    DynamicTrialEnumerator = function (_super) {
+        __extends(DynamicTrialEnumerator, _super);
+        function DynamicTrialEnumerator(generator, maxTrials) {
+            this.generator = generator;
+            this.maxTrials = maxTrials != null ? maxTrials : 10000;
+            this.index = 0;
+        }
+        DynamicTrialEnumerator.prototype.next = function (context) {
+            this.index = this.index + 1;
+            if (this.index < this.maxTrials) {
+                return this.generator(context);
+            }
+        };
+        DynamicTrialEnumerator.prototype.hasNext = function () {
+            return this.index < this.maxTrials;
+        };
+        return DynamicTrialEnumerator;
+    }(TrialEnumerator);
     RunnableNode = function () {
         RunnableNode.functionList = function (nodes, context, callback) {
             return _.map(nodes, function (node) {
@@ -10081,8 +10162,6 @@ require.define('67', function(module, exports, __dirname, __filename, undefined)
                     });
                     context.clearBackground();
                     if (_this.background != null) {
-                        console.log('drawing background');
-                        console.log('background is', _this.background);
                         context.setBackground(_this.background);
                         return context.drawBackground();
                     }
@@ -10312,16 +10391,20 @@ require.define('67', function(module, exports, __dirname, __filename, undefined)
             if (withState == null) {
                 withState = true;
             }
+            console.log('pushing data', data);
+            console.log('state', this.exState.toRecord());
             if (withState) {
                 record = _.extend(this.exState.toRecord(), data);
             } else {
                 record = data;
             }
+            console.log('record', record);
             return this.userData.insert(record);
         };
         ExperimentContext.prototype.handleResponse = function (arg) {
             if (arg != null && arg instanceof ResponseData) {
                 this.responseQueue.push(arg);
+                console.log('pushing response', arg.data);
                 return this.pushData(arg.data);
             }
         };
@@ -10580,7 +10663,6 @@ require.define('67', function(module, exports, __dirname, __filename, undefined)
             _results = [];
             for (key in eventSpec) {
                 value = eventSpec[key];
-                console.log('building event', key, ', ', value);
                 _results.push(context.stimFactory.buildEvent(value));
             }
             return _results;
@@ -10865,55 +10947,110 @@ require.define('72', function(module, exports, __dirname, __filename, undefined)
         GraphicalStimulus.prototype.toPixels = function (arg, dim) {
             return lay.toPixels(arg, dim);
         };
+        GraphicalStimulus.prototype.defaultOrigin = 'top-left';
         GraphicalStimulus.prototype.xyoffset = function (origin, nodeWidth, nodeHeight) {
-            switch (origin) {
-            case 'center':
-                return [
-                    -nodeWidth / 2,
-                    -nodeHeight / 2
-                ];
-            case 'center-left' || 'left-center':
-                return [
-                    0,
-                    -nodeHeight / 2
-                ];
-            case 'center-right' || 'right-center':
-                return [
-                    -nodeWidth,
-                    -nodeHeight / 2
-                ];
-            case 'top-left' || 'left-top':
-                return [
-                    0,
-                    0
-                ];
-            case 'top-right' || 'right-top':
-                return [
-                    -nodeWidth,
-                    0
-                ];
-            case 'top-center' || 'center-top':
-                return [
-                    -nodeWidth / 2,
-                    0
-                ];
-            case 'bottom-left' || 'left-bottom':
-                return [
-                    0,
-                    -nodeHeight
-                ];
-            case 'bottom-right' || 'right-bottom':
-                return [
-                    -nodeWidth,
-                    -nodeHeight
-                ];
-            case 'bottom-center' || 'center-bottom':
-                return [
-                    -nodeWidth / 2,
-                    -nodeHeight
-                ];
-            default:
-                throw new Error('failed to match \'origin\' argument:', origin);
+            if (this.defaultOrigin === 'top-left') {
+                switch (origin) {
+                case 'center':
+                    return [
+                        -nodeWidth / 2,
+                        -nodeHeight / 2
+                    ];
+                case 'center-left' || 'left-center':
+                    return [
+                        0,
+                        -nodeHeight / 2
+                    ];
+                case 'center-right' || 'right-center':
+                    return [
+                        -nodeWidth,
+                        -nodeHeight / 2
+                    ];
+                case 'top-left' || 'left-top':
+                    return [
+                        0,
+                        0
+                    ];
+                case 'top-right' || 'right-top':
+                    return [
+                        -nodeWidth,
+                        0
+                    ];
+                case 'top-center' || 'center-top':
+                    return [
+                        -nodeWidth / 2,
+                        0
+                    ];
+                case 'bottom-left' || 'left-bottom':
+                    return [
+                        0,
+                        -nodeHeight
+                    ];
+                case 'bottom-right' || 'right-bottom':
+                    return [
+                        -nodeWidth,
+                        -nodeHeight
+                    ];
+                case 'bottom-center' || 'center-bottom':
+                    return [
+                        -nodeWidth / 2,
+                        -nodeHeight
+                    ];
+                default:
+                    throw new Error('failed to match \'origin\' argument:', origin);
+                }
+            } else if (this.defaultOrigin === 'center') {
+                switch (origin) {
+                case 'center':
+                    return [
+                        0,
+                        0
+                    ];
+                case 'center-left' || 'left-center':
+                    return [
+                        nodeWidth / 2,
+                        0
+                    ];
+                case 'center-right' || 'right-center':
+                    return [
+                        -nodeWidth / 2,
+                        0
+                    ];
+                case 'top-left' || 'left-top':
+                    return [
+                        nodeWidth / 2,
+                        nodeHeight / 2
+                    ];
+                case 'top-right' || 'right-top':
+                    return [
+                        -nodeWidth / 2,
+                        nodeHeight / 2
+                    ];
+                case 'top-center' || 'center-top':
+                    return [
+                        0,
+                        nodeHeight / 2
+                    ];
+                case 'bottom-left' || 'left-bottom':
+                    return [
+                        nodeWidth / 2,
+                        -nodeHeight / 2
+                    ];
+                case 'bottom-right' || 'right-bottom':
+                    return [
+                        -nodeWidth / 2,
+                        -nodeHeight / 2
+                    ];
+                case 'bottom-center' || 'center-bottom':
+                    return [
+                        0,
+                        -nodeHeight / 2
+                    ];
+                default:
+                    throw new Error('failed to match \'origin\' argument:', origin);
+                }
+            } else {
+                throw new Error('failed to match \'origin\' argument:', this.defaultOrigin);
             }
         };
         GraphicalStimulus.prototype.computeCoordinates = function (context, position, nodeWidth, nodeHeight) {
@@ -10936,7 +11073,7 @@ require.define('72', function(module, exports, __dirname, __filename, undefined)
                         this.layout.convertToCoordinate(this.spec.y, context.height())
                     ];
                 } else {
-                    throw new Error('computeCoordinates: either position or x,y coordinates must be defined');
+                    throw new Error('computeCoordinates: either \'position\' constraint or \'x\',\'y\' coordinates must be defined');
                 }
             }.call(this);
             if (this.spec.origin != null) {
@@ -14503,12 +14640,13 @@ require.define('101', function(module, exports, __dirname, __filename, undefined
                 opacity: this.spec.opacity
             });
         };
+        Circle.prototype.defaultOrigin = 'center';
         Circle.prototype.render = function (context) {
             var coords;
             coords = this.computeCoordinates(context, this.spec.position, this.circle.getWidth(), this.circle.getHeight());
             this.circle.setPosition({
-                x: coords[0] + this.circle.getWidth() / 2,
-                y: coords[1] + this.circle.getHeight() / 2
+                x: coords[0],
+                y: coords[1]
             });
             return new (function (_super1) {
                 __extends(_Class, _super1);
@@ -14516,10 +14654,10 @@ require.define('101', function(module, exports, __dirname, __filename, undefined
                     return _Class.__super__.constructor.apply(this, arguments);
                 }
                 _Class.prototype.x = function () {
-                    return this.node.getX() - this.nodes[0].getWidth() / 2;
+                    return this.node.getX() - this.node.getWidth() / 2;
                 };
                 _Class.prototype.y = function () {
-                    return this.node.getY() - this.nodes[0].getHeight() / 2;
+                    return this.node.getY() - this.node.getHeight() / 2;
                 };
                 _Class.prototype.width = function () {
                     return this.node.getWidth();
@@ -14664,21 +14802,28 @@ require.define('99', function(module, exports, __dirname, __filename, undefined)
             this.node = new Kinetic.Group({
                 x: 0,
                 y: 0,
-                rotationDeg: this.angle,
-                offset: [
-                    len / 2,
-                    height / 2
-                ]
+                rotationDeg: this.angle
             });
             this.node.add(this.arrowShaft);
             return this.node.add(this.arrowHead);
         };
         Arrow.prototype.render = function (context) {
             var coords;
-            coords = this.computeCoordinates(context, this.spec.position, this.arrowShaft.getWidth(), this.arrowShaft.getHeight());
+            coords = this.computeCoordinates(context, this.spec.position, this.arrowShaft.getWidth() + this.spec.arrowSize, this.arrowShaft.getHeight());
+            console.log('arrow x', this.spec.x);
+            console.log('arrow y', this.spec.y);
+            console.log('arrow coords', coords);
+            console.log('arrow offset', {
+                x: (this.arrowShaft.getWidth() + this.spec.arrowSize) / 2,
+                y: this.spec.thickness / 2
+            });
             this.node.setPosition({
                 x: coords[0] + (this.arrowShaft.getWidth() + this.spec.arrowSize) / 2,
                 y: coords[1] + this.spec.thickness / 2
+            });
+            this.node.setOffset({
+                x: (this.arrowShaft.getWidth() + this.spec.arrowSize) / 2,
+                y: this.spec.thickness / 2
             });
             return this.presentable(this, this.node);
         };
@@ -16964,16 +17109,15 @@ require.define('127', function(module, exports, __dirname, __filename, undefined
     html = require('76', module);
     CheckBox = function (_super) {
         __extends(CheckBox, _super);
+        function CheckBox() {
+            return CheckBox.__super__.constructor.apply(this, arguments);
+        }
         CheckBox.prototype.defaults = {
             label: 'click here',
             'class': ''
         };
-        function CheckBox(spec) {
+        CheckBox.prototype.initialize = function () {
             var outer;
-            if (spec == null) {
-                spec = {};
-            }
-            CheckBox.__super__.constructor.call(this, spec);
             this.el.addClass('ui large checkbox');
             this.input = $('<input type="checkbox" id="mycheckbox">');
             this.label = $('<label></label>').text(this.spec.label);
@@ -16982,17 +17126,17 @@ require.define('127', function(module, exports, __dirname, __filename, undefined
             this.el.append(this.label);
             this.el.addClass(this.spec['class']);
             outer = this;
-            this.input.on('change', function () {
+            return this.input.on('change', function () {
                 console.log('detected checkbox event');
                 if ($(this).is(':checked')) {
                     console.log('emitting checked outer event');
-                    return outer.emit('checked');
+                    outer.emit('checked');
                 } else {
                     console.log('emitting unchecked outer event');
-                    return outer.emit('unchecked');
+                    outer.emit('unchecked');
                 }
             });
-        }
+        };
         return CheckBox;
     }(html.HtmlStimulus);
     exports.CheckBox = CheckBox;
@@ -22426,20 +22570,18 @@ require.define('132', function(module, exports, __dirname, __filename, undefined
     html = require('76', module);
     TextField = function (_super) {
         __extends(TextField, _super);
+        function TextField() {
+            return TextField.__super__.constructor.apply(this, arguments);
+        }
         TextField.prototype.defaults = {
             placeholder: '',
             icon: '',
             'class': ''
         };
         TextField.prototype.signals = ['change'];
-        function TextField(spec) {
-            if (spec == null) {
-                spec = {};
-            }
-            TextField.__super__.constructor.call(this, spec);
-        }
         TextField.prototype.initialize = function () {
             var outer, placeholder;
+            outer = this;
             this.el = this.div();
             this.el.addClass('ui input');
             placeholder = this.spec.placeholder;
@@ -22449,6 +22591,7 @@ require.define('132', function(module, exports, __dirname, __filename, undefined
             outer = this;
             return this.input.on('change', function () {
                 var content;
+                content = void 0;
                 content = $(this).val();
                 return outer.emit('change', {
                     id: outer.id,

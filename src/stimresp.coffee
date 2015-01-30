@@ -150,28 +150,49 @@ class GraphicalStimulus extends exports.Stimulus
 
   toPixels: (arg, dim) -> lay.toPixels(arg,dim)
 
+  defaultOrigin: "top-left"
+
   xyoffset: (origin, nodeWidth, nodeHeight) ->
-    switch origin
-      when "center" then [-nodeWidth/2, -nodeHeight/2]
-      when "center-left" or "left-center" then [0, -nodeHeight/2]
-      when "center-right" or "right-center" then [-nodeWidth,-nodeHeight/2]
-      when "top-left" or "left-top" then [0,0]
-      when "top-right" or "right-top" then [-nodeWidth,0]
-      when "top-center" or "center-top" then [-nodeWidth/2,0]
-      when "bottom-left" or "left-bottom" then [0,-nodeHeight]
-      when "bottom-right" or "right-bottom" then [-nodeWidth,-nodeHeight]
-      when "bottom-center" or "center-bottom" then [-nodeWidth/2,-nodeHeight]
-      else
-        throw new Error("failed to match 'origin' argument:", origin)
+    if @defaultOrigin is "top-left"
+      switch origin
+        when "center" then [-nodeWidth/2, -nodeHeight/2]
+        when "center-left" or "left-center" then [0, -nodeHeight/2]
+        when "center-right" or "right-center" then [-nodeWidth,-nodeHeight/2]
+        when "top-left" or "left-top" then [0,0]
+        when "top-right" or "right-top" then [-nodeWidth,0]
+        when "top-center" or "center-top" then [-nodeWidth/2,0]
+        when "bottom-left" or "left-bottom" then [0,-nodeHeight]
+        when "bottom-right" or "right-bottom" then [-nodeWidth,-nodeHeight]
+        when "bottom-center" or "center-bottom" then [-nodeWidth/2,-nodeHeight]
+        else
+          throw new Error("failed to match 'origin' argument:", origin)
+    else if @defaultOrigin is "center"
+      switch origin
+        # todo fix me
+        when "center" then [0, 0]
+        when "center-left" or "left-center" then [nodeWidth/2, 0]
+        when "center-right" or "right-center" then [-nodeWidth/2,0]
+        when "top-left" or "left-top" then [nodeWidth/2,nodeHeight/2]
+        when "top-right" or "right-top" then [-nodeWidth/2,nodeHeight/2]
+        when "top-center" or "center-top" then [0,nodeHeight/2]
+        when "bottom-left" or "left-bottom" then [nodeWidth/2,-nodeHeight/2]
+        when "bottom-right" or "right-bottom" then [-nodeWidth/2,-nodeHeight/2]
+        when "bottom-center" or "center-bottom" then [0,-nodeHeight/2]
+        else
+          throw new Error("failed to match 'origin' argument:", origin)
+    else
+      throw new Error("failed to match 'origin' argument:", @defaultOrigin)
+
 
   computeCoordinates: (context, position, nodeWidth=0, nodeHeight=0) ->
     xy = if position?
       @layout.computePosition([context.width(), context.height()], position)
     else if @spec.x? and @spec.y?
       [@layout.convertToCoordinate(@spec.x, context.width()), @layout.convertToCoordinate(@spec.y, context.height())]
-    else throw new Error("computeCoordinates: either position or x,y coordinates must be defined")
+    else throw new Error("computeCoordinates: either 'position' constraint or 'x','y' coordinates must be defined")
 
     if @spec.origin?
+      #todo make this dependent on node type, e.g. circle
       xyoff = @xyoffset(@spec.origin, nodeWidth, nodeHeight)
       xy[0] = xy[0] + xyoff[0]
       xy[1] = xy[1] + xyoff[1]

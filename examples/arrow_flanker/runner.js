@@ -73,7 +73,6 @@
       },
       Block: {
         Start: function() {
-          console.log("START BLOCK");
           return {
             Text: {
               position: "center",
@@ -101,7 +100,7 @@
       },
       Trial: function() {
         var arrowLen;
-        arrowLen = 175;
+        arrowLen = 150;
         return {
           Background: {
             Blank: {

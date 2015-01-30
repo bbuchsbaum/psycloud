@@ -10,6 +10,7 @@ class Circle extends KStimulus
     x: 50, y: 50, radius: 50, fill: 'red', opacity: 1, origin: "center"
 
 
+
   # Construct a new Circle.
   #
   # @param [Object] spec component parameters
@@ -25,6 +26,7 @@ class Circle extends KStimulus
   initialize: ->
     @circle = new Kinetic.Circle({ x: @spec.x, y: @spec.y, radius: @spec.radius, fill: @spec.fill, stroke: @spec.stroke, strokeWidth: @spec.strokeWidth, opacity: @spec.opacity })
 
+  defaultOrigin: "center"
 
 
   render: (context) ->
@@ -33,12 +35,12 @@ class Circle extends KStimulus
     ## the origin of a circle in Kinetic.js is at the center of the circle, so the offset computation performed by computeCoodinates is incorrect.
     ## @computeCoordinates could take an extra argument that specifies whether origin is already at center of object.
     ## for now, we fix the offset by shifting the circle by 1/2 of the width and height
-    @circle.setPosition({x: coords[0] + @circle.getWidth()/2, y: coords[1] + @circle.getHeight()/2})
+    @circle.setPosition({x: coords[0], y: coords[1]})
 
     ## we override KineticDrawable to provide accurate numbers for circle bounding box.
     new (class extends KDrawable
-      x: -> @node.getX() - @nodes[0].getWidth()/2
-      y: -> @node.getY() - @nodes[0].getHeight()/2
+      x: -> @node.getX() - @node.getWidth()/2
+      y: -> @node.getY() - @node.getHeight()/2
       width: -> @node.getWidth()
       height: -> @node.getHeight()
 
