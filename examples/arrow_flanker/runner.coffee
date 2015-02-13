@@ -18,15 +18,11 @@ _ = Psy._
           flankerArrow:
             levels: ["left", "right"]
             choose: (trial) -> ...
-
-
     Items:
       flankerArrow:
 
 
 ###
-
-
 
 
 factorSet =
@@ -50,16 +46,13 @@ fnode = Psy.FactorSetNode.build(factorSet)
           right: "left"
 
 
-
-console.log("trials", @trials)
-
-
 @trials.shuffle()
 
 
-window.display =
-  Display:
+window.experiment =
 
+
+  Routines:
     Prelude:
       Events:
         1:
@@ -86,28 +79,32 @@ window.display =
 
           """
           Next:
-            AnyKey: ""
+            AnyKey: {}
 
     Block:
       Start: ->
         Text:
           position: "center"
           origin: "center"
-          content: ["Get Ready for Block #{@blockNumber}!", "Press Space Bar to start"]
-        Next:
-          SpaceKey: ""
+          content: ["Get Ready for Block #{@context.get("State.blockNumber")}!", "Press any key to start"]
+
+        Next: AnyKey: {}
 
       End: ->
-        console.log("END BLOCK")
         Text:
           position: "center"
           origin: "center"
-          content: ["End of Block #{@blockNumber}", "Press any key to continue"]
-        Next:
-          AnyKey: ""
+          content: ["End of Block #{@context.get("State.blockNumber")}", "Press any key to continue"]
+
+        Next: AnyKey: {}
 
     Trial: ->
       arrowLen = 150
+      arrowx = [@screen.center.x - 2*arrowLen - 20,
+                @screen.center.x - arrowLen - 10,
+                @screen.center.x,
+                @screen.center.x + arrowLen + 10,
+                @screen.center.x + 2*arrowLen + 20]
 
       Background:
         Blank:
@@ -125,61 +122,17 @@ window.display =
               duration: 1000
         2:
           Group:
-            stims: [
-              Arrow:
-                x: @screen.center.x - 2*arrowLen - 20
-                y: @screen.center.y
-                thickness: 35
-                arrowSize: 75
-                origin: "center"
-                fill: "black"
-                length: arrowLen
-                direction: @trial.flankerArrow
-            ,
-
-              Arrow:
-                x: @screen.center.x - arrowLen - 10
-                y: @screen.center.y
-                thickness: 35
-                arrowSize: 75
-                origin: "center"
-                fill: "black"
-                length: arrowLen
-                direction: @trial.flankerArrow
-                #height: diameter
-            ,
-              Arrow:
-                x: @screen.center.x
-                y: @screen.center.y
-                thickness: 35
-                arrowSize: 75
-                origin: "center"
-                fill: "black"
-                length: arrowLen
-                direction: @trial.centerArrow
-
-            ,
-              Arrow:
-                x: @screen.center.x + arrowLen + 10
-                y: @screen.center.y
-                thickness: 35
-                arrowSize: 75
-                origin: "center"
-                fill: "black"
-                length: arrowLen
-                direction: @trial.flankerArrow
-            ,
-              Arrow:
-                x: @screen.center.x + 2*arrowLen + 20
-                y: @screen.center.y
-                thickness: 35
-                arrowSize: 75
-                origin: "center"
-                fill: "black"
-                length: arrowLen
-                direction: @trial.flankerArrow
-
-            ]
+            stims:
+              for x, index in arrowx
+                Arrow:
+                  x: x
+                  y: @screen.center.y
+                  thickness: 35
+                  arrowSize: 75
+                  origin: "center"
+                  fill: "black"
+                  length: arrowLen
+                  direction: if index is 2 then @trial.centerArrow else @trial.flankerArrow
 
           Next:
             KeyPress:
@@ -190,7 +143,7 @@ window.display =
 
       Feedback: ->
         Blank:
-          fill: if @answer.Accuracy then "green" else "red"
+          fill: if @response[1].accuracy then "green" else "red"
           opacity: .1
         Next:
           Timeout:
@@ -209,9 +162,18 @@ window.display =
             Timeout: duration: 5000
 
 
+  Flow: (routines) ->
+    1: routines.Prelude
+    2: BlockSequence:
+      trialList: trials
+      start: routines.Block.Start
+      trial: routines.Trial
+      end: routines.Block.End
+    3: routines.Coda
 
 
 
+@pres = new Psy.Presentation(trials, experiment, context)
+@pres.start()
 
-pres = new Psy.Presenter(trials, display.Display, context)
-pres.start()
+

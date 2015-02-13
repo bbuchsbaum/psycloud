@@ -58,8 +58,6 @@ class KeyResponse extends Response
 
   createResponseData: (timeStamp, startTime, Acc, char, noResponse=false) ->
     resp =
-      name: @name
-      id: @id
       keyTime: timeStamp
       RT: timeStamp - startTime
       accuracy: Acc
@@ -69,12 +67,13 @@ class KeyResponse extends Response
     resp
 
 
-  resolveOnTimeout: (deferred, timeout) ->
+  resolveOnTimeout: (deferred, timeout, stimulus) ->
     utils.doTimer(timeout, (diff) =>
       if !deferred.isResolved
         timeStamp = utils.getTimestamp()
         Acc = false
         resp = @createResponseData(timeStamp, @startTime, Acc, '', true)
+        resp = _.extend(@baseResponse(stimulus), resp)
         deferred.resolve(new ResponseData(resp))
     )
 
@@ -90,7 +89,7 @@ class KeyPress extends KeyResponse
     keyStream = context.keypressStream()
 
     if @spec.timeout?
-      @resolveOnTimeout(deferred, @spec.timeout)
+      @resolveOnTimeout(deferred, @spec.timeout, stimulus)
 
 
     keyStream.filter((event) =>
@@ -101,6 +100,7 @@ class KeyPress extends KeyResponse
         Acc = _.contains(@spec.correct, String.fromCharCode(filtered.keyCode))
 
         resp = @createResponseData(timeStamp, @startTime, Acc, String.fromCharCode(filtered.keyCode))
+        resp = _.extend(@baseResponse(stimulus), resp)
         deferred.resolve(new ResponseData(resp)))
 
     deferred.promise

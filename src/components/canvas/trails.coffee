@@ -40,8 +40,11 @@ class Trails
 
 # Component for Trail-making task, version A
 #
-# @event 'trail_moved' when the correct item is selected
-# @event 'trail_completed' when the last item has been selected and the trail is completed
+# @event trail_move
+#   Emitted when user selects the next node in the trail
+#   @param index [Integer] the index of the node (starts at 0)
+# @event trail_completed
+#   Emitted when the last item has been selected and the trail is complete.
 class TrailsA extends KStimulus
 
   defaults:
@@ -86,31 +89,65 @@ class TrailsA extends KStimulus
     pts
 
 
+  emitComplete: (outer, pathIndex, id) ->
+    outer.emit("trail_complete", {
+      name: outer.name
+      id: outer.id
+      index: pathIndex
+      node_id: id
+      timeElapsed: outer.timeElapsed
+    })
+
+
+  # @event trail_move
+  #   Emitted when user selects the next node in the trail
+  #   @param index [Integer] the index of the node (starts at 0)
+  emitMove: (outer, pathIndex, id) ->
+    if pathIndex == 0
+      outer.startTime = utils.timestamp()
+      outer.timeElapsed = 0
+      RT = 0
+    else
+      curtime = utils.timestamp()
+      RT = (curtime - outer.startTime) - outer.timeElapsed
+      outer.timeElapsed = curtime - outer.startTime
+
+    outer.emit("trail_move", {
+      name: outer.name
+      id: outer.id
+      index: pathIndex
+      node_id: id
+      timeElapsed: outer.timeElapsed
+      RT: RT
+    })
+
+
   addCircleListener: (circle, context) ->
     outer = this
     circle.on "click", ->
       if this.attrs.id == "circle_".concat(outer.pathIndex + 1)
         if outer.pathIndex == (outer.npoints-1)
           this.fill("red")
+
           console.log("emitting trail_completed signal")
-          setTimeout((-> outer.emit("trail_completed")), 200)
+          setTimeout((-> outer.emitComplete(outer, outer.pathIndex, outer.attrs.id)), 200)
         else
           this.fill(outer.spec.circleSelectedFill)
 
         console.log("emitting trail_move signal")
-        outer.emit("trail_move", {
-          index: outer.pathIndex
-          node_id: this.attrs.id
-        })
+
 
         if outer.pathIndex == 0
           outer.path.points([this.getPosition().x, this.getPosition().y])
           outer.path.visible(true)
+
           #outer.group.add(outer.path)
         else
 
           pts = outer.path.points()
           outer.path.points(pts.concat([this.getPosition().x, this.getPosition().y]))
+
+        outer.emitMove(outer, outer.pathIndex,this.attrs.id)
 
         outer.pathIndex++
         context.draw()

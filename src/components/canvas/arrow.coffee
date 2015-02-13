@@ -78,10 +78,7 @@ class Arrow extends KStimulus
     coords = @computeCoordinates(context, @spec.position, @arrowShaft.getWidth()+@spec.arrowSize, @arrowShaft.getHeight())
     # need to recenter
     #@node.setPosition({x: coords[0] + (@arrowShaft.getWidth()+@spec.arrowSize)/2, y: coords[1] + @spec.thickness/2})
-    console.log("arrow x", @spec.x)
-    console.log("arrow y", @spec.y)
-    console.log("arrow coords", coords)
-    console.log("arrow offset",{x: (@arrowShaft.getWidth()+@spec.arrowSize)/2,  y: @spec.thickness/2} )
+
     @node.setPosition({x: coords[0] + (@arrowShaft.getWidth()+@spec.arrowSize)/2, y: coords[1] + @spec.thickness/2 })
     @node.setOffset({x: (@arrowShaft.getWidth()+@spec.arrowSize)/2,  y: @spec.thickness/2})
     @presentable(this, @node)

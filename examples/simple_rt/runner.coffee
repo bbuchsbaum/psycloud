@@ -3,30 +3,6 @@
 @context = new Psy.createContext()
 _ = Psy._
 
-###
-
-  Task:
-    name: "arrow_flanker"
-
-    Conditions:
-      Crossed:
-          flanker:
-            levels: ["congruent", "incongruent"]
-          centerArrow:
-            levels: ["left", "right"]
-      Uncrossed:
-          flankerArrow:
-            levels: ["left", "right"]
-            choose: (trial) -> ...
-
-
-    Items:
-      flankerArrow:
-
-
-###
-
-
 
 
 factorSet =
@@ -40,10 +16,6 @@ fnode = Psy.FactorSetNode.build(factorSet)
 
 # create 5 blocks of trials with 5 complete replications per block
 @trials = fnode.trialList(2, 2)
-
-
-console.log("trials", @trials)
-
 @trials.shuffle()
 
 instructions = """
@@ -83,7 +55,6 @@ instructions = """
 
     Block:
       Start: ->
-        console.log("START BLOCK")
         Text:
           position: "center"
           origin: "center"
@@ -92,7 +63,6 @@ instructions = """
           AnyKey: ""
 
       End: ->
-        console.log("END BLOCK")
         Text:
           position: "center"
           origin: "center"
@@ -120,7 +90,6 @@ instructions = """
 
 
       Feedback: ->
-        console.log("context is", context)
         cresp = @context.selectBy({id: "circleResp"})
         RT = _.last(cresp).RT
 

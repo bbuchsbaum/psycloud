@@ -55,9 +55,9 @@ instructions = """
         Text:
           position: "center"
           origin: "center"
-          content: ["Get Ready!", "Press Space Bar to start"]
+          content: ["Get Ready!", "Press any key to start"]
         Next:
-          SpaceKey: ""
+          AnyKey: ""
 
     Trial: ->
       Background:
@@ -76,6 +76,9 @@ instructions = """
           TrailsB:
             id: "trails_b"
             npoints: 24
+            react:
+              trail_move: (ev) ->
+                console.log("react: trail moved!", ev)
           Next:
             ## components can emit "signals" that have an id.
             ## when the user connects the last circle, TrailsA emits "trail_completed"

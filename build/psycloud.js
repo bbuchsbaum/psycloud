@@ -8282,9 +8282,10 @@ require.define('72', function(module, exports, __dirname, __filename, undefined)
                 this.id = _.uniqueId('stim_');
             }
             this.stopped = false;
-            return this.react = this.spec.react || {};
+            this.react = this.spec.react || {};
+            return this.initReactions();
         };
-        Stimulus.prototype.initReactions = function (self) {
+        Stimulus.prototype.initReactions = function () {
             var key, value, _ref, _results;
             _ref = this.react;
             _results = [];
@@ -9350,6 +9351,7 @@ require.define('69', function(module, exports, __dirname, __filename, undefined)
         };
     }
     exports.getTimestamp = getTimestamp;
+    exports.timestamp = getTimestamp;
     this.browserBackDisabled = false;
     exports.disableBrowserBack = function () {
         var rx;
@@ -10218,8 +10220,6 @@ require.define('84', function(module, exports, __dirname, __filename, undefined)
                 noResponse = false;
             }
             resp = {
-                name: this.name,
-                id: this.id,
                 keyTime: timeStamp,
                 RT: timeStamp - startTime,
                 accuracy: Acc,
@@ -10228,7 +10228,7 @@ require.define('84', function(module, exports, __dirname, __filename, undefined)
             };
             return resp;
         };
-        KeyResponse.prototype.resolveOnTimeout = function (deferred, timeout) {
+        KeyResponse.prototype.resolveOnTimeout = function (deferred, timeout, stimulus) {
             return utils.doTimer(timeout, function (_this) {
                 return function (diff) {
                     var Acc, resp, timeStamp;
@@ -10236,6 +10236,7 @@ require.define('84', function(module, exports, __dirname, __filename, undefined)
                         timeStamp = utils.getTimestamp();
                         Acc = false;
                         resp = _this.createResponseData(timeStamp, _this.startTime, Acc, '', true);
+                        resp = _.extend(_this.baseResponse(stimulus), resp);
                         return deferred.resolve(new ResponseData(resp));
                     }
                 };
@@ -10254,7 +10255,7 @@ require.define('84', function(module, exports, __dirname, __filename, undefined)
             deferred = Q.defer();
             keyStream = context.keypressStream();
             if (this.spec.timeout != null) {
-                this.resolveOnTimeout(deferred, this.spec.timeout);
+                this.resolveOnTimeout(deferred, this.spec.timeout, stimulus);
             }
             keyStream.filter(function (_this) {
                 return function (event) {
@@ -10268,6 +10269,7 @@ require.define('84', function(module, exports, __dirname, __filename, undefined)
                     timeStamp = utils.getTimestamp();
                     Acc = _.contains(_this.spec.correct, String.fromCharCode(filtered.keyCode));
                     resp = _this.createResponseData(timeStamp, _this.startTime, Acc, String.fromCharCode(filtered.keyCode));
+                    resp = _.extend(_this.baseResponse(stimulus), resp);
                     return deferred.resolve(new ResponseData(resp));
                 };
             }(this));
@@ -11888,7 +11890,6 @@ require.define('103', function(module, exports, __dirname, __filename, undefined
             x = context.width() / 2;
             y = context.height() / 2;
             len = this.toPixels(this.spec.length, context.width());
-            console.log('FIX len is', len);
             horz = new Kinetic.Rect({
                 x: x - len / 2,
                 y: y,
@@ -12163,13 +12164,6 @@ require.define('99', function(module, exports, __dirname, __filename, undefined)
         Arrow.prototype.render = function (context) {
             var coords;
             coords = this.computeCoordinates(context, this.spec.position, this.arrowShaft.getWidth() + this.spec.arrowSize, this.arrowShaft.getHeight());
-            console.log('arrow x', this.spec.x);
-            console.log('arrow y', this.spec.y);
-            console.log('arrow coords', coords);
-            console.log('arrow offset', {
-                x: (this.arrowShaft.getWidth() + this.spec.arrowSize) / 2,
-                y: this.spec.thickness / 2
-            });
             this.node.setPosition({
                 x: coords[0] + (this.arrowShaft.getWidth() + this.spec.arrowSize) / 2,
                 y: coords[1] + this.spec.thickness / 2
@@ -13739,6 +13733,35 @@ require.define('114', function(module, exports, __dirname, __filename, undefined
             }
             return pts;
         };
+        TrailsA.prototype.emitComplete = function (outer, pathIndex, id) {
+            return outer.emit('trail_complete', {
+                name: outer.name,
+                id: outer.id,
+                index: pathIndex,
+                node_id: id,
+                timeElapsed: outer.timeElapsed
+            });
+        };
+        TrailsA.prototype.emitMove = function (outer, pathIndex, id) {
+            var RT, curtime;
+            if (pathIndex === 0) {
+                outer.startTime = utils.timestamp();
+                outer.timeElapsed = 0;
+                RT = 0;
+            } else {
+                curtime = utils.timestamp();
+                RT = curtime - outer.startTime - outer.timeElapsed;
+                outer.timeElapsed = curtime - outer.startTime;
+            }
+            return outer.emit('trail_move', {
+                name: outer.name,
+                id: outer.id,
+                index: pathIndex,
+                node_id: id,
+                timeElapsed: outer.timeElapsed,
+                RT: RT
+            });
+        };
         TrailsA.prototype.addCircleListener = function (circle, context) {
             var outer;
             outer = this;
@@ -13749,16 +13772,12 @@ require.define('114', function(module, exports, __dirname, __filename, undefined
                         this.fill('red');
                         console.log('emitting trail_completed signal');
                         setTimeout(function () {
-                            return outer.emit('trail_completed');
+                            return outer.emitComplete(outer, outer.pathIndex, outer.attrs.id);
                         }, 200);
                     } else {
                         this.fill(outer.spec.circleSelectedFill);
                     }
                     console.log('emitting trail_move signal');
-                    outer.emit('trail_move', {
-                        index: outer.pathIndex,
-                        node_id: this.attrs.id
-                    });
                     if (outer.pathIndex === 0) {
                         outer.path.points([
                             this.getPosition().x,
@@ -13772,6 +13791,7 @@ require.define('114', function(module, exports, __dirname, __filename, undefined
                             this.getPosition().y
                         ]));
                     }
+                    outer.emitMove(outer, outer.pathIndex, this.attrs.id);
                     outer.pathIndex++;
                     return context.draw();
                 }

@@ -98,7 +98,9 @@ class Stimulus extends exports.Component
 
     @react = @spec.react or {}
 
-  initReactions: (self) ->
+    @initReactions()
+
+  initReactions:  ->
     for key, value of @react
       if _.isFunction(value)
         @addReaction(key,value)

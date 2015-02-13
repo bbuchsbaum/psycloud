@@ -11,6 +11,7 @@ else
   getTimestamp = -> new Date().getTime()
 
 exports.getTimestamp = getTimestamp
+exports.timestamp = getTimestamp
 
 @browserBackDisabled = false
 
