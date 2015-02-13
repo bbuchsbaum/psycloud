@@ -14,10 +14,10 @@ class Receiver extends Response
 
     callback = (args) =>
       console.log("Reciever callback")
-      resp =
-        name: "Receiver"
-        signal: @spec.signal
-        id: @spec.id
+      resp = @baseResponse(stimulus)
+      resp.name = "Receiver"
+      resp.signal = @spec.signal
+      resp.id = @spec.id
 
       deferred.resolve(new ResponseData(resp))
 

@@ -26,12 +26,12 @@
       <table class='box'>
         <tr>
           <td>Defined in:</td>
-          <td>src&#47;psycloud.coffee</td>
+          <td>src&#47;flow.coffee</td>
         </tr>
         <tr>
           <td>Inherits:</td>
           <td>
-            <a href='../class/RunnableNode.html'>RunnableNode</a>
+            <a href='../class/EventSequence.html'>EventSequence</a>
           </td>
         </tr>
       </table>
@@ -39,21 +39,10 @@
       <ul class='summary'>
   <li>
     <span class='signature'>
-      <a href='#numEvents-dynamic'>
+      <a href='#updateState-dynamic'>
         #
 (void)
-<b>numEvents</b><span>()</span>
-      </a>
-    </span>
-    <span class='desc'>
-    </span>
-  </li>
-  <li>
-    <span class='signature'>
-      <a href='#push-dynamic'>
-        #
-(void)
-<b>push</b><span>(event)</span>
+<b>updateState</b><span>(node, context)</span>
       </a>
     </span>
     <span class='desc'>
@@ -67,6 +56,7 @@
 <b>before</b><span>(context)</span>
       </a>
     </span>
+    <span class='bound note title'>Bound</span>
     <span class='desc'>
     </span>
   </li>
@@ -78,28 +68,7 @@
 <b>after</b><span>(context)</span>
       </a>
     </span>
-    <span class='desc'>
-    </span>
-  </li>
-  <li>
-    <span class='signature'>
-      <a href='#start-dynamic'>
-        #
-(void)
-<b>start</b><span>(context, callback)</span>
-      </a>
-    </span>
-    <span class='desc'>
-    </span>
-  </li>
-  <li>
-    <span class='signature'>
-      <a href='#stop-dynamic'>
-        #
-(void)
-<b>stop</b><span>(context)</span>
-      </a>
-    </span>
+    <span class='bound note title'>Bound</span>
     <span class='desc'>
     </span>
   </li>
@@ -108,13 +77,15 @@
         <small>Inherited Method Summary</small>
         <h3 class='inherited'>
           Methods inherited from
-          <a href='../class/RunnableNode.html'>RunnableNode</a>
+          <a href='../class/EventSequence.html'>EventSequence</a>
         </h3>
         <p class='inherited'>
-          <a href='../class/RunnableNode.html#functionList-static'>.functionList</a>
-          <a href='../class/RunnableNode.html#chainFunctions-static'>.chainFunctions</a>
-          <a href='../class/RunnableNode.html#before-dynamic'>#before</a>
+          <a href='../class/EventSequence.html#numEvents-dynamic'>#numEvents</a>
+          <a href='../class/EventSequence.html#push-dynamic'>#push</a>
+          <a href='../class/EventSequence.html#updateState-dynamic'>#updateState</a>
+          <a href='../class/EventSequence.html#before-dynamic'>#before</a>
           <a href='../class/RunnableNode.html#after-dynamic'>#after</a>
+          <a href='../class/RunnableNode.html#callback-dynamic'>#callback</a>
           <a href='../class/RunnableNode.html#numChildren-dynamic'>#numChildren</a>
           <a href='../class/RunnableNode.html#length-dynamic'>#length</a>
           <a href='../class/RunnableNode.html#start-dynamic'>#start</a>
@@ -136,19 +107,10 @@
       <h2>Instance Method Details</h2>
       <div class='methods'>
   <div class='method_details'>
-    <p class='signature' id='numEvents-dynamic'>
+    <p class='signature' id='updateState-dynamic'>
       #
 (void)
-<b>numEvents</b><span>()</span>
-      <br>
-    </p>
-    
-  </div>
-  <div class='method_details'>
-    <p class='signature' id='push-dynamic'>
-      #
-(void)
-<b>push</b><span>(event)</span>
+<b>updateState</b><span>(node, context)</span>
       <br>
     </p>
     
@@ -158,6 +120,7 @@
       #
 (void)
 <b>before</b><span>(context)</span>
+      <span class='bound note'>Bound</span>
       <br>
     </p>
     
@@ -167,24 +130,7 @@
       #
 (void)
 <b>after</b><span>(context)</span>
-      <br>
-    </p>
-    
-  </div>
-  <div class='method_details'>
-    <p class='signature' id='start-dynamic'>
-      #
-(void)
-<b>start</b><span>(context, callback)</span>
-      <br>
-    </p>
-    
-  </div>
-  <div class='method_details'>
-    <p class='signature' id='stop-dynamic'>
-      #
-(void)
-<b>stop</b><span>(context)</span>
+      <span class='bound note'>Bound</span>
       <br>
     </p>
     
@@ -192,7 +138,7 @@
 </div>
     </div>
     <div id='footer'>
-  January 30, 15 11:48:42 by
+  February 12, 15 20:30:53 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

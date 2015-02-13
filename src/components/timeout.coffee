@@ -8,15 +8,15 @@ class Timeout extends Response
   defaults:
     duration: 1000
 
-  activate: (context) ->
+  activate: (context, stimulus) ->
     deferred = Q.defer()
 
     utils.doTimer(@spec.duration, (diff) =>
-      resp =
-        name: "Timeout"
-        id: @id
-        timeElapsed: diff
-        timeRequested: @spec.duration
+      resp = @baseResponse(stimulus)
+      resp.name = "Timeout"
+      resp.id = @id
+      resp.timeElapsed = diff
+      resp.timeRequested = @spec.duration
 
       deferred.resolve(new ResponseData(resp)))
 

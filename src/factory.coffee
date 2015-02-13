@@ -9,6 +9,7 @@ Components = require("./components/components")
 Psy = require("./psycloud")
 Layout = require("./layout")
 AutoResponse = require("./stimresp").AutoResponse
+Flow = require("./flow")
 
 
 
@@ -43,6 +44,7 @@ class ComponentFactory
 
 
   buildEvent: (spec) ->
+    console.log("building event", spec)
     stimSpec = _.omit(spec, "Next")
 
     if spec.Next?
@@ -54,6 +56,34 @@ class ComponentFactory
     stim = @buildStimulus(stimSpec)
 
     @makeEvent(stim, response)
+
+  buildTrial: (spec, record) ->
+    console.log("building trial from spec", spec)
+    espec = _.omit(spec, ["Feedback", "Background"])
+    evseq = @buildEventSeq(espec)
+
+    console.log("trial events", evseq)
+    console.log("feedback is", spec.Feedback)
+
+    if spec.Background?
+      background = @makeStimulus("Background", spec.Background)
+      new Flow.Trial(evseq, record, spec.Feedback, background)
+    else
+      new Flow.Trial(evseq, record, spec.Feedback)
+
+
+  buildEventSeq: (spec) ->
+    console.log("building event sequence", spec)
+    if _.isArray(spec)
+      for value in spec
+        @buildEvent(value)
+    else if spec.Events?
+      espec = _.omit(spec, "Background")
+      for key, value of espec.Events
+        @buildEvent(value)
+    else
+      espec = _.omit(spec, "Background")
+      [@buildEvent(espec)]
 
   make: (name, params, registry) ->
     throw new Error("unimplemented", name, params, registry)
@@ -77,7 +107,8 @@ spec =
     file: "red"
 
 [name, params] = ComponentFactory.transformPropertySpec(_.keys(spec)[0], _.values(spec)[0])
-console.log(name, params)
+
+
 
 exports.ComponentFactory = ComponentFactory
 
@@ -148,13 +179,12 @@ class DefaultComponentFactory extends ComponentFactory
         new registry[name](params)
 
   makeStimulus: (name, params) ->
-    console.log("making stimulus", name, "with params", params)
     @make(name, params, @registry)
 
   makeResponse: (name, params) ->
     @make(name, params, @registry)
 
-  makeEvent: (stim, response) -> new Psy.Event(stim, response)
+  makeEvent: (stim, response) -> new Flow.Event(stim, response)
 
   makeLayout: (name, params, context) ->
     switch name

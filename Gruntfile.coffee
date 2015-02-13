@@ -55,22 +55,38 @@ module.exports = (grunt) ->
         sourceRoot: ".."
       all:
         files:
-          "build/psycloud_bundle.js": ['build/psycloud.js', 'jslibs/jqxcore.js', 'jslibs/jqxbuttons.js', 'jslibs/jqxslider.js', 'jslibs/jquery-1.7.js', 'vex.combined.min.js']
+          #"build/psycloud_bundle.js": ['build/psycloud.js', 'jslibs/jqxcore.js', 'jslibs/jqxbuttons.js', 'jslibs/jqxslider.js', 'jslibs/jquery-1.7.js', 'vex.combined.min.js']
+          "build/psycloud_bundle.js": ['build/psycloud.js', 'jslibs/jquery-1.7.js', 'vex.combined.min.js']
 
 
     concat:
       min:
         #src: ['build/psycloud.min.js', 'jslibs/jquery-1.7.min.js', 'jslibs/jqxcore.js', 'jslibs/jqxbuttons.js', 'jslibs/jqxslider.js', 'vex.combined.min.js']
-        src: ['jslibs/buzz.js', 'jslibs/kinetic-v5.0.1.js', 'jslibs/jquery-1.7.min.js', 'jslibs/jqxcore.js', 'jslibs/jqxbuttons.js', 'jslibs/jqxslider.js', 'vex.combined.min.js', 'jslibs/semantic.js']
+        src: ['bower_components/buzz/dist/buzz.min.js',
+              'bower_components/kineticjs/kinetic.min.js',
+              'bower_components/jquery/dist/jquery.min.js',
+              'bower_components/vex/js/vex.combined.min.js',
+              'bower_components/semantic/dist/semantic.min.js']
+
         dest: 'build/psycloud_libs.min.js'
       all:
-        src: ['jslibs/buzz.js', 'jslibs/kinetic-v5.0.1.js', 'jslibs/jquery-1.7.js', 'jslibs/jqxcore.js', 'jslibs/jqxbuttons.js', 'jslibs/jqxslider.js', 'vex.combined.min.js', 'jslibs/semantic.js']
+        src: ['bower_components/buzz/dist/buzz.js',
+              'bower_components/kineticjs/kinetic.js',
+              'bower_components/jquery/dist/jquery.js',
+              'bower_components/vex/js/vex.combined.min.js',
+              'bower_components/semantic/dist/semantic.js']
         dest: 'build/psycloud_libs.js'
 
     cssmin: 
       combine: 
         files: 
-          'build/psycloud_bundle.css': ['css/*.css']
+          'build/psycloud_bundle.css':
+            ['css/psycloud.css',
+             'css/markdown_ns.css',
+             'bower_components/semantic/dist/semantic.min.css',
+             'bower_components/vex/css/vex.css',
+             'bower_components/vex/css/vex-theme-wireframe.css']
+
 
     copy:
       main:
@@ -101,5 +117,6 @@ module.exports = (grunt) ->
   grunt.registerTask('code', ['clean', 'powerbuild:all', 'concat', 'copy'])
   #grunt.registerTask('default', ['clean', 'coffee', 'powerbuild:all', 'concat_sourcemap:all', 'cssmin', 'shell'])
   grunt.registerTask('default', ['clean', 'coffee', 'powerbuild:all', 'concat', 'cssmin', 'copy', 'shell'])
+  #grunt.registerTask('compile', ['coffee', 'powerbuild:all', 'concat'])
   grunt.registerTask('document', ['shell'])
   grunt.registerTask('power', ["powerbuild"])

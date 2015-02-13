@@ -202,12 +202,11 @@ pres.start().then( =>
   }
 
   console.log(dat)
-  console.log($)
 
-  #$.ajax({
-  #  type: "POST",
-  #  url: "/results",
-  #  data: dat,
-  #  dataType: "json"
-  #})
+  $.ajax({
+    type: "POST",
+    url: "/results",
+    data: dat,
+    dataType: "json"
+  })
 )

@@ -84,7 +84,7 @@ class KeyResponse extends Response
 class KeyPress extends KeyResponse
 
 
-  activate: (context) ->
+  activate: (context, stimulus) ->
     @startTime = utils.getTimestamp()
     deferred = Q.defer()
     keyStream = context.keypressStream()
@@ -97,11 +97,9 @@ class KeyPress extends KeyResponse
       char = String.fromCharCode(event.keyCode)
       _.contains(@spec.keys, char)).take(1).onValue( (filtered) =>
         timeStamp = utils.getTimestamp()
-        console.log("correct", @spec.correct)
-        console.log("key", String.fromCharCode(filtered.keyCode))
 
         Acc = _.contains(@spec.correct, String.fromCharCode(filtered.keyCode))
-        console.log("acc", Acc)
+
         resp = @createResponseData(timeStamp, @startTime, Acc, String.fromCharCode(filtered.keyCode))
         deferred.resolve(new ResponseData(resp)))
 
@@ -112,38 +110,41 @@ exports.KeyPress = KeyPress
 
 
 class SpaceKey extends Response
+  defaults:
+    timeout: null
+
   # not DRY, need to abstract
-  activate: (context) ->
+  activate: (context, stimulus) ->
     @startTime = utils.getTimestamp()
     deferred = Q.defer()
     keyStream = context.keypressStream()
     keyStream.filter((event) =>
       event.keyCode == 32).take(1).onValue((event) =>
       timeStamp = utils.getTimestamp()
-      resp =
-        name: "SpaceKey"
-        id: @id
-        KeyTime: timeStamp
-        RT: timeStamp - @startTime
-        KeyChar: "space"
+      resp = @baseResponse(stimulus)
+      resp.name = "SpaceKey"
+      resp.id = @id
+      resp.keyTime = timeStamp
+      resp.RT = timeStamp - @startTime
+      resp.keyChar = "space"
       deferred.resolve(new ResponseData(resp)))
 
     deferred.promise
 
 class AnyKey extends Response
   # not DRY, need to abstract
-  activate: (context) ->
+  activate: (context, stimulus) ->
     @startTime = utils.getTimestamp()
     deferred = Q.defer()
     keyStream = context.keypressStream()
     keyStream.take(1).onValue((event) =>
       timeStamp = utils.getTimestamp()
-      resp =
-        name: "AnyKey"
-        id: @id
-        keyTime: timeStamp
-        RT: timeStamp - @startTime
-        keyChar: String.fromCharCode(event.keyCode)
+      resp = @baseResponse(stimulus)
+      resp.name = "AnyKey"
+      resp.id = @id
+      resp.keyTime = timeStamp
+      resp.RT =  timeStamp - @startTime
+      resp.keyChar = String.fromCharCode(event.keyCode)
       deferred.resolve(new ResponseData(resp)))
 
     deferred.promise

@@ -53,9 +53,7 @@ factorial = (n) ->
   val
 
 exports.permute = (perm, maxlen=1000) ->
-  console.log("maxlen", maxlen)
   total = factorial(perm.length)
-  console.log("total", total)
   j = 0
   i = 0
   inc = 1
@@ -224,9 +222,6 @@ exports.sd = (els) ->
 
 
 
-
-
-
 exports.distanceMatrix = (pts) ->
   for i in [0...pts.length]
     for j in [0...pts.length]
@@ -302,13 +297,13 @@ exports.nearestFromIndex = (pts, index) ->
 
 
 
-console.log(exports.distanceMatrix([ [0,1], [1,2], [2,2]]))
-console.log(exports.nearestFromIndex([ [0,1], [1,2], [2,2], [0,1.2]], 1))
+#console.log(exports.distanceMatrix([ [0,1], [1,2], [2,2]]))
+#console.log(exports.nearestFromIndex([ [0,1], [1,2], [2,2], [0,1.2]], 1))
 
-console.log(exports.nearestTo([0,1], [ [0,1], [1,2], [2,2], [0,1.2]], 2))
-console.log(exports.nearestNeighbors([ [0,1], [1,2], [2,2], [0,1.2], [0,1.001]], 2))
+#console.log(exports.nearestTo([0,1], [ [0,1], [1,2], [2,2], [0,1.2]], 2))
+#console.log(exports.nearestNeighbors([ [0,1], [1,2], [2,2], [0,1.2], [0,1.001]], 2))
 
-console.log(exports.pathLength([ [0,1], [0,2], [0,3], [0,4], [0,5]]))
+#console.log(exports.pathLength([ [0,1], [0,2], [0,3], [0,4], [0,5]]))
 
 
 #exports.in = (x, set) -> _.contains(x,set)
@@ -334,3 +329,4 @@ exports.doTimer = (length, oncomplete) ->
 
 
 
+exports.letters = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']

@@ -9,10 +9,11 @@ loadTable = (url) ->
     dataType: "text"
     async: false
   }).responseText
+
   records = csv.toObjects(data)
   DataTable.fromRecords(records)
 
-# Class representing a tabular data set consisiting of a set of fixed-length colmnar variables
+# Class representing a tabular data set consisting of a set of fixed-length columnar variables
 #
 # @example How to create a DataTable
 #   dt = new DataFrame({v1: [1,2,3], v2: ["a", "b", "c"])

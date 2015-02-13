@@ -12,7 +12,7 @@ class Prompt extends Response
     title: "Prompt", delay: 0, defaultValue: "", theme: 'vex-theme-wireframe'
 
 
-  activate: (context) ->
+  activate: (context, stimulus) ->
     deferred = Q.defer()
     promise = Q.delay(@spec.delay)
     promise.then((f) =>

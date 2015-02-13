@@ -37,6 +37,12 @@ class Reaction
     trial2: ->
       design
 
+  Flow: ->
+    @prelude(),
+    
+
+
+
 
 ###
 
@@ -379,6 +385,15 @@ class Response extends exports.Stimulus
 
   activate: (context, stimulus) ->
     console.log("Response.activate", context, stimulus)
+
+  baseResponse: (stimulus) ->
+    resp =
+      type: "response"
+      name: @constructor.name
+      stimName: stimulus.name
+      id: @id
+
+    resp
 
 exports.AutoResponse =
 class AutoResponse extends exports.Response

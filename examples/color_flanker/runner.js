@@ -215,7 +215,12 @@
         Data: pres.context.get("datalog")
       };
       console.log(dat);
-      return console.log($);
+      return $.ajax({
+        type: "POST",
+        url: "/results",
+        data: dat,
+        dataType: "json"
+      });
     };
   })(this));
 

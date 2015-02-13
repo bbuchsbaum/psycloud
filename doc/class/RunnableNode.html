@@ -26,45 +26,21 @@
       <table class='box'>
         <tr>
           <td>Defined in:</td>
-          <td>src&#47;psycloud.coffee</td>
+          <td>src&#47;flow.coffee</td>
         </tr>
       </table>
       <h2>Direct Known Subclasses</h2>
       <p class='children'>
-        <a href='../class/FunctionNode.html'>FunctionNode</a>
+        <a href='../class/QNode.html'>QNode</a>
+        <a href='../class/DeferredNode.html'>DeferredNode</a>
         <a href='../class/FeedbackNode.html'>FeedbackNode</a>
+        <a href='../class/EventSequence.html'>EventSequence</a>
         <a href='../class/Event.html'>Event</a>
-        <a href='../class/Trial.html'>Trial</a>
         <a href='../class/Block.html'>Block</a>
         <a href='../class/BlockSeq.html'>BlockSeq</a>
         <a href='../class/Prelude.html'>Prelude</a>
         <a href='../class/Coda.html'>Coda</a>
       </p>
-      <h2>Class Method Summary</h2>
-      <ul class='summary'>
-  <li>
-    <span class='signature'>
-      <a href='#functionList-static'>
-        .
-(void)
-<b>functionList</b><span>(nodes, context, callback)</span>
-      </a>
-    </span>
-    <span class='desc'>
-    </span>
-  </li>
-  <li>
-    <span class='signature'>
-      <a href='#chainFunctions-static'>
-        .
-(void)
-<b>chainFunctions</b><span>(funArray)</span>
-      </a>
-    </span>
-    <span class='desc'>
-    </span>
-  </li>
-</ul>
       <h2>Instance Method Summary</h2>
       <ul class='summary'>
   <li>
@@ -86,6 +62,29 @@
 <b>after</b><span>(context)</span>
       </a>
     </span>
+    <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#updateState-dynamic'>
+        #
+(void)
+<b>updateState</b><span>(node, context, namespace = &quot;&quot;)</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#callback-dynamic'>
+        #
+(void)
+<b>callback</b><span>(node, context)</span>
+      </a>
+    </span>
+    <span class='bound note title'>Bound</span>
     <span class='desc'>
     </span>
   </li>
@@ -134,27 +133,6 @@
     </span>
   </li>
 </ul>
-      <h2>Class Method Details</h2>
-      <div class='methods'>
-  <div class='method_details'>
-    <p class='signature' id='functionList-static'>
-      .
-(void)
-<b>functionList</b><span>(nodes, context, callback)</span>
-      <br>
-    </p>
-    
-  </div>
-  <div class='method_details'>
-    <p class='signature' id='chainFunctions-static'>
-      .
-(void)
-<b>chainFunctions</b><span>(funArray)</span>
-      <br>
-    </p>
-    
-  </div>
-</div>
       <h2>Constructor Details</h2>
       <div class='methods'>
   <div class='method_details'>
@@ -183,6 +161,25 @@
       #
 (void)
 <b>after</b><span>(context)</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='updateState-dynamic'>
+      #
+(void)
+<b>updateState</b><span>(node, context, namespace = &quot;&quot;)</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='callback-dynamic'>
+      #
+(void)
+<b>callback</b><span>(node, context)</span>
+      <span class='bound note'>Bound</span>
       <br>
     </p>
     
@@ -226,7 +223,7 @@
 </div>
     </div>
     <div id='footer'>
-  January 30, 15 11:48:42 by
+  February 12, 15 20:30:53 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

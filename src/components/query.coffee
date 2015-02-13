@@ -11,7 +11,7 @@ class Query extends require("../stimresp").Response
   constructor: (spec) ->
     super(spec)
 
-  activate: (context) ->
+  activate: (context, stimulus) ->
     ret = if _.isEmpty(@spec.filter)
       context.userData()
     else

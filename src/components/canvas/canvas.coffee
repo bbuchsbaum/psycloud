@@ -17,6 +17,7 @@ Canvas.TextInput = require("./textinput").TextInput
 Canvas.LabeledElement = require("./labeled").LabeledElement
 Canvas.MessageBox = require("./messagebox").MessageBox
 Canvas.TrailsA = require("./trails").TrailsA
+Canvas.TrailsB = require("./trails").TrailsB
 Canvas.Title = require("./title").Title
 
 exports.Canvas = Canvas

@@ -59,9 +59,6 @@
             <a href='../../class/DynamicTrialEnumerator.html'>
               DynamicTrialEnumerator
             </a>
-            <a href='../../class/RunnableNode.html'>
-              RunnableNode
-            </a>
             <a href='../../class/KineticContext.html'>
               KineticContext
             </a>
@@ -130,20 +127,20 @@
     <pre><code class='coffeescript'>require(&quot;.&#47;stimresp&quot;)</code></pre>
     
   </dd>
+  <dt id='RunnableNode-variable'>
+    RunnableNode
+    =
+  </dt>
+  <dd>
+    <pre><code class='coffeescript'>Flow</code></pre>
+    
+  </dd>
   <dt id='STRIP_COMMENTS-variable'>
     STRIP_COMMENTS
     =
   </dt>
   <dd>
     <pre><code class='coffeescript'>&#47;((\&#47;\&#47;.*$)|(\&#47;\*[\s\S]*?\*\&#47;))&#47;g</code></pre>
-    
-  </dd>
-  <dt id='exports.RunnableNode-variable'>
-    exports.RunnableNode
-    =
-  </dt>
-  <dd>
-    <pre><code class='coffeescript'>RunnableNode</code></pre>
     
   </dd>
   <dt id='exports.createContext-variable'>
@@ -181,28 +178,12 @@
 }</code></pre>
     
   </dd>
-  <dt id='exports.letters-variable'>
-    exports.letters
-    =
-  </dt>
-  <dd>
-    <pre><code class='coffeescript'>[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;, &#39;e&#39;, &#39;d&#39;, &#39;f&#39;, &#39;g&#39;, &#39;h&#39;, &#39;i&#39;, &#39;j&#39;, &#39;k&#39;, &#39;l&#39;, &#39;m&#39;, &#39;n&#39;, &#39;o&#39;, &#39;p&#39;, &#39;q&#39;, &#39;r&#39;, &#39;s&#39;, &#39;t&#39;, &#39;u&#39;, &#39;v&#39;, &#39;w&#39;, &#39;x&#39;, &#39;y&#39;, &#39;z&#39;]</code></pre>
-    
-  </dd>
   <dt id='exports.buildTrial-variable'>
     exports.buildTrial
     =
   </dt>
   <dd>
     <pre><code class='coffeescript'>buildTrial</code></pre>
-    
-  </dd>
-  <dt id='exports.buildPrelude-variable'>
-    exports.buildPrelude
-    =
-  </dt>
-  <dd>
-    <pre><code class='coffeescript'>buildPrelude</code></pre>
     
   </dd>
 </dl>
@@ -214,17 +195,6 @@
         ~
 (void)
 <b>getParamNames</b><span>(func)</span>
-      </a>
-    </span>
-    <span class='desc'>
-    </span>
-  </li>
-  <li>
-    <span class='signature'>
-      <a href='#functionNode-'>
-        ~
-(void)
-<b>functionNode</b><span>(fun)</span>
       </a>
     </span>
     <span class='desc'>
@@ -254,32 +224,10 @@
   </li>
   <li>
     <span class='signature'>
-      <a href='#makeEventSeq-'>
+      <a href='#makeBlockSeq-'>
         ~
 (void)
-<b>makeEventSeq</b><span>(spec, context)</span>
-      </a>
-    </span>
-    <span class='desc'>
-    </span>
-  </li>
-  <li>
-    <span class='signature'>
-      <a href='#buildPrelude-'>
-        ~
-(void)
-<b>buildPrelude</b><span>(preludeSpec, context)</span>
-      </a>
-    </span>
-    <span class='desc'>
-    </span>
-  </li>
-  <li>
-    <span class='signature'>
-      <a href='#buildCoda-'>
-        ~
-(void)
-<b>buildCoda</b><span>(codaSpec, context)</span>
+<b>makeBlockSeq</b><span>(spec, context)</span>
       </a>
     </span>
     <span class='desc'>
@@ -293,15 +241,6 @@
       ~
 (void)
 <b>getParamNames</b><span>(func)</span>
-      <br>
-    </p>
-    
-  </div>
-  <div class='method_details'>
-    <p class='signature' id='functionNode-'>
-      ~
-(void)
-<b>functionNode</b><span>(fun)</span>
       <br>
     </p>
     
@@ -325,28 +264,10 @@
     
   </div>
   <div class='method_details'>
-    <p class='signature' id='makeEventSeq-'>
+    <p class='signature' id='makeBlockSeq-'>
       ~
 (void)
-<b>makeEventSeq</b><span>(spec, context)</span>
-      <br>
-    </p>
-    
-  </div>
-  <div class='method_details'>
-    <p class='signature' id='buildPrelude-'>
-      ~
-(void)
-<b>buildPrelude</b><span>(preludeSpec, context)</span>
-      <br>
-    </p>
-    
-  </div>
-  <div class='method_details'>
-    <p class='signature' id='buildCoda-'>
-      ~
-(void)
-<b>buildCoda</b><span>(codaSpec, context)</span>
+<b>makeBlockSeq</b><span>(spec, context)</span>
       <br>
     </p>
     
@@ -354,7 +275,7 @@
 </div>
     </div>
     <div id='footer'>
-  January 30, 15 11:48:42 by
+  February 12, 15 20:30:53 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>
