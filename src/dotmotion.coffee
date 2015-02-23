@@ -114,7 +114,7 @@ class RandomDotMotion extends Base.Stimulus
       for i in [0...curset.length]
         xy = dx[i]
         xy = [xy[0] * @apRadius, xy[1] * @apRadius]
-        console.log(xy)
+        #console.log(xy)
         curset[i].setPosition(xy)
         if not DotSet.inCircle(.5*@apRadius, .5*@apRadius, @apRadius/2, xy[0], xy[1])
           curset[i].hide()
@@ -150,7 +150,7 @@ class RandomDotMotion extends Base.Stimulus
       for i in [0...curset.length]
         xy = dx[i]
         xy = [xy[0] * @apRadius, xy[1] * @apRadius]
-        console.log(xy)
+        #console.log(xy)
         curset[i].setPosition(xy)
 
       @layers[part].draw()
@@ -167,14 +167,6 @@ class RandomDotMotion extends Base.Stimulus
 
 
 
-
-
-
-
-
-
-
-x = new DotSet(51,3)
-console.log(x.dotSets)
-
-console.log("NEXT", x.nextFrame(.5, .01, 180))
+#x = new DotSet(51,3)
+#console.log(x.dotSets)
+#console.log("NEXT", x.nextFrame(.5, .01, 180))

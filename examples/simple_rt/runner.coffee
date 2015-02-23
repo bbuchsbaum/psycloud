@@ -1,40 +1,13 @@
-
-
-@context = new Psy.createContext()
 _ = Psy._
-
-
-
-factorSet =
-  color:
-    levels: ["red", "blue"]
-  radius:
-    levels: [50, 100]
-
-
-fnode = Psy.FactorSetNode.build(factorSet)
-
-# create 5 blocks of trials with 5 complete replications per block
-@trials = fnode.trialList(2, 2)
-@trials.shuffle()
+@SimpleRT = {}
 
 instructions = """
 
           Welcome to the Experiment!
           ==========================
 
-          On every trial a central arrow will appear surrounded by arrows on either side.
-          Your goal is to focus on the central arrow and decide whether it points left or right.
+          This is a simple reaction time experiment. Every time a circle appears on the screen, press any key on the keyboard.
 
-            * If the central arrow points <-- left, press the 'g' key.
-
-            * If the central arrow points --> right, press the 'h' key.
-
-            * If your response is correct, the screen will briefly turn green.
-
-            * If your response is incorrect, the screen will briefly turn red.
-
-            * make your decision as fast as you can.
 
           Press any key to continue
           -------------------------
@@ -42,7 +15,7 @@ instructions = """
           """
 
 
-@experiment =
+@SimpleRT.experiment =
 
   Routines:
 
@@ -125,7 +98,23 @@ instructions = """
 
     3: routines.Coda
 
+context = new Psy.createContext()
+
+factorSet =
+  color:
+    levels: ["red", "blue"]
+  radius:
+    levels: [50, 100]
 
 
-@pres = new Psy.Presentation(trials, experiment, context)
-@pres.start()
+fnode = Psy.FactorSetNode.build(factorSet)
+
+# create 5 blocks of trials with 5 complete replications per block
+trials = fnode.trialList(2, 2)
+trials.shuffle()
+
+@SimpleRT.start = =>
+  @pres = new Psy.Presentation(trials, @SimpleRT.experiment, context)
+  @pres.start()
+
+

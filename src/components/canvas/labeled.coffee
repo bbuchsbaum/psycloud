@@ -10,9 +10,14 @@ class LabeledElement extends StimResp.Stimulus
 
   # Construct a new LabeledElement.
   #
-  # @param [Stimulus] element the element to label
+  # @param [Stimulus] element the element associated with the label
   # @param [Object] spec component parameters
-  # @option options [String] position the relative position of the label
+  # @option spec [String] position the relative position of the label
+  # @option spec [String] content the text content of the label
+  # @option spec [Integer] gap the gap in pixels between label and element
+  # @option spec [Integer] fontSize the font size of the label
+  # @option spec [String] fill the fill color of the label
+  # @option spec [String] fontFamily the font family of the label
   constructor: (@element, spec = {}) ->
     super(spec)
 

@@ -220,6 +220,12 @@ exports.ArrayIterator =
 
 class TrialList
 
+  @fromBlock: (block) ->
+    tlist = new TrialList(1)
+    for rec in block.toRecordArray()
+      tlist.add(0, rec)
+    tlist
+
   @fromBlockArray: (blocks) ->
     if !_.isArray(blocks)
       throw new Error("TrialList.fromBlockArray: 'blocks' argument must be an array")
@@ -231,6 +237,7 @@ class TrialList
         tlist.add(i, rec)
 
     tlist
+
 
   constructor: (nblocks) ->
     @blocks = []

@@ -22,10 +22,15 @@ _ = require("lodash")
   </div>
 </div>
 ###
+
+# @event change
+#   Emitted when a change is made to choice selection.
+#   @param id [String] the name of the selected item.
 class MultiChoice extends html.HtmlStimulus
 
   defaults:
     choices: ["1", "2", "3", "4"]
+    inline: false
 
   signals: ["change"]
 
@@ -33,9 +38,10 @@ class MultiChoice extends html.HtmlStimulus
     outer = this
     form = render =>
       spec = @spec
+      fieldClass = if @spec.inline then ".inline.fields" else ".grouped.fields"
 
       div "#multichoice.ui.form", ->
-        div ".grouped.inline.fields", ->
+        div fieldClass, ->
           for choice in spec.choices
             div ".field", ->
               div ".ui.radio.checkbox", ->

@@ -334,8 +334,8 @@ _ = Psy._
     HtmlRange:
       Default: makeTrial(new Psy.Html.HtmlRange(), SpaceKey)
 
-    Slider:
-      Default: makeTrial(new Psy.Html.Slider(), SpaceKey)
+    #Slider:
+    #  Default: makeTrial(new Psy.Html.Slider(), SpaceKey)
 
     Consent:
       Default: makeTrial(new Psy.Consent({url: "resources/Consent-1.md"}), SpaceKey)
@@ -494,7 +494,7 @@ _ = Psy._
       "Default": makeTrial(new Psy.TrailsA(), new Psy.Receiver({id: "trail_completed"}))
 
   Tasks:
-    "Arrow Flanker": -> "../arrow_flanker_index.html"
+    "Arrow Flanker": -> "../arrow_flanker/index.html"
 
 
   Response: null

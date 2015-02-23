@@ -3,7 +3,8 @@ KStimulus = require("../../stimresp").KineticStimulus
 KDrawable = require("../../stimresp").KineticDrawable
 
 
-# A circle graphical element
+# A canvas-based component that draws a circle that may or may not be filled
+#
 class Circle extends KStimulus
 
   defaults:
@@ -17,9 +18,10 @@ class Circle extends KStimulus
   # @option options [Int] x the x coordinate
   # @option options [Int] y the y coordinate
   # @option options [Int] radius the radius of the circle
-  # @option options [Number] opacity the opacity of the Rectangle (0 is transparent, 1 opaque)
-  # @option options [String] fill the color of the rectangle
+  # @option options [String] fill the color of the circle
   # @option options [String] stroke the color of the outline
+  # @option options [Number] strokeWidth the width of the outline
+  # @option options [Number] opacity the opacity of the Rectangle (0 is transparent, 1 opaque)
   constructor: (spec = {}) ->
     super(spec)
 

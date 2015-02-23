@@ -7161,11 +7161,13 @@ require.define('78', function(module, exports, __dirname, __filename, undefined)
                 }
                 return _results;
             } else if (spec.Events != null) {
+                console.log('building event sequence from event key', spec);
                 espec = _.omit(spec, 'Background');
                 _ref = espec.Events;
                 _results1 = [];
                 for (key in _ref) {
                     value = _ref[key];
+                    console.log('building event from key, value: ', key, value);
                     _results1.push(this.buildEvent(value));
                 }
                 return _results1;
@@ -7236,33 +7238,26 @@ require.define('78', function(module, exports, __dirname, __filename, undefined)
             }(this));
         };
         DefaultComponentFactory.prototype.make = function (name, params, registry) {
-            var callee, layoutName, layoutParams, resps, stims, _ref1;
+            var callee, columns, resps, rows, stims, _ref1;
             callee = arguments.callee;
             _ref1 = ComponentFactory.transformPropertySpec(name, params), name = _ref1[0], params = _ref1[1];
             switch (name) {
             case 'Group':
-                stims = this.makeNestedStims(params.stims, callee, this.registry);
-                if (params.layout != null) {
-                    layoutName = _.keys(params.layout)[0];
-                    layoutParams = _.values(params.layout)[0];
-                    return new Components.Group(stims, this.makeLayout(layoutName, layoutParams, context), params);
-                } else {
-                    return new Components.Group(stims, null, params);
-                }
-                break;
+                stims = params.elements != null ? this.makeNestedStims(params.elements, callee, this.registry) : this.makeNestedStims(params, callee, this.registry);
+                return new Components.Group(stims, null, params);
             case 'CanvasGroup':
-                stims = this.makeNestedStims(params.stims, callee, this.registry);
-                if (params.layout != null) {
-                    layoutName = _.keys(params.layout)[0];
-                    layoutParams = _.values(params.layout)[0];
-                    return new Components.CanvasGroup(stims, this.makeLayout(layoutName, layoutParams, context), params);
-                } else {
-                    return new Components.CanvasGroup(stims, null, params);
-                }
-                break;
+                stims = this.makeNestedStims(params, callee, this.registry);
+                return new Components.CanvasGroup(stims, null, params);
             case 'Grid':
-                stims = this.makeNestedStims(params.stims, callee, this.registry);
-                return new Components.Grid(stims, params.rows || 3, params.columns || 3, params.bounds || null);
+                rows = _.pick(params, 'rows');
+                columns = _.pick(params, 'columns');
+                columns = _.pick(params, 'bounds');
+                params = _.omit(params, [
+                    'rows',
+                    'columns'
+                ]);
+                stims = this.makeNestedStims(params, callee, this.registry);
+                return new Components.Grid(stims, rows || 3, columns || 3, params.bounds || null);
             case 'Background':
                 stims = this.makeStimSet(params, callee, this.registry);
                 return new Canvas.Background(stims);
@@ -7306,7 +7301,7 @@ require.define('78', function(module, exports, __dirname, __filename, undefined)
 });
 require.define('73', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var AbsoluteLayout, GridLayout, Layout, computeGridCells, convertPercentageToFraction, convertToCoordinate, isPercentage, isPositionLabel, positionToCoord, toPixels, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var AbsoluteLayout, GridLayout, Layout, computeGridCells, convertPercentageToFraction, convertToCoordinate, isPercentage, isPositionLabel, positionToCoord, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -7395,7 +7390,7 @@ require.define('73', function(module, exports, __dirname, __filename, undefined)
             return xy;
         }
     };
-    toPixels = function (arg, dim) {
+    exports.toPixels = function (arg, dim) {
         if (_.isNumber(arg)) {
             return arg;
         } else if (isPercentage(arg)) {
@@ -7449,7 +7444,7 @@ require.define('73', function(module, exports, __dirname, __filename, undefined)
         function Layout() {
         }
         Layout.prototype.computePosition = function (dim, constraints) {
-            throw new Error('unimplimented error');
+            throw new Error('unimplemented error');
         };
         Layout.prototype.convertToCoordinate = function (val, d) {
             var ret;
@@ -7516,7 +7511,8 @@ require.define('73', function(module, exports, __dirname, __filename, undefined)
         return GridLayout;
     }(exports.Layout);
     exports.positionToCoord = positionToCoord;
-    exports.toPixels = toPixels;
+    exports.convertPercentageToFraction = convertPercentageToFraction;
+    exports.convertToCoordinate = convertToCoordinate;
 }.call(this));
 });
 require.define('67', function(module, exports, __dirname, __filename, undefined){
@@ -7928,6 +7924,9 @@ require.define('67', function(module, exports, __dirname, __filename, undefined)
         };
         ExperimentContext.prototype.draw = function () {
         };
+        ExperimentContext.prototype.document = function () {
+            return $('#htmlcontainer');
+        };
         ExperimentContext.prototype.insertHTMLDiv = function () {
             $('canvas').css('position', 'absolute');
             $('#container').append('<div id="htmlcontainer" class="htmllayer"></div>');
@@ -8097,6 +8096,7 @@ require.define('67', function(module, exports, __dirname, __filename, undefined)
                         args = {};
                         args.trial = record;
                         args.screen = context.screenInfo();
+                        args.context = context;
                         trialSpec = spec.trial.apply(args);
                         _results1.push(context.stimFactory.buildTrial(trialSpec, record));
                     }
@@ -8203,7 +8203,7 @@ require.define('67', function(module, exports, __dirname, __filename, undefined)
 });
 require.define('72', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var ActionPresentable, AutoResponse, Component, ContainerDrawable, Drawable, GraphicalStimulus, KineticDrawable, KineticStimulus, Presentable, Q, Reaction, Response, ResponseData, Stimulus, lay, match, signals, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var ActionPresentable, AutoResponse, Component, ContainerDrawable, Drawable, GraphicalStimulus, KineticDrawable, KineticStimulus, Presentable, Q, Reaction, Response, ResponseArray, ResponseData, Stimulus, lay, match, signals, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -8255,9 +8255,8 @@ require.define('72', function(module, exports, __dirname, __filename, undefined)
                 return value == null;
             });
             this.name = this.constructor.name;
-            this.initialize();
         }
-        Component.prototype.initialize = function () {
+        Component.prototype.initialize = function (context) {
         };
         Component.prototype.start = function (context) {
         };
@@ -8269,24 +8268,25 @@ require.define('72', function(module, exports, __dirname, __filename, undefined)
         __extends(Stimulus, _super);
         Stimulus.prototype.standardDefaults = { react: {} };
         function Stimulus(spec) {
+            var _ref;
             if (spec == null) {
                 spec = {};
             }
             Stimulus.__super__.constructor.call(this, spec);
-        }
-        Stimulus.prototype.initialize = function () {
-            var _ref;
             if (((_ref = this.spec) != null ? _ref.id : void 0) != null) {
                 this.id = this.spec.id;
             } else {
-                this.id = _.uniqueId('stim_');
+                this.id = _.uniqueId();
             }
-            this.stopped = false;
             this.react = this.spec.react || {};
+        }
+        Stimulus.prototype.initialize = function (context) {
+            this.stopped = false;
             return this.initReactions();
         };
         Stimulus.prototype.initReactions = function () {
             var key, value, _ref, _results;
+            console.log('initializing reactions from ' + this.constructor.name, this.react);
             _ref = this.react;
             _results = [];
             for (key in _ref) {
@@ -8301,6 +8301,7 @@ require.define('72', function(module, exports, __dirname, __filename, undefined)
         };
         Stimulus.prototype.addReaction = function (name, fun, selector) {
             var child, _i, _len, _ref, _results;
+            console.log('adding reaction', name, fun, selector);
             if (selector == null) {
                 return this.on(name, fun);
             } else {
@@ -8812,6 +8813,11 @@ require.define('72', function(module, exports, __dirname, __filename, undefined)
         }
         return ResponseData;
     }();
+    exports.ResponseArray = ResponseArray = function () {
+        function ResponseArray() {
+        }
+        return ResponseArray;
+    }();
     exports.KineticStimulus = KineticStimulus;
 }.call(this));
 });
@@ -8874,14 +8880,17 @@ require.define('70', function(module, exports, __dirname, __filename, undefined)
     _ = require('138', module);
     utils = require('69', module);
     csv = require('18', module);
-    loadTable = function (url) {
+    loadTable = function (url, separator) {
         var data, records;
+        if (separator == null) {
+            separator = ',';
+        }
         data = $.ajax({
             url: url,
             dataType: 'text',
             async: false
         }).responseText;
-        records = csv.toObjects(data);
+        records = csv.toObjects(data, { separator: separator });
         return DataTable.fromRecords(records);
     };
     DataTable = function () {
@@ -9696,6 +9705,16 @@ require.define('69', function(module, exports, __dirname, __filename, undefined)
         }
         return out;
     };
+    exports.compressObject = function (x, result, prefix) {
+        if (_.isObject(x)) {
+            _.each(x, function (v, k) {
+                flatten(v, result, prefix ? prefix + '_' + k : k);
+            });
+        } else {
+            result[prefix] = x;
+        }
+        return result;
+    };
     exports.pathLength = function (pts) {
         var i, len, _i, _ref2;
         if (pts.length <= 1) {
@@ -10375,6 +10394,18 @@ require.define('83', function(module, exports, __dirname, __filename, undefined)
         Container.prototype.getChildren = function () {
             return this.children;
         };
+        Container.prototype.initialize = function (context) {
+            var child, _i, _len, _ref, _results;
+            Container.__super__.initialize.call(this, context);
+            console.log('initializing group');
+            _ref = this.children;
+            _results = [];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                child = _ref[_i];
+                _results.push(child.initialize(context));
+            }
+            return _results;
+        };
         return Container;
     }(Stimulus);
     Group = function (_super) {
@@ -10396,6 +10427,7 @@ require.define('83', function(module, exports, __dirname, __filename, undefined)
         }
         Group.prototype.render = function (context) {
             var nodes, stim;
+            console.log('rendering group');
             nodes = function () {
                 var _i, _len, _ref, _results;
                 _ref = this.children;
@@ -10414,17 +10446,11 @@ require.define('83', function(module, exports, __dirname, __filename, undefined)
     CanvasGroup = function (_super) {
         __extends(CanvasGroup, _super);
         function CanvasGroup(children, layout, spec) {
-            var stim, _i, _len, _ref;
             if (spec == null) {
                 spec = {};
             }
             CanvasGroup.__super__.constructor.call(this, children, layout, spec);
             this.group = new Kinetic.Group({ id: this.spec.id });
-            _ref = this.stims;
-            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-                stim = _ref[_i];
-                console.log('canvas group stim child', stim);
-            }
         }
         CanvasGroup.prototype.render = function (context) {
             var node, stim, _i, _len, _ref;
@@ -10434,7 +10460,6 @@ require.define('83', function(module, exports, __dirname, __filename, undefined)
                 stim = _ref[_i];
                 console.log('rendering node for stim', stim);
                 node = stim.render(context).node;
-                console.log('rendered node', node);
                 this.group.add(node);
             }
             return new KineticDrawable(this, this.group);
@@ -10676,6 +10701,7 @@ require.define('76', function(module, exports, __dirname, __filename, undefined)
                     return this.element.height();
                 };
                 _Class.prototype.present = function (context) {
+                    console.log('presenting html');
                     return this.element.show();
                 };
                 return _Class;
@@ -10683,6 +10709,7 @@ require.define('76', function(module, exports, __dirname, __filename, undefined)
         };
         HtmlStimulus.prototype.render = function (context) {
             var coords;
+            console.log('rendering html');
             HtmlStimulus.__super__.render.call(this, context);
             this.el.hide();
             this.initReactions();
@@ -10831,12 +10858,10 @@ require.define('96', function(module, exports, __dirname, __filename, undefined)
                 this.spec.content = spec;
             }
             if (this.spec.url != null) {
-                console.log('trying to load url', this.spec.url);
                 $.ajax({
                     url: this.spec.url,
                     success: function (_this) {
                         return function (result) {
-                            console.log('successfully loaded markdown', result);
                             _this.spec.content = result;
                             return _this.el.append(marked(_this.spec.content));
                         };
@@ -11099,7 +11124,8 @@ require.define('91', function(module, exports, __dirname, __filename, undefined)
         HtmlButton.prototype.description = 'An html button that can be clicked.';
         HtmlButton.prototype.defaults = {
             label: 'Next',
-            'class': ''
+            'class': '',
+            disabled: 'false'
         };
         HtmlButton.prototype.signals = ['clicked'];
         function HtmlButton(spec) {
@@ -11113,12 +11139,15 @@ require.define('91', function(module, exports, __dirname, __filename, undefined)
             HtmlButton.__super__.initialize.call(this);
             this.el = this.div();
             this.el.addClass('ui button');
+            if (this.spec.disabled) {
+                this.el.addClass('disabled');
+            }
             this.el.addClass(this.spec['class']);
             this.el.append(this.spec.label);
+            this.el.attr('id', this.id);
             outer = this;
             return this.el.on('click', function (_this) {
                 return function () {
-                    console.log('emitting clicked');
                     return outer.emit('clicked', {
                         id: outer.id,
                         source: _this,
@@ -11831,7 +11860,8 @@ require.define('104', function(module, exports, __dirname, __filename, undefined
         __extends(CanvasBorder, _super);
         CanvasBorder.prototype.defaults = {
             strokeWidth: 5,
-            stroke: 'black'
+            stroke: 'black',
+            opacity: 1
         };
         function CanvasBorder(spec) {
             if (spec == null) {
@@ -11847,7 +11877,8 @@ require.define('104', function(module, exports, __dirname, __filename, undefined
                 width: context.width(),
                 height: context.height(),
                 strokeWidth: this.spec.strokeWidth,
-                stroke: this.spec.stroke
+                stroke: this.spec.stroke,
+                opacity: this.spec.opacity
             });
             return this.presentable(this, border);
         };
@@ -12045,13 +12076,16 @@ require.define('100', function(module, exports, __dirname, __filename, undefined
     KStimulus = require('72', module).KineticStimulus;
     Blank = function (_super) {
         __extends(Blank, _super);
-        function Blank() {
-            return Blank.__super__.constructor.apply(this, arguments);
-        }
         Blank.prototype.defaults = {
             fill: 'gray',
             opacity: 1
         };
+        function Blank(spec) {
+            if (spec == null) {
+                spec = {};
+            }
+            Blank.__super__.constructor.call(this, spec);
+        }
         Blank.prototype.render = function (context) {
             var blank;
             blank = new Kinetic.Rect({
@@ -12538,6 +12572,16 @@ require.define('74', function(module, exports, __dirname, __filename, undefined)
         return ArrayIterator;
     }(Iterator);
     TrialList = function () {
+        TrialList.fromBlock = function (block) {
+            var rec, tlist, _i, _len, _ref;
+            tlist = new TrialList(1);
+            _ref = block.toRecordArray();
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                rec = _ref[_i];
+                tlist.add(0, rec);
+            }
+            return tlist;
+        };
         TrialList.fromBlockArray = function (blocks) {
             var i, rec, tlist, _i, _j, _len, _ref, _ref1;
             if (!_.isArray(blocks)) {
@@ -13258,7 +13302,7 @@ require.define('71', function(module, exports, __dirname, __filename, undefined)
 });
 require.define('68', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Base, DotSet, RandomDotMotion, x, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var Base, DotSet, RandomDotMotion, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -13469,7 +13513,6 @@ require.define('68', function(module, exports, __dirname, __filename, undefined)
                             xy[0] * _this.apRadius,
                             xy[1] * _this.apRadius
                         ];
-                        console.log(xy);
                         curset[i].setPosition(xy);
                         if (!DotSet.inCircle(0.5 * _this.apRadius, 0.5 * _this.apRadius, _this.apRadius / 2, xy[0], xy[1])) {
                             _results.push(curset[i].hide());
@@ -13512,7 +13555,6 @@ require.define('68', function(module, exports, __dirname, __filename, undefined)
                             xy[0] * _this.apRadius,
                             xy[1] * _this.apRadius
                         ];
-                        console.log(xy);
                         curset[i].setPosition(xy);
                     }
                     return _this.layers[part].draw();
@@ -13526,100 +13568,6 @@ require.define('68', function(module, exports, __dirname, __filename, undefined)
         };
         return RandomDotMotion;
     }(Base.Stimulus);
-    x = new DotSet(51, 3);
-    console.log(x.dotSets);
-    console.log('NEXT', x.nextFrame(0.5, 0.01, 180));
-}.call(this));
-});
-require.define('66', function(module, exports, __dirname, __filename, undefined){
-(function () {
-    var AbsoluteLayout, Background, Bacon, Base, GridLayout, KineticStimFactory, Layout, Q, Response, Stimulus, disableBrowserBack, doTimer, getTimestamp, input, lay, li, marked, renderable, ul, utils, _, _ref;
-    Bacon = require('22', module).Bacon;
-    _ = require('138', module);
-    Q = require('17', module);
-    marked = require('45', module);
-    utils = require('69', module);
-    lay = require('73', module);
-    Base = require('72', module);
-    Stimulus = Base.Stimulus;
-    Response = Base.Response;
-    Background = require('113', module).Background;
-    _ref = require('61', module), renderable = _ref.renderable, ul = _ref.ul, li = _ref.li, input = _ref.input;
-    Layout = lay.Layout;
-    AbsoluteLayout = lay.AbsoluteLayout;
-    GridLayout = lay.GridLayout;
-    doTimer = utils.doTimer;
-    disableBrowserBack = utils.disableBrowserBack;
-    getTimestamp = utils.getTimestamp;
-    exports.KineticStimFactory = KineticStimFactory = function () {
-        function KineticStimFactory() {
-            console.log('making stim factory');
-        }
-        KineticStimFactory.prototype.makeLayout = function (name, params, context) {
-        };
-        KineticStimFactory.prototype.makeInstructions = function (spec) {
-        };
-        KineticStimFactory.prototype.makeStimulus = function (name, params, context) {
-        };
-        KineticStimFactory.prototype.makeResponse = function (name, params, context) {
-        };
-        KineticStimFactory.prototype.makeEvent = function (stim, response) {
-        };
-        return KineticStimFactory;
-    }();
-}.call(this));
-});
-require.define('113', function(module, exports, __dirname, __filename, undefined){
-(function () {
-    var Background, ContainerDrawable, GStimulus, KineticDrawable, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
-            for (var key in parent) {
-                if (__hasProp.call(parent, key))
-                    child[key] = parent[key];
-            }
-            function ctor() {
-                this.constructor = child;
-            }
-            ctor.prototype = parent.prototype;
-            child.prototype = new ctor();
-            child.__super__ = parent.prototype;
-            return child;
-        };
-    GStimulus = require('72', module).GraphicalStimulus;
-    KineticDrawable = require('72', module).KineticDrawable;
-    ContainerDrawable = require('72', module).ContainerDrawable;
-    _ = require('138', module);
-    Background = function (_super) {
-        __extends(Background, _super);
-        function Background(stims, fill) {
-            this.stims = stims != null ? stims : [];
-            this.fill = fill != null ? fill : 'white';
-            Background.__super__.constructor.call(this, {}, {});
-            if (!_.isArray(this.stims)) {
-                this.stims = [this.stims];
-            }
-        }
-        Background.prototype.render = function (context) {
-            var background, drawables, stim, _i, _len, _ref;
-            background = new Kinetic.Rect({
-                x: 0,
-                y: 0,
-                width: context.width(),
-                height: context.height(),
-                name: 'background',
-                fill: this.fill
-            });
-            drawables = [];
-            drawables.push(new KineticDrawable(this, background));
-            _ref = this.stims;
-            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-                stim = _ref[_i];
-                drawables.push(stim.render(context));
-            }
-            return new ContainerDrawable(drawables);
-        };
-        return Background;
-    }(GStimulus);
-    exports.Background = Background;
 }.call(this));
 });
 require.define('114', function(module, exports, __dirname, __filename, undefined){
@@ -13885,8 +13833,7 @@ require.define('114', function(module, exports, __dirname, __filename, undefined
 });
 require.define('115', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Dots, Exp, Psy, Q, canvas, components, csv, datatable, design, factory, html, include, layout, lib, libs, match, samplers, stimresp, sugar, utils, _, _i, _len;
-    Exp = require('66', module);
+    var Dots, Psy, Q, canvas, components, csv, datatable, design, factory, flow, html, include, layout, lib, libs, match, samplers, stimresp, sugar, utils, _, _i, _len;
     Psy = require('67', module);
     Dots = require('68', module);
     utils = require('69', module);
@@ -13900,6 +13847,7 @@ require.define('115', function(module, exports, __dirname, __filename, undefined
     components = require('77', module);
     factory = require('78', module);
     sugar = require('128', module);
+    flow = require('139', module);
     _ = require('138', module);
     Q = require('17', module);
     csv = require('18', module);
@@ -13914,7 +13862,6 @@ require.define('115', function(module, exports, __dirname, __filename, undefined
         return _results;
     };
     libs = [
-        Exp,
         Psy,
         Dots,
         utils,
@@ -13927,6 +13874,7 @@ require.define('115', function(module, exports, __dirname, __filename, undefined
         html,
         components,
         factory,
+        flow,
         match
     ];
     for (_i = 0, _len = libs.length; _i < _len; _i++) {
@@ -14103,7 +14051,8 @@ require.define('120', function(module, exports, __dirname, __filename, undefined
         }
         Receiver.prototype.defaults = {
             id: null,
-            signal: ''
+            signal: '',
+            delay: 0
         };
         Receiver.prototype.activate = function (context, stimulus) {
             var callback, deferred;
@@ -14112,12 +14061,18 @@ require.define('120', function(module, exports, __dirname, __filename, undefined
             callback = function (_this) {
                 return function (args) {
                     var resp;
-                    console.log('Reciever callback');
                     resp = _this.baseResponse(stimulus);
                     resp.name = 'Receiver';
                     resp.signal = _this.spec.signal;
-                    resp.id = _this.spec.id;
-                    return deferred.resolve(new ResponseData(resp));
+                    resp.id = _this.id;
+                    resp.event = args;
+                    if (_this.spec.delay > 0) {
+                        return utils.doTimer(_this.spec.delay, function () {
+                            return deferred.resolve(new ResponseData(resp));
+                        });
+                    } else {
+                        return deferred.resolve(new ResponseData(resp));
+                    }
                 };
             }(this);
             if (this.spec.id != null) {
@@ -19993,16 +19948,19 @@ require.define('132', function(module, exports, __dirname, __filename, undefined
         TextField.prototype.defaults = {
             placeholder: '',
             icon: '',
-            'class': ''
+            'class': '',
+            focus: true
         };
         TextField.prototype.signals = ['change'];
-        TextField.prototype.initialize = function () {
+        TextField.prototype.initialize = function (context) {
             var outer, placeholder;
             outer = this;
             this.el = this.div();
             this.el.addClass('ui input');
             placeholder = this.spec.placeholder;
             this.input = $('<input type="text" placeholder="' + placeholder + '">  ');
+            this.input.attr('autofocus', 'autofocus');
+            this.input.attr('id', this.id);
             this.el.append(this.input);
             this.el.addClass(this.spec['class']);
             outer = this;
@@ -20017,6 +19975,14 @@ require.define('132', function(module, exports, __dirname, __filename, undefined
                     name: outer.name
                 });
             });
+        };
+        TextField.prototype.render = function (context) {
+            var p;
+            console.log('rendering textfield');
+            p = TextField.__super__.render.call(this, context);
+            console.log('setting input focus');
+            this.input.focus();
+            return p;
         };
         return TextField;
     }(html.HtmlStimulus);
@@ -20119,7 +20085,8 @@ require.define('134', function(module, exports, __dirname, __filename, undefined
                 '2',
                 '3',
                 '4'
-            ]
+            ],
+            inline: false
         };
         MultiChoice.prototype.signals = ['change'];
         MultiChoice.prototype.renderForm = function () {
@@ -20127,10 +20094,11 @@ require.define('134', function(module, exports, __dirname, __filename, undefined
             outer = this;
             form = render(function (_this) {
                 return function () {
-                    var spec;
+                    var fieldClass, spec;
                     spec = _this.spec;
+                    fieldClass = _this.spec.inline ? '.inline.fields' : '.grouped.fields';
                     return div('#multichoice.ui.form', function () {
-                        return div('.grouped.inline.fields', function () {
+                        return div(fieldClass, function () {
                             var choice, _i, _len, _ref1, _results;
                             _ref1 = spec.choices;
                             _results = [];
@@ -20182,7 +20150,7 @@ require.define('134', function(module, exports, __dirname, __filename, undefined
 });
 require.define('135', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var DropDown, MultiChoice, Question, TextField, div, h4, html, input, label, p, render, table, td, tr, _ref, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var DropDown, MultiChoice, Question, TextField, div, h4, html, input, label, layout, p, render, table, td, tr, _ref, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -20199,16 +20167,23 @@ require.define('135', function(module, exports, __dirname, __filename, undefined
     DropDown = require('133', module).DropDown;
     MultiChoice = require('134', module).MultiChoice;
     TextField = require('132', module).TextField;
+    layout = require('73', module);
     _ref = require('61', module), render = _ref.render, div = _ref.div, p = _ref.p, td = _ref.td, tr = _ref.tr, table = _ref.table, input = _ref.input, label = _ref.label, h4 = _ref.h4;
     Question = function (_super) {
         __extends(Question, _super);
         Question.prototype.defaults = {
             question: 'What is your name?',
             type: 'dropdown',
+            block: false,
             paddingBottom: 15,
             headerSize: 'huge',
             headerFontColor: 'black',
-            headerInverted: true
+            headerInverted: false,
+            width: '50%',
+            dividing: true,
+            inline: false,
+            x: 10,
+            y: 10
         };
         Question.prototype.inputElement = function () {
             switch (this.spec.type) {
@@ -20233,6 +20208,7 @@ require.define('135', function(module, exports, __dirname, __filename, undefined
                 spec = {};
             }
             Question.__super__.constructor.call(this, spec);
+            this.question = this.inputElement(spec.type);
         }
         Question.prototype.addReaction = function (name, fun, selector) {
             if (selector == null) {
@@ -20243,30 +20219,36 @@ require.define('135', function(module, exports, __dirname, __filename, undefined
                 }
             }
         };
-        Question.prototype.initialize = function () {
+        Question.prototype.initialize = function (context) {
             var content, hclass, headerClass;
+            Question.__super__.initialize.call(this, context);
             this.el = this.div();
-            this.question = this.inputElement();
+            this.question.initialize(context);
             headerClass = function (_this) {
                 return function () {
                     var header;
-                    header = 'ui ' + _this.spec.headerSize + ' top attached ' + _this.spec.headerFontColor;
+                    header = 'ui header ' + _this.spec.headerSize + ' top attached ' + _this.spec.headerFontColor;
                     if (_this.spec.headerInverted) {
-                        return header = header + ' inverted block header';
-                    } else {
-                        return header = header + ' block header';
+                        header = header + ' inverted';
                     }
+                    if (_this.spec.block) {
+                        header = header + ' block';
+                    }
+                    if (_this.spec.dividing) {
+                        header = header + ' dividing';
+                    }
+                    return header;
                 };
             }(this);
             hclass = headerClass();
             this.title = $('<h4 class="' + hclass + '">').text(this.spec.question);
             this.segment = $('<div class="ui segment attached">');
             content = this.question.el;
-            console.log('content is', content);
             this.segment.append(content);
             this.el.append(this.title);
             this.el.append(this.segment);
-            this.el.css('width', '95%');
+            this.el.attr('id', this.id);
+            this.el.css('width', this.toPixels(this.spec.width, context.width()));
             return this.el.css('padding-bottom', this.spec.paddingBottom + 'px');
         };
         return Question;
@@ -24056,7 +24038,7 @@ require.define('138', function(module, exports, __dirname, __filename, undefined
 });
 require.define('139', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Block, BlockSeq, Coda, DataTable, DeferredNode, Event, EventSequence, FeedbackNode, Flow, Prelude, Q, QNode, RunnableNode, Trial, _, __bind = function (fn, me) {
+    var Block, BlockSeq, Coda, DataTable, Event, EventSequence, FeedbackNode, Flow, Prelude, Q, QNode, RunnableNode, Trial, _, __bind = function (fn, me) {
             return function () {
                 return fn.apply(me, arguments);
             };
@@ -24184,22 +24166,11 @@ require.define('139', function(module, exports, __dirname, __filename, undefined
         };
         return QNode;
     }(RunnableNode);
-    DeferredNode = function (_super) {
-        __extends(DeferredNode, _super);
-        function DeferredNode(fun) {
-            this.fun = fun;
-            this.start = __bind(this.start, this);
-            DeferredNode.__super__.constructor.call(this, [this.fun]);
-        }
-        DeferredNode.prototype.start = function (context) {
-            return this.fun(context);
-        };
-        return DeferredNode;
-    }(RunnableNode);
     FeedbackNode = function (_super) {
         __extends(FeedbackNode, _super);
-        function FeedbackNode(feedback) {
+        function FeedbackNode(feedback, record) {
             this.feedback = feedback;
+            this.record = record != null ? record : {};
         }
         FeedbackNode.prototype.numChildren = function () {
             return 1;
@@ -24214,7 +24185,8 @@ require.define('139', function(module, exports, __dirname, __filename, undefined
                 args = {
                     context: context,
                     response: response,
-                    screen: context.screenInfo()
+                    screen: context.screenInfo(),
+                    trial: this.record
                 };
                 spec = this.feedback.apply(args);
                 if (spec != null) {
@@ -24265,7 +24237,7 @@ require.define('139', function(module, exports, __dirname, __filename, undefined
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
                 child = _ref[_i];
                 console.log('initializing stimulus', child.stimulus);
-                child.stimulus.initialize();
+                child.stimulus.initialize(context);
             }
             return Flow.lift(function (_this) {
                 return function () {
@@ -24302,7 +24274,7 @@ require.define('139', function(module, exports, __dirname, __filename, undefined
             _ref = this.children;
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
                 child = _ref[_i];
-                child.stimulus.initialize();
+                child.stimulus.initialize(context);
             }
             return Flow.lift(function (_this) {
                 return function () {
@@ -24315,7 +24287,7 @@ require.define('139', function(module, exports, __dirname, __filename, undefined
             }(this));
         };
         Trial.prototype.after = function (context) {
-            return new FeedbackNode(this.feedback);
+            return new FeedbackNode(this.feedback, this.record);
         };
         return Trial;
     }(EventSequence);
@@ -24379,12 +24351,19 @@ require.define('139', function(module, exports, __dirname, __filename, undefined
             this.state.trialNumber += 1;
             return Block.__super__.updateState.call(this, node, context);
         };
-        Block.prototype.before = function (context) {
+        Block.prototype.prepBlock = function (block, context) {
             var args, spec;
-            if (this.startBlock != null) {
+            if (_.isFunction(block)) {
                 args = _.extend({}, { context: context });
-                spec = this.startBlock.apply(args);
+                spec = block.apply(args);
                 return this.makeSeq(spec, context);
+            } else {
+                return this.makeSeq(block, context);
+            }
+        };
+        Block.prototype.before = function (context) {
+            if (this.startBlock != null) {
+                return this.prepBlock(this.startBlock, context);
             } else {
                 return Flow.lift(function () {
                     return 0;
@@ -24394,11 +24373,8 @@ require.define('139', function(module, exports, __dirname, __filename, undefined
         Block.prototype.after = function (context) {
             return Flow.lift(function (_this) {
                 return function () {
-                    var args, spec;
                     if (_this.endBlock) {
-                        args = _.extend({}, { context: context });
-                        spec = _this.endBlock.apply(args);
-                        return _this.makeSeq(spec, context);
+                        return _this.prepBlock(_this.endBlock, context);
                     } else {
                         return 0;
                     }
@@ -24407,6 +24383,11 @@ require.define('139', function(module, exports, __dirname, __filename, undefined
         };
         return Block;
     }(RunnableNode);
+    Prelude = function () {
+        function Prelude() {
+        }
+        return Prelude;
+    }();
     BlockSeq = function (_super) {
         __extends(BlockSeq, _super);
         function BlockSeq(children) {
@@ -24419,25 +24400,6 @@ require.define('139', function(module, exports, __dirname, __filename, undefined
         };
         return BlockSeq;
     }(RunnableNode);
-    Prelude = function (_super) {
-        __extends(Prelude, _super);
-        function Prelude(children) {
-            Prelude.__super__.constructor.call(this, children);
-        }
-        Prelude.prototype.before = function (context) {
-            return Flow.lift(function (_this) {
-                return function () {
-                };
-            }(this));
-        };
-        Prelude.prototype.after = function (context) {
-            return Flow.lift(function (_this) {
-                return function () {
-                };
-            }(this));
-        };
-        return Prelude;
-    }(RunnableNode);
     Coda = function (_super) {
         __extends(Coda, _super);
         function Coda(children) {
@@ -24447,7 +24409,6 @@ require.define('139', function(module, exports, __dirname, __filename, undefined
     }(RunnableNode);
     exports.EventSequence = EventSequence;
     exports.FeedbackNode = FeedbackNode;
-    exports.DeferredNode = DeferredNode;
     exports.QNode = QNode;
     exports.Flow = Flow;
     exports.RunnableNode = RunnableNode;

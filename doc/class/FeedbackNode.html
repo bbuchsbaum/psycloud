@@ -35,6 +35,12 @@
           </td>
         </tr>
       </table>
+      <h2>Overview</h2>
+      <div class='docstring'>
+  <p>An runnable node used for presenting feedback to user after trial</p>
+</div>
+<div class='tags'>
+</div>
       <h2>Instance Method Summary</h2>
       <ul class='summary'>
   <li>
@@ -94,10 +100,37 @@
     <p class='signature' id='constructor-dynamic'>
       #
 (void)
-<b>constructor</b><span>(feedback)</span>
+<b>constructor</b><span>(feedback, record = {})</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>Construct a FeedbackNode</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>feedback</span>
+      <span class='type'>
+        (
+          <tt>Object</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>a feedback generator spec. </span>
+    </li>
+    <li>
+      <span class='name'>record</span>
+      <span class='type'>
+        (
+          <tt>Object</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>the current trial condition information </span>
+    </li>
+  </ul>
+</div>
   </div>
 </div>
       <h2>Instance Method Details</h2>
@@ -132,7 +165,7 @@
 </div>
     </div>
     <div id='footer'>
-  February 13, 15 09:49:30 by
+  February 23, 15 06:48:06 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

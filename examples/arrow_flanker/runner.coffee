@@ -1,6 +1,6 @@
 
 
-@context = new Psy.createContext()
+
 _ = Psy._
 
 ###
@@ -25,31 +25,11 @@ _ = Psy._
 ###
 
 
-factorSet =
-  flanker:
-    levels: ["congruent", "incongruent"]
-  centerArrow:
-    levels: ["left", "right"]
+
+window.ArrowFlanker = {}
 
 
-fnode = Psy.FactorSetNode.build(factorSet)
-
-# create 5 blocks of trials with 5 complete replications per block
-@trials = fnode.trialList(5, 5)
-
-
-@trials = @trials.bind (record) ->
-  flankerArrow: Psy.match record.flanker,
-      congruent: record.centerArrow
-      incongruent: -> Psy.match record.centerArrow,
-          left: "right"
-          right: "left"
-
-
-@trials.shuffle()
-
-
-window.experiment =
+@ArrowFlanker.experiment =
 
 
   Routines:
@@ -122,7 +102,7 @@ window.experiment =
               duration: 1000
         2:
           Group:
-            stims:
+            elements:
               for x, index in arrowx
                 Arrow:
                   x: x
@@ -172,8 +152,32 @@ window.experiment =
     3: routines.Coda
 
 
+factorSet =
+  flanker:
+    levels: ["congruent", "incongruent"]
+  centerArrow:
+    levels: ["left", "right"]
 
-@pres = new Psy.Presentation(trials, experiment, context)
-@pres.start()
+
+fnode = Psy.FactorSetNode.build(factorSet)
+
+# create 5 blocks of trials with 5 complete replications per block
+trials = fnode.trialList(5, 5)
+
+
+trials = trials.bind (record) ->
+  flankerArrow: Psy.match record.flanker,
+    congruent: record.centerArrow
+    incongruent: -> Psy.match record.centerArrow,
+      left: "right"
+      right: "left"
+
+
+trials.shuffle()
+
+@ArrowFlanker.start =  ->
+  context = new Psy.createContext()
+  pres = new Psy.Presentation(trials, window.ArrowFlanker.experiment, context)
+  pres.start()
 
 

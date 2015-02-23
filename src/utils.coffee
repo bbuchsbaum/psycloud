@@ -272,8 +272,14 @@ exports.nearestNeighbors = (pointSet, k) ->
     out.push({ index: ind[dord[i]], distance: dlin[dord[i]] })
   out
 
-
-
+exports.compressObject = (x, result, prefix) ->
+  if _.isObject(x)
+    _.each x, (v, k) ->
+      flatten v, result, if prefix then prefix + '_' + k else k
+      return
+  else
+    result[prefix] = x
+  result
 
 exports.pathLength = (pts) ->
   if pts.length <= 1

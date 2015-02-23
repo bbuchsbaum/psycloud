@@ -41,12 +41,20 @@
     <pre><code class='coffeescript'>positionToCoord</code></pre>
     
   </dd>
-  <dt id='exports.toPixels-variable'>
-    exports.toPixels
+  <dt id='exports.convertPercentageToFraction-variable'>
+    exports.convertPercentageToFraction
     =
   </dt>
   <dd>
-    <pre><code class='coffeescript'>toPixels</code></pre>
+    <pre><code class='coffeescript'>convertPercentageToFraction</code></pre>
+    
+  </dd>
+  <dt id='exports.convertToCoordinate-variable'>
+    exports.convertToCoordinate
+    =
+  </dt>
+  <dd>
+    <pre><code class='coffeescript'>convertToCoordinate</code></pre>
     
   </dd>
 </dl>
@@ -94,6 +102,7 @@
       </a>
     </span>
     <span class='desc'>
+      Convert from fractional or percentage units to pixels. 
     </span>
   </li>
   <li>
@@ -105,6 +114,7 @@
       </a>
     </span>
     <span class='desc'>
+      Convert String percentage value to fraction 
     </span>
   </li>
   <li>
@@ -166,7 +176,45 @@
 <b>toPixels</b><span>(arg, dim)</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>Convert from fractional or percentage units to pixels.</p>
+  <div class='examples'>
+    <h3>Examples:</h3>
+    <h4>
+      convert percentage string to pixel units
+    </h4>
+    <pre><code class='coffeescript'>toPixels(&quot;90%&quot;, 200) [answer is 180]</code></pre>
+    <h4>
+      convert fraction to pixel units
+    </h4>
+    <pre><code class='coffeescript'>toPixels(.9, 200) [answer is 180]</code></pre>
+  </div>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>arg</span>
+      <span class='type'>
+        (
+          <tt>Number, String</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>the value to convert </span>
+    </li>
+    <li>
+      <span class='name'>dim</span>
+      <span class='type'>
+        (
+          <tt>Integer</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>the size of the target dimension </span>
+    </li>
+  </ul>
+</div>
   </div>
   <div class='method_details'>
     <p class='signature' id='convertPercentageToFraction-'>
@@ -175,7 +223,41 @@
 <b>convertPercentageToFraction</b><span>(perc, dim)</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>Convert String percentage value to fraction</p>
+  <div class='examples'>
+    <h3>Examples:</h3>
+    <h4>
+      convert percentage string to pixel units
+    </h4>
+    <pre><code class='coffeescript'>convertPercentageToFraction(&quot;50%&quot;, 1) [answer is .5]</code></pre>
+  </div>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>arg</span>
+      <span class='type'>
+        (
+          <tt>String</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>the percentage to convert </span>
+    </li>
+    <li>
+      <span class='name'>dim</span>
+      <span class='type'>
+        (
+          <tt>Integer</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>the size of the target dimension </span>
+    </li>
+  </ul>
+</div>
   </div>
   <div class='method_details'>
     <p class='signature' id='convertToCoordinate-'>
@@ -198,7 +280,7 @@
 </div>
     </div>
     <div id='footer'>
-  February 13, 15 09:49:30 by
+  February 23, 15 06:48:06 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

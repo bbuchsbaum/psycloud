@@ -50,7 +50,8 @@ class Flow
     result
 
 
-
+# A base cass for experiment nodes that perform some action
+#
 class RunnableNode
 
   constructor: (@children) ->
@@ -61,8 +62,18 @@ class RunnableNode
     ## https://github.com/jashkenas/coffeescript/issues/714
     # classRef = if command.constructor.name? then command.constructor.name else command.constructor.toString().match(/^function\s(.+)\(/)[1]
 
+  # execute an action before running current node
+  #
+  # @param [ExperimentContext] context
+  # @return [promise] output
+  #
   before: (context) -> Flow.lift(-> 0)
 
+  # execute an action after running current node
+  #
+  # @param [ExperimentContext] context
+  # @return [promise] output
+  #
   after: (context) ->  Flow.lift(-> 0)
 
   updateState: (node, context, namespace="") ->
@@ -84,24 +95,27 @@ class RunnableNode
   stop: (context) ->
 
 
+# A node that wraps an ordinary function in a promise
+#
 class QNode extends RunnableNode
 
+  # Construct a QNode
+  #
+  # @param [Function] fun the function to wrap in the promise
   constructor: (@fun) ->
 
   start: (context) => Q.fcall(@fun, context)
 
 
-class DeferredNode extends RunnableNode
-
-  constructor: (@fun) ->
-    super([@fun])
-
-  start: (context) => @fun(context)
-
-
+# An runnable node used for presenting feedback to user after trial
+#
 class FeedbackNode extends RunnableNode
 
-  constructor: (@feedback) ->
+  # Construct a FeedbackNode
+  #
+  # @param [Object] feedback a feedback generator spec.
+  # @param [Object] record the current trial condition information
+  constructor: (@feedback, @record={}) ->
 
   numChildren: -> 1
 
@@ -111,8 +125,7 @@ class FeedbackNode extends RunnableNode
     if @feedback?
       response = context.responseSet()
 
-      args = { context: context, response: response, screen: context.screenInfo() }
-
+      args = { context: context, response: response, screen: context.screenInfo(), trial: @record }
       spec = @feedback.apply(args)
 
       if spec?
@@ -142,7 +155,7 @@ class EventSequence extends RunnableNode
     for child in @children
       console.log("initializing stimulus", child.stimulus)
       # TODO initialize should be removed from constructor call then
-      child.stimulus.initialize()
+      child.stimulus.initialize(context)
 
     Flow.lift ( =>
       context.clearBackground()
@@ -171,7 +184,7 @@ class Trial extends EventSequence
 
       for child in @children
         # TODO initialize should be removed from constructor call then
-        child.stimulus.initialize()
+        child.stimulus.initialize(context)
 
 
       Flow.lift ( =>
@@ -183,7 +196,7 @@ class Trial extends EventSequence
       )
 
     after: (context) =>
-      new FeedbackNode(@feedback)
+      new FeedbackNode(@feedback, @record)
 
 
 
@@ -234,11 +247,19 @@ class Block extends RunnableNode
     @state.trialNumber += 1
     super(node, context)
 
+  prepBlock: (block, context) ->
+    if _.isFunction block
+      ## dynamic content
+      args = _.extend({}, context: context)
+      spec = block.apply(args)
+      @makeSeq(spec, context)
+    else
+      @makeSeq(block, context)
+
+
   before: (context) =>
     if @startBlock?
-      args = _.extend({}, context: context)
-      spec = @startBlock.apply(args)
-      @makeSeq(spec, context)
+      @prepBlock(@startBlock, context)
     else
       Flow.lift(-> 0)
 
@@ -253,14 +274,13 @@ class Block extends RunnableNode
         #  out[curid] = DataTable.fromRecords(blockData.filter(id: curid).get())
 
         #args = _.extend({}, context: context, out)
-        args = _.extend({}, context: context)
-        spec = @endBlock.apply(args)
-        @makeSeq(spec, context)
+        @prepBlock(@endBlock, context)
       else
         0
     )
 
 
+class Prelude
 
 class BlockSeq extends RunnableNode
   constructor: (children) ->
@@ -271,23 +291,6 @@ class BlockSeq extends RunnableNode
     @state.blockNumber += 1
     super(node, context)
 
-class Prelude extends RunnableNode
-  constructor: (children) -> super(children)
-
-  before: (context) ->
-    Flow.lift( =>
-      #context.updateState(=>
-      #  context.exState.insidePrelude()
-      #)
-    )
-
-  after: (context) ->
-    Flow.lift( =>
-      #context.updateState(=>
-      #  context.exState.outsidePrelude()
-      #)
-    )
-
 
 
 class Coda extends RunnableNode
@@ -295,7 +298,7 @@ class Coda extends RunnableNode
 
 exports.EventSequence = EventSequence
 exports.FeedbackNode = FeedbackNode
-exports.DeferredNode = DeferredNode
+#exports.DeferredNode = DeferredNode
 exports.QNode = QNode
 exports.Flow = Flow
 exports.RunnableNode = RunnableNode

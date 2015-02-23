@@ -2,15 +2,15 @@ _ = require('lodash')
 utils = require("./utils")
 csv = require('../jslibs/jquery.csv.js')
 
-
-loadTable = (url) ->
+## replace with papa parse, looks more robust
+loadTable = (url, separator=",") ->
   data = $.ajax({
     url: url
     dataType: "text"
     async: false
   }).responseText
 
-  records = csv.toObjects(data)
+  records = csv.toObjects(data, {separator: separator})
   DataTable.fromRecords(records)
 
 # Class representing a tabular data set consisting of a set of fixed-length columnar variables

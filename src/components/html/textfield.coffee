@@ -7,15 +7,20 @@ class TextField extends html.HtmlStimulus
       placeholder: ""
       icon: ""
       class: ""
+      focus: true
 
     signals: ["change"]
 
-    initialize: ->
+    initialize: (context) ->
       outer = this
       @el = @div()
       @el.addClass "ui input"
       placeholder = @spec.placeholder
+
+
       @input = $("<input type=\"text\" placeholder=\"" + placeholder + "\">  ")
+      @input.attr("autofocus", "autofocus")
+      @input.attr("id", @id)
       @el.append @input
       @el.addClass @spec["class"]
       outer = this
@@ -27,6 +32,14 @@ class TextField extends html.HtmlStimulus
           val: content
           source: outer
           name: outer.name
+
+
+    render: (context) ->
+      console.log("rendering textfield")
+      p = super(context)
+      console.log("setting input focus")
+      @input.focus()
+      p
 
 
 

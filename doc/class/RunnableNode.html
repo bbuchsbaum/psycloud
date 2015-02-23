@@ -29,16 +29,20 @@
           <td>src&#47;flow.coffee</td>
         </tr>
       </table>
+      <h2>Overview</h2>
+      <div class='docstring'>
+  <p>A base cass for experiment nodes that perform some action</p>
+</div>
+<div class='tags'>
+</div>
       <h2>Direct Known Subclasses</h2>
       <p class='children'>
         <a href='../class/QNode.html'>QNode</a>
-        <a href='../class/DeferredNode.html'>DeferredNode</a>
         <a href='../class/FeedbackNode.html'>FeedbackNode</a>
         <a href='../class/EventSequence.html'>EventSequence</a>
         <a href='../class/Event.html'>Event</a>
         <a href='../class/Block.html'>Block</a>
         <a href='../class/BlockSeq.html'>BlockSeq</a>
-        <a href='../class/Prelude.html'>Prelude</a>
         <a href='../class/Coda.html'>Coda</a>
       </p>
       <h2>Instance Method Summary</h2>
@@ -47,22 +51,24 @@
     <span class='signature'>
       <a href='#before-dynamic'>
         #
-(void)
+(promise)
 <b>before</b><span>(context)</span>
       </a>
     </span>
     <span class='desc'>
+      execute an action before running current node 
     </span>
   </li>
   <li>
     <span class='signature'>
       <a href='#after-dynamic'>
         #
-(void)
+(promise)
 <b>after</b><span>(context)</span>
       </a>
     </span>
     <span class='desc'>
+      execute an action after running current node 
     </span>
   </li>
   <li>
@@ -150,20 +156,72 @@
   <div class='method_details'>
     <p class='signature' id='before-dynamic'>
       #
-(void)
+(promise)
 <b>before</b><span>(context)</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>execute an action before running current node</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>context</span>
+      <span class='type'>
+        (
+          <tt><a href='../class/ExperimentContext.html'>ExperimentContext</a></tt>
+        )
+      </span>
+    </li>
+  </ul>
+  <h3>Returns:</h3>
+  <ul class='return'>
+    <li>
+      <span class='type'></span>
+      (
+        <tt>promise</tt>
+      )
+      &mdash;
+      <span class='desc'>output </span>
+    </li>
+  </ul>
+</div>
   </div>
   <div class='method_details'>
     <p class='signature' id='after-dynamic'>
       #
-(void)
+(promise)
 <b>after</b><span>(context)</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>execute an action after running current node</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>context</span>
+      <span class='type'>
+        (
+          <tt><a href='../class/ExperimentContext.html'>ExperimentContext</a></tt>
+        )
+      </span>
+    </li>
+  </ul>
+  <h3>Returns:</h3>
+  <ul class='return'>
+    <li>
+      <span class='type'></span>
+      (
+        <tt>promise</tt>
+      )
+      &mdash;
+      <span class='desc'>output </span>
+    </li>
+  </ul>
+</div>
   </div>
   <div class='method_details'>
     <p class='signature' id='updateState-dynamic'>
@@ -223,7 +281,7 @@
 </div>
     </div>
     <div id='footer'>
-  February 13, 15 09:49:30 by
+  February 23, 15 06:48:06 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

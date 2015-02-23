@@ -2,7 +2,7 @@ html = require("./html")
 DropDown = require("./dropdown").DropDown
 MultiChoice = require("./multichoice").MultiChoice
 TextField = require("./textfield").TextField
-
+layout = require("../../layout")
 
 {render, div, p, td, tr, table, input, label, h4} = require("teacup")
 
@@ -11,13 +11,19 @@ class Question extends html.HtmlStimulus
   defaults:
     question: "What is your name?"
     type: "dropdown"
+    block: false
     paddingBottom: 15
     headerSize: "huge"
     headerFontColor: "black"
-    headerInverted:  true
+    headerInverted:  false
+    width: "50%"
+    dividing: true
+    inline: false
+    x: 10
+    y: 10
 
 
-  inputElement: ->
+  inputElement:  ->
     switch @spec.type
       when "dropdown" then new DropDown(@spec)
       when "multichoice" then new MultiChoice(@spec)
@@ -32,6 +38,7 @@ class Question extends html.HtmlStimulus
 
   constructor: (spec = {}) ->
     super(spec)
+    @question = @inputElement(spec.type)
 
   #initReactions: ->
   #  for key, value of @react
@@ -47,16 +54,21 @@ class Question extends html.HtmlStimulus
         @question.on(name,fun)
 
 
-  initialize: ->
+  initialize: (context) ->
+    super(context)
     @el = @div()
-    @question = @inputElement()
+
+    @question.initialize(context)
 
     headerClass = =>
-      header = "ui " + @spec.headerSize + " top attached " + @spec.headerFontColor
+      header = "ui header " + @spec.headerSize + " top attached " + @spec.headerFontColor
       if @spec.headerInverted
-        header = header + " inverted block header"
-      else
-        header = header + " block header"
+        header = header + " inverted"
+      if @spec.block
+        header = header + " block"
+      if @spec.dividing
+        header = header + " dividing"
+      header
 
     hclass = headerClass()
 
@@ -64,21 +76,15 @@ class Question extends html.HtmlStimulus
     @segment = $("""<div class="ui segment attached">""")
 
     content = @question.el
-    console.log("content is", content)
 
     @segment.append(content)
 
     @el.append(@title)
     @el.append(@segment)
+    @el.attr("id", @id)
 
-    @el.css("width", "95%")
+    @el.css("width", @toPixels(@spec.width, context.width()))
     @el.css("padding-bottom", @spec.paddingBottom + "px")
-
-
-
-
-
-
 
 
 

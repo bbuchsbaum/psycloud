@@ -1,36 +1,9 @@
+window.ColorStroop = {}
 
-factorSet =
-  condition:
-    levels: ["congruent", "incongruent"]
-
-
-colors = ["red", "green", "blue", "yellow"]
+ColorStroop.experiment =
 
 
-factorNode = Psy.FactorSetNode.build(factorSet)
-
-# create 5 blocks of trials with 5 complete replications per block
-@trials = factorNode.trialList(5, 5)
-
-
-
-@trials = @trials.bind (record) ->
-  color = Psy.oneOf(colors)
-  word: Psy.match record.condition,
-    congruent: color.toUpperCase()
-    incongruent: Psy.oneOf(colors.exclude(color)).toUpperCase()
-  color: color
-
-
-@trials.shuffle()
-@context = Psy.createContext()
-
-console.log(@trials)
-
-
-window.display =
-  Display:
-
+  Routines:
     Prelude:
       Events:
         1:
@@ -39,7 +12,9 @@ window.display =
           Welcome to the Experiment!
           ==========================
 
-          This a simple task.
+          This is a Color Stroop experiment.
+
+          On each trial, click the button matching the color of *font* of the word displayed above.
 
           Press any key to continue
           -------------------------
@@ -50,25 +25,22 @@ window.display =
 
     Block:
       Start: ->
-        console.log("START BLOCK")
         Text:
           position: "center"
           origin: "center"
-          content: ["Get Ready for Block #{@blockNumber}!", "Press Space Bar to start"]
+          content: ["Get Ready for Block #{@context.get("State.blockNumber")}!", "Press any key to start"]
         Next:
-          SpaceKey: ""
+          AnyKey: ""
 
       End: ->
-        console.log("END BLOCK")
         Text:
           position: "center"
           origin: "center"
-          content: ["End of Block #{@blockNumber}", "Press any key to continue"]
+          content: ["End of Block #{@context.get("State.blockNumber")}", "Press any key to continue"]
         Next:
           AnyKey: ""
 
     Trial: ->
-
       Background:
         Blank:
           fill: "black"
@@ -99,29 +71,59 @@ window.display =
             Receiver$buttonset:
               signal: "clicked"
 
-      Feedback:  ->
-
+      Feedback: ->
         Blank:
           opacity: .1
         Next:
           Timeout:
             duration: 200
 
-#Coda:
-#  Events:
-#    1:
-#      Text:
-#        position: "center"
-#        origin: "center"
-#        content: "The End"
-#        fontSize: 200
-#
-#      Next:
-#        Timeout: duration: 5000
+    Coda:
+      Events:
+        1:
+          Text:
+            content: "You're done, way to go!"
+            position: "center"
+            origin: "center"
+            fontSize: 20
+        Next:
+          Timeout:
+            duration: 5000
+
+  Flow: (routines) ->
+    1: routines.Prelude
+    2: BlockSequence:
+      trialList: trials
+      start: routines.Block.Start
+      trial: routines.Trial
+      end: routines.Block.End
+    3: routines.Coda
 
 
 
+factorSet =
+  condition:
+    levels: ["congruent", "incongruent"]
 
-pres = new Psy.Presenter(trials, display.Display, context)
-pres.start()
+
+colors = ["red", "green", "blue", "yellow"]
+
+
+factorNode = Psy.FactorSetNode.build(factorSet)
+
+# create 2 blocks of trials with 2 complete replications per block
+trials = factorNode.trialList(2,2)
+trials = trials.bind (record) ->
+  color = Psy.oneOf(colors)
+  word: Psy.match record.condition,
+    congruent: color.toUpperCase()
+    incongruent: Psy.oneOf(colors.exclude(color)).toUpperCase()
+  color: color
+
+trials.shuffle()
+
+ColorStroop.start = ->
+  context = Psy.createContext()
+  pres = new Psy.Presentation(trials, ColorStroop.experiment, context)
+  pres.start()
 

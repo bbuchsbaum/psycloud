@@ -1,4 +1,4 @@
-Exp = require("./elements")
+
 Psy = require("./psycloud")
 Dots = require("./dotmotion")
 utils = require("./utils")
@@ -12,8 +12,10 @@ html = require("./components/html/html")
 components = require("./components/components")
 factory = require("./factory")
 sugar = require("sugar")
+flow = require("./flow")
 
 #Kinetic = require("../jslibs/kinetic").Kinetic
+
 _ = require('lodash')
 Q = require("q")
 
@@ -27,7 +29,7 @@ include = (lib) ->
 
 #libs = [Exp, Psy, Dots, utils, datatable, samplers, stimresp, layout]
 
-libs = [Exp, Psy, Dots, utils, datatable, samplers, stimresp, layout, design, canvas, html, components, factory, match]
+libs = [Psy, Dots, utils, datatable, samplers, stimresp, layout, design, canvas, html, components, factory, flow, match]
 
 for lib in libs
   include(lib)

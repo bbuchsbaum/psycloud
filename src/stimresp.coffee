@@ -71,9 +71,9 @@ class Component
 
     @name = @constructor.name
 
-    @initialize()
+    #@initialize()
 
-  initialize: ->
+  initialize: (context) ->
 
   start: (context) ->
 
@@ -86,21 +86,20 @@ class Stimulus extends exports.Component
 
   constructor: (spec={}) ->
     super(spec)
-
-
-  initialize: ->
     if @spec?.id?
       @id = @spec.id
     else
-      @id = _.uniqueId("stim_")
-
-    @stopped = false
+      @id = _.uniqueId()
 
     @react = @spec.react or {}
+    #@initReactions()
 
+  initialize: (context) ->
+    @stopped = false
     @initReactions()
 
   initReactions:  ->
+    console.log("initializing reactions from #{@constructor.name}", @react)
     for key, value of @react
       if _.isFunction(value)
         @addReaction(key,value)
@@ -108,6 +107,7 @@ class Stimulus extends exports.Component
         @addReaction(key, value.callback, value.selector)
 
   addReaction: (name, fun, selector) ->
+    console.log("adding reaction", name, fun, selector)
     # TODO check that "name" is a valid signal
     if not selector?
       this.on(name,fun)
@@ -408,5 +408,7 @@ class ResponseData
 
   constructor: (@data) ->
 
+exports.ResponseArray =
+class ResponseArray
 
 exports.KineticStimulus = KineticStimulus

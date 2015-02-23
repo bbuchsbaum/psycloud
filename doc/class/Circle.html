@@ -37,7 +37,7 @@
       </table>
       <h2>Overview</h2>
       <div class='docstring'>
-  <p>A circle graphical element</p>
+  <p>A canvas-based component that draws a circle that may or may not be filled</p>
 </div>
 <div class='tags'>
 </div>
@@ -154,16 +154,6 @@
       <span class='desc'>the radius of the circle </span>
     </li>
     <li>
-      <span class='name'>opacity</span>
-      <span class='type'>
-        (
-          <tt>Number</tt>
-        )
-      </span>
-      &mdash;
-      <span class='desc'>the opacity of the Rectangle (0 is transparent, 1 opaque) </span>
-    </li>
-    <li>
       <span class='name'>fill</span>
       <span class='type'>
         (
@@ -171,7 +161,7 @@
         )
       </span>
       &mdash;
-      <span class='desc'>the color of the rectangle </span>
+      <span class='desc'>the color of the circle </span>
     </li>
     <li>
       <span class='name'>stroke</span>
@@ -182,6 +172,26 @@
       </span>
       &mdash;
       <span class='desc'>the color of the outline </span>
+    </li>
+    <li>
+      <span class='name'>strokeWidth</span>
+      <span class='type'>
+        (
+          <tt>Number</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>the width of the outline </span>
+    </li>
+    <li>
+      <span class='name'>opacity</span>
+      <span class='type'>
+        (
+          <tt>Number</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>the opacity of the Rectangle (0 is transparent, 1 opaque) </span>
     </li>
   </ul>
 </div>
@@ -210,7 +220,7 @@
 </div>
     </div>
     <div id='footer'>
-  February 13, 15 09:49:30 by
+  February 23, 15 06:48:06 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

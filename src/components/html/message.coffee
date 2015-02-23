@@ -5,7 +5,10 @@ html = require("./html")
 class Message extends html.HtmlStimulus
 
   defaults:
-    title: "Message!", content: "your content here", color: "", size: "large"
+    title: "Message!"
+    content: "your content here"
+    color: ""
+    size: "large"
 
   constructor: (spec = {}) ->
     super(spec)

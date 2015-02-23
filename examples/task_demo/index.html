@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Task Demo</title>
+    <link href="../../build/psycloud_bundle.css" rel="stylesheet" media="screen">
+    <link href="css/codemirror.css" rel="stylesheet" media="screen">
+</head>
+<body>
+
+<div class="ui bottom attached segment pushable">
+    <div class="ui visible inverted left vertical pointing sidebar menu">
+        <a class="item" id="arrow_flanker" data-code="../arrow_flanker/runner.coffee">
+            Arrow Flanker
+        </a>
+        <a class="item" id="color_flanker" data-code="../color_flanker/runner.coffee">
+            Color Flanker
+        </a>
+        <a class="item" id="color_stroop" data-code="../color_stroop/runner.coffee">
+            Color Stroop
+        </a>
+        <a class="item" id="simple_rt" data-code="../simple_rt/runner.coffee">
+            Simple RT
+        </a>
+        <a class="item">
+            Trails B
+        </a>
+        <a class="item" id="remote_associates" data-code="../remote_associates/runner.coffee">
+            Remote Associates
+        </a>
+    </div>
+    <div class="pusher" id="demotabs">
+        <div class="ui basic segment">
+            <h3 class="ui header">Demo</h3>
+            <div class="ui top attached tabular menu">
+                <a class="active item" id="tasktab" data-tab="first">Task Demo</a>
+                <a class="item" id="codetab" data-tab="second">Source Code</a>
+            </div>
+            <div class="ui bottom attached active tab segment" data-tab="first">
+                <div id="container" style="overflow-y:scroll;overflow-x:hidden;width: 960px"></div>
+            </div>
+            <div class="ui bottom attached tab segment" data-tab="second">
+                <textarea id="code1" style="width: 960px;min-height:800px">
+
+                </textarea>
+
+            </div>
+
+
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="js/codemirror.js"></script>
+<script type="text/javascript" src="js/coffeescript.js"></script>
+<script type="text/javascript" src="../../build/psycloud_libs.js"></script>
+<script type="text/javascript" src="../../build/psycloud.js"></script>
+<script type="text/javascript" src="../arrow_flanker/runner.js"></script>
+<script type="text/javascript" src="../color_flanker/runner.js"></script>
+<script type="text/javascript" src="../color_stroop/runner.js"></script>
+<script type="text/javascript" src="../remote_associates/runner.js"></script>
+<script type="text/javascript" src="../simple_rt/runner.js"></script>
+<script type="text/javascript" src="./task_demo.js"></script>
+
+</body>
+</html>

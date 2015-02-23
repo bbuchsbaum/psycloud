@@ -22,7 +22,18 @@ positionToCoord = (pos, offx, offy, width, height, xy) ->
     else xy
 
 
-toPixels = (arg, dim) ->
+# Convert from fractional or percentage units to pixels.
+#
+#
+# @example convert percentage string to pixel units
+#   toPixels("90%", 200) [answer is 180]
+# @example convert fraction to pixel units
+#   toPixels(.9, 200) [answer is 180]
+#
+# @param [Number, String] arg the value to convert
+# @param [Integer] dim the size of the target dimension
+#
+exports.toPixels = (arg, dim) ->
   if _.isNumber(arg)
     arg
   else if isPercentage(arg)
@@ -30,7 +41,15 @@ toPixels = (arg, dim) ->
   else
     throw new Error("toPixels: argument must either be a Number or a String-based Percentage value: ", arg)
 
-
+# Convert String percentage value to fraction
+#
+#
+# @example convert percentage string to pixel units
+#   convertPercentageToFraction("50%", 1) [answer is .5]
+#
+# @param [String] arg the percentage to convert
+# @param [Integer] dim the size of the target dimension
+#
 convertPercentageToFraction = (perc, dim) ->
   frac = parseFloat(perc)/100
   frac = Math.min(1,frac)
@@ -42,7 +61,6 @@ convertToCoordinate = (val, d) ->
     val = convertPercentageToFraction(val, d)
   else if isPositionLabel val
     ret = positionToCoord(val, 0, 0, d[0], d[1], [0,0])
-    #console.log("position coordinate", ret)
     ret
   else
     Math.min(val, d)
@@ -58,14 +76,12 @@ computeGridCells = (rows, cols, bounds) ->
       }
 
 
-
-
 exports.Layout =
   class Layout
 
     constructor: ->
 
-    computePosition: (dim, constraints) -> throw new Error("unimplimented error")
+    computePosition: (dim, constraints) -> throw new Error("unimplemented error")
 
     convertToCoordinate: (val, d) ->
       #console.log("converting to coordinate!!!!!!!!", val)
@@ -125,4 +141,5 @@ exports.GridLayout =
       [cell.x + cell.width/2, cell.y + cell.height/2]
 
 exports.positionToCoord = positionToCoord
-exports.toPixels = toPixels
+exports.convertPercentageToFraction = convertPercentageToFraction
+exports.convertToCoordinate = convertToCoordinate

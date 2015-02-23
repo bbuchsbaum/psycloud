@@ -6,7 +6,7 @@ class HtmlButton extends html.HtmlStimulus
   description: "An html button that can be clicked."
 
   defaults:
-    label: "Next", class: ""
+    label: "Next", class: "", disabled: "false"
 
   signals: ["clicked"]
 
@@ -17,13 +17,16 @@ class HtmlButton extends html.HtmlStimulus
     super()
     @el = @div()
     @el.addClass("ui button")
+    if @spec.disabled
+      @el.addClass("disabled")
+
     @el.addClass(@spec.class)
     @el.append(@spec.label)
+    @el.attr("id", @id)
     #@positionElement(@el)
 
     outer = this
     @el.on("click", =>
-      console.log("emitting clicked")
       outer.emit("clicked", {
           id: outer.id
           source: this

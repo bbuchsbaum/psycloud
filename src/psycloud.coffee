@@ -336,6 +336,8 @@ exports.ExperimentContext =
 
     draw: ->
 
+    document: -> $("#htmlcontainer")
+
     insertHTMLDiv: ->
       $("canvas").css("position", "absolute")
       #$(".kineticjs-content").css("position", "absolute")
@@ -492,6 +494,7 @@ makeBlockSeq = (spec, context) ->
         args = {}
         args.trial = record
         args.screen = context.screenInfo()
+        args.context = context
         trialSpec = spec.trial.apply(args)
         context.stimFactory.buildTrial(trialSpec, record)
       new Flow.Block(trials, spec.start, spec.end)

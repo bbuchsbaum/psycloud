@@ -32,8 +32,6 @@ class Likert extends html.HtmlStimulus
   constructor: (spec = {}) ->
     super(spec)
     @el.addClass(@spec.class)
-
-
     out = render =>
       spec = @spec
 

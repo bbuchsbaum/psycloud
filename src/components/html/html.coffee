@@ -60,17 +60,22 @@ class HtmlStimulus extends HMixStim
 
       height: -> @element.height()
 
-      present: (context) -> @element.show()
+      present: (context) ->
+        console.log("presenting html")
+        #console.log("showing element", @element.html())
+        @element.show()
 
     )(element)
 
   render: (context) ->
+    console.log("rendering html")
     super(context)
     @el.hide()
     @initReactions()
     # TODO inconsistency here. html elements are added at rendering stage, Kinetic objects are not...
     context.appendHtml(@el)
     coords = @computeCoordinates(context, @spec.position, @el.width(), @el.height())
+    #console.log("rendering element, coords are", coords)
     @positionElement(@el, coords[0], coords[1])
     @presentable(@el)
 

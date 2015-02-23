@@ -2,7 +2,7 @@
 KStimulus = require("../../stimresp").KineticStimulus
 
 
-# A crosshair consisting of intersecting horizontal and vertical lines
+# A canvas-based component that draws a crosshair consisting of intersecting horizontal and vertical lines
 class FixationCross extends KStimulus
 
   defaults:

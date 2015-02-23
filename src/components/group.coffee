@@ -9,19 +9,15 @@ class Container extends Stimulus
   constructor: (@children, spec={}) ->
     super(spec)
 
-    #for stim in @stims
-    #  for signal in stim.signals
-    #    ""
-        #stim.on(signal, (args) =>
-        #  console.log("forwarding signal", signal, "with args", args)
-        #  @emit(signal, args)
-        #)
-
-  #addReaction: (name, reaction) ->
-
   hasChildren: -> true
 
   getChildren: -> @children
+
+  initialize: (context) ->
+    super(context)
+    console.log("initializing group")
+    for child in @children
+      child.initialize(context)
 
 
 class Group extends Container
@@ -35,9 +31,9 @@ class Group extends Container
         stim.layout = layout
 
   render: (context) ->
+    console.log("rendering group")
     nodes = for stim in @children
       stim.render(context)
-
     new ContainerDrawable(nodes)
 
 exports.Group = Group
@@ -48,17 +44,12 @@ class CanvasGroup extends Group
     super(children, layout, spec)
     @group = new Kinetic.Group({id: @spec.id})
 
-    for stim in @stims
-      console.log("canvas group stim child", stim)
-      #console.log(stim instanceof Kinetic.Node)
-      #@group.add(stim)
 
   render: (context) ->
     console.log("rendering canvas group child nodes", @children)
     for stim in @children
       console.log("rendering node for stim", stim)
       node = stim.render(context).node
-      console.log("rendered node", node)
       @group.add(node)
 
     new KineticDrawable(this, @group)

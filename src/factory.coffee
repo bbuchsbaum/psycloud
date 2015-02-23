@@ -75,11 +75,14 @@ class ComponentFactory
   buildEventSeq: (spec) ->
     console.log("building event sequence", spec)
     if _.isArray(spec)
+      ## spec is an array
       for value in spec
         @buildEvent(value)
     else if spec.Events?
+      console.log("building event sequence from event key", spec)
       espec = _.omit(spec, "Background")
       for key, value of espec.Events
+        console.log("building event from key, value: ", key, value)
         @buildEvent(value)
     else
       espec = _.omit(spec, "Background")
@@ -142,28 +145,40 @@ class DefaultComponentFactory extends ComponentFactory
 
     switch name
       when "Group"
-        stims = @makeNestedStims(params.stims, callee, @registry)
+        #layout = _.pick(params, "layout")
+        #params = _.omit(params, "layout")
+        stims =
+          if params.elements?
+            @makeNestedStims(params.elements, callee, @registry)
+          else
+            @makeNestedStims(params, callee, @registry)
 
-        if params.layout?
-          layoutName = _.keys(params.layout)[0]
-          layoutParams = _.values(params.layout)[0]
-          new Components.Group(stims, @makeLayout(layoutName, layoutParams, context), params)
-        else
-          new Components.Group(stims, null, params)
+        #if layout?
+        #  layoutName = _.keys(layout)[0]
+        #  layoutParams = _.values(layout)[0]
+        #  new Components.Group(stims, @makeLayout(layoutName, layoutParams, context), params)
+        #else
+        new Components.Group(stims, null, params)
 
       when "CanvasGroup"
-        stims = @makeNestedStims(params.stims, callee, @registry)
+        #layout = _.pick(params, "layout")
+        #params = _.omit(params, "layout")
+        stims = @makeNestedStims(params, callee, @registry)
 
-        if params.layout?
-          layoutName = _.keys(params.layout)[0]
-          layoutParams = _.values(params.layout)[0]
-          new Components.CanvasGroup(stims, @makeLayout(layoutName, layoutParams, context), params)
-        else
-          new Components.CanvasGroup(stims, null, params)
+        #if layout?
+        #  layoutName = _.keys(layout)[0]
+        #  layoutParams = _.values(layout)[0]
+        #  new Components.CanvasGroup(stims, @makeLayout(layoutName, layoutParams, context), params)
+        #else
+        new Components.CanvasGroup(stims, null, params)
 
       when "Grid"
-        stims = @makeNestedStims(params.stims, callee, @registry)
-        new Components.Grid(stims, params.rows or 3, params.columns or 3, params.bounds or null)
+        rows = _.pick(params, "rows")
+        columns = _.pick(params, "columns")
+        columns = _.pick(params, "bounds")
+        params = _.omit(params, ["rows", "columns"])
+        stims = @makeNestedStims(params, callee, @registry)
+        new Components.Grid(stims, rows or 3, columns or 3, params.bounds or null)
 
       when "Background"
         stims = @makeStimSet(params, callee, @registry)
