@@ -1,4 +1,24 @@
 
+class Input
+
+  @EOF: new Input()
+  @EMPTY: new Input()
+
+class Iteratee
+
+class Done extends Iteratee
+  constructor: (@a, @remaining) ->
+
+class Error extends Iteratee
+  constructor: (@msg, @input)  ->
+
+class Cont extends Iteratee
+  # cont = input -> iteratee
+  constructor: (@cont) ->
+
+
+
+
 x = class X
       zz: 7
       Y: =>

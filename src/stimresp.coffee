@@ -107,7 +107,7 @@ class Stimulus extends exports.Component
         @addReaction(key, value.callback, value.selector)
 
   addReaction: (name, fun, selector) ->
-    console.log("adding reaction", name, fun, selector)
+    #console.log("adding reaction", name, fun, selector)
     # TODO check that "name" is a valid signal
     if not selector?
       this.on(name,fun)
@@ -193,12 +193,19 @@ class GraphicalStimulus extends exports.Stimulus
 
 
   computeCoordinates: (context, position, nodeWidth=0, nodeHeight=0) ->
+    #console.log("computing coordinates")
+    #console.log("context.width", context.width())
+    #console.log("context.height", context.height())
     xy = if position?
       @layout.computePosition([context.width(), context.height()], position)
     else if @spec.x? and @spec.y?
       [@layout.convertToCoordinate(@spec.x, context.width()), @layout.convertToCoordinate(@spec.y, context.height())]
     else throw new Error("computeCoordinates: either 'position' constraint or 'x','y' coordinates must be defined")
-
+    #console.log("@spec.x", @spec.x)
+    #console.log("@spec.y", @spec.y)
+    #console.log("computed xy", xy)
+    #console.log("node width", nodeWidth)
+    #console.log("node height", nodeHeight)
     if @spec.origin?
       #todo make this dependent on node type, e.g. circle
       xyoff = @xyoffset(@spec.origin, nodeWidth, nodeHeight)
@@ -381,6 +388,9 @@ class ContainerDrawable extends exports.Drawable
 
 exports.Response =
 class Response extends exports.Stimulus
+
+  @resolveOnTimeout: ->
+
 
   start: (context, stimulus) ->
     @activate(context, stimulus)

@@ -27,26 +27,6 @@ getParamNames = (func) ->
 
 
 
-class Input
-
-  @EOF: new Input()
-  @EMPTY: new Input()
-
-class Iteratee
-
-class Done extends Iteratee
-  constructor: (@a, @remaining) ->
-
-class Error extends Iteratee
-  constructor: (@msg, @input)  ->
-
-class Cont extends Iteratee
-  # cont = input -> iteratee
-  constructor: (@cont) ->
-
-
-
-
 
 exports.EventData =
 class EventData
@@ -224,6 +204,7 @@ exports.ExperimentContext =
       record.trialNumber = @get("State.trialNumber")
       record.blockNumber = @get("State.blockNumber")
       record.eventNumber = @get("State.eventNumber")
+      record.taskName = @get("State.taskName")
 
       @userData.insert(record)
 
@@ -304,24 +285,7 @@ exports.ExperimentContext =
     showStimulus: (stimulus) ->
       p = stimulus.render(this)
       p.present(this)
-      console.log("show Stimulus, drawing")
       @draw()
-
-    start: (blockList) ->
-
-
-      try
-        farray = Flow.functionList(Flow.lift(->), Flow.lift(->), blockList, this,
-          (block) ->
-            console.log("block callback", block)
-        )
-
-        Flow.chainFunctions(farray)
-
-      catch error
-        console.log("caught error:", error)
-
-      #result.done()
 
 
     clearContent: ->
@@ -350,8 +314,11 @@ exports.ExperimentContext =
       $("#htmlcontainer").css(
         position: "absolute"
         "z-index": 999
+        #"border-style": "solid"
+        #"border-color": "blue"
         outline: "none"
-        padding: "5px"
+        padding: 0
+        margin: 0
       )
 
       $("#container").attr("tabindex", 0)
@@ -406,6 +373,7 @@ class KineticContext extends exports.ExperimentContext
     @backgroundLayer.removeChildren()
 
   clearContent: (draw = false) ->
+    #console.log("clearing html content")
     #@hideHtml()
     @clearHtml()
     @backgroundLayer.draw()
@@ -486,19 +454,18 @@ buildTrial = (eventSpec, record, context, feedback, backgroundSpec) ->
 
 
 makeBlockSeq = (spec, context) ->
-  console.log("making block seq from", spec)
-  new Flow.BlockSeq(for block in spec.trialList.blocks
-      console.log("building block", block)
-      trials = for trialNum in [0...block.length]
-        record = _.clone(block[trialNum])
-        args = {}
-        args.trial = record
-        args.screen = context.screenInfo()
-        args.context = context
-        trialSpec = spec.trial.apply(args)
-        context.stimFactory.buildTrial(trialSpec, record)
-      new Flow.Block(trials, spec.start, spec.end)
-  )
+  blockSeq = for block in spec.trialList.blocks
+    trials = for trialNum in [0...block.length]
+      record = _.clone(block[trialNum])
+      args = {}
+      args.trial = record
+      args.screen = context.screenInfo()
+      args.context = context
+      trialSpec = spec.trial.apply(args)
+      context.stimFactory.buildTrial(trialSpec, record)
+    new Flow.Block(trials, spec.start, spec.end)
+
+  new Flow.BlockSeq(blockSeq, spec.name)
 
 
 exports.Presentation =
@@ -520,13 +487,11 @@ class Presentation
       if _.keys(val)[0] is "BlockSequence"
         makeBlockSeq(val.BlockSequence, @context)
       else if _.isFunction(val)
-        body = val.apply(@context)
-        new Flow.EventSequence(context.stimFactory.buildEventSeq(body),  body.Background)
+        body = val.apply({context: @context})
+        new Flow.EventSequence(@context.stimFactory.buildEventSeq(body),  body.Background)
       else
-        es = context.stimFactory.buildEventSeq(val)
+        es = @context.stimFactory.buildEventSeq(val)
         new Flow.EventSequence(es, val.Background)
-
-    console.log("@evseq", @evseq)
 
 
   start: -> new Flow.RunnableNode(@evseq).start(@context)

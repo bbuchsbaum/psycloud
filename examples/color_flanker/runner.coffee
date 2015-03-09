@@ -136,6 +136,18 @@ _ = Psy._
           Next:
             Timeout: duration: 5000
 
+    Save: ->
+      Action:
+        execute: (context) ->
+          if context.get("active_brain")
+            logdat= context.get("resultObject")
+            $.ajax({
+              type: "POST"
+              url: "/results"
+              data: JSON.stringify(logdat)
+              contentType: "application/json"
+            })
+
 
 
   Flow: (routines) ->
@@ -179,34 +191,10 @@ trials = trials.bind (record) ->
 trials.shuffle()
 
 
-ColorFlanker.start = =>
-
+ColorFlanker.start = (subjectNumber, sessionNumber) =>
 
   context.set("datalog", [])
 
   @pres = new Psy.Presentation(trials, @ColorFlanker.experiment, context)
   @pres.start()
 
-
-
-#pres.start().then( =>
-#  console.log("DONE!!")
-#
-#  dat = {
-#    Header:
-#      id: 10001
-#      date: Date()
-#      task: "flanker"
-#    Data: pres.context.get("datalog")
-#
-#
-#  }
-
-#  console.log(dat)
-#  $.ajax({
-#    type: "POST",
-#    url: "/results",
-#    data: dat,
-#    dataType: "json"
-#  })
-#)

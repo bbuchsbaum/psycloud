@@ -58,8 +58,6 @@ class MultiChoice extends html.HtmlStimulus
       throw new Error("MultiChoice: no duplicate elements allowed in 'choices' argument")
 
 
-
-
   initialize: ->
     outer = this
     @el = @div()

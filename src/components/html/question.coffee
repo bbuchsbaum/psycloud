@@ -11,6 +11,7 @@ class Question extends html.HtmlStimulus
   defaults:
     question: "What is your name?"
     type: "dropdown"
+    headerTag: "h1"
     block: false
     paddingBottom: 15
     headerSize: "huge"
@@ -21,6 +22,7 @@ class Question extends html.HtmlStimulus
     inline: false
     x: 10
     y: 10
+    focus: true
 
 
   inputElement:  ->
@@ -61,18 +63,21 @@ class Question extends html.HtmlStimulus
     @question.initialize(context)
 
     headerClass = =>
-      header = "ui header " + @spec.headerSize + " top attached " + @spec.headerFontColor
+      header = "ui " + @spec.headerSize + " top attached " + @spec.headerFontColor
       if @spec.headerInverted
         header = header + " inverted"
       if @spec.block
         header = header + " block"
       if @spec.dividing
-        header = header + " dividing"
+        header = header + " dividing" + " header"
       header
 
     hclass = headerClass()
 
-    @title = $("""<h4 class="#{hclass}">""").text(@spec.question)
+    stub = """<h4 class="#{hclass}"></h4>""".replace(/h4/g, @spec.headerTag)
+    console.log("stub is", stub)
+
+    @title = $(stub).text(@spec.question)
     @segment = $("""<div class="ui segment attached">""")
 
     content = @question.el
@@ -85,6 +90,21 @@ class Question extends html.HtmlStimulus
 
     @el.css("width", @toPixels(@spec.width, context.width()))
     @el.css("padding-bottom", @spec.paddingBottom + "px")
+
+
+
+  onload: (context) ->
+    super(context)
+    if @spec.focus
+
+      setTimeout(
+        => @question.input.focus()
+      , 0)
+
+      #@question.input.focus()
+      #$("#" + @question.id).focus()
+
+
 
 
 

@@ -48,6 +48,7 @@ class HtmlStimulus extends HMixStim
   html: -> $('<div>').append(@element()).html()
 
   presentable: (element) ->
+    outer = this
     new (class extends Drawable
 
       constructor: (@element) ->
@@ -61,14 +62,17 @@ class HtmlStimulus extends HMixStim
       height: -> @element.height()
 
       present: (context) ->
-        console.log("presenting html")
+        #console.log("presenting html")
         #console.log("showing element", @element.html())
         @element.show()
+        outer.onload(context)
 
     )(element)
 
+  onload: (context)->
+
   render: (context) ->
-    console.log("rendering html")
+    #console.log("rendering html")
     super(context)
     @el.hide()
     @initReactions()

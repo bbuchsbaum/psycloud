@@ -152,6 +152,24 @@
             }
           }
         }
+      },
+      Save: function() {
+        return {
+          Action: {
+            execute: function(context) {
+              var logdat;
+              if (context.get("active_brain")) {
+                logdat = context.get("resultObject");
+                return $.ajax({
+                  type: "POST",
+                  url: "/results",
+                  data: JSON.stringify(logdat),
+                  contentType: "application/json"
+                });
+              }
+            }
+          }
+        };
       }
     },
     Flow: function(routines) {
@@ -199,11 +217,13 @@
 
   trials.shuffle();
 
-  this.ArrowFlanker.start = function() {
-    var context, pres;
-    context = new Psy.createContext();
-    pres = new Psy.Presentation(trials, window.ArrowFlanker.experiment, context);
-    return pres.start();
-  };
+  this.ArrowFlanker.start = (function(_this) {
+    return function(subjectNumber, sessionNumber) {
+      var pres;
+      _this.context = new Psy.createContext();
+      pres = new Psy.Presentation(trials, window.ArrowFlanker.experiment, context);
+      return pres.start();
+    };
+  })(this);
 
 }).call(this);

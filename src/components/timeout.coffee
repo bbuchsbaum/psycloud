@@ -17,7 +17,7 @@ class Timeout extends Response
       resp.id = @id
       resp.timeElapsed = diff
       resp.timeRequested = @spec.duration
-
+      console.log("timeout!")
       deferred.resolve(new ResponseData(resp)))
 
     deferred.promise

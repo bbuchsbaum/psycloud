@@ -20,7 +20,7 @@ Example 1.
 - BAY
 
 
-(**Solution**: Time*out* / *Out*weigh / *Out*last)
+**Solution**: Time*out* / *Out*weigh / *Out*last
 
 -------------------------------------------------------------------
 
@@ -32,4 +32,6 @@ Example 2.
 - CROP
 - LAWN ?
 
-(**Solution**: *Lawn* mower / *Lawn* gnome / *Lawn* fertilizer)
+**Solution**: *Lawn* mower / *Lawn* gnome / *Lawn* fertilizer
+
+ **Press any key to continue**

@@ -153,6 +153,24 @@
             }
           }
         }
+      },
+      Save: function() {
+        return {
+          Action: {
+            execute: function(context) {
+              var logdat;
+              if (context.get("active_brain")) {
+                logdat = context.get("resultObject");
+                return $.ajax({
+                  type: "POST",
+                  url: "/results",
+                  data: JSON.stringify(logdat),
+                  contentType: "application/json"
+                });
+              }
+            }
+          }
+        };
       }
     },
     Flow: function(routines) {
@@ -207,7 +225,7 @@
   trials.shuffle();
 
   ColorFlanker.start = (function(_this) {
-    return function() {
+    return function(subjectNumber, sessionNumber) {
       context.set("datalog", []);
       _this.pres = new Psy.Presentation(trials, _this.ColorFlanker.experiment, context);
       return _this.pres.start();

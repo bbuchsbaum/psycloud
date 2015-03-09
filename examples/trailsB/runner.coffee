@@ -1,18 +1,9 @@
-@context = new Psy.createContext()
+
 _ = Psy._
 
-
+@TrailsB = {}
 ## this is a task with a simple design: just one factor consisting of three trials.
-factorSet =
-  trial: [1,2,3]
 
-console.log("building factorSet")
-fnode = Psy.FactorSetNode.build(factorSet)
-
-# create 1 block of trials with 1 complete replications per block.
-# so this will create 3 trials.
-console.log("constructing trial list")
-@trials = fnode.trialList(1,3)
 
 
 instructions = """
@@ -41,7 +32,7 @@ instructions = """
           """
 
 
-@experiment =
+@TrailsB.experiment =
   Routines:
     Prelude:
       Events:
@@ -115,11 +106,22 @@ instructions = """
 
 
 
+factorSet =
+  trial: [1,2,3]
 
 
+fnode = Psy.FactorSetNode.build(factorSet)
 
-@pres = new Psy.Presentation(trials, experiment, context)
-@pres.start()
+# create 1 block of trials with 1 complete replications per block.
+# so this will create 3 trials.
+trials = fnode.trialList(1,3)
+
+@TrailsB.start = (subjectNumber, sessionNumber) =>
+  context = new Psy.createContext()
+  @pres = new Psy.Presentation(trials, @TrailsB.experiment, context)
+  @pres.start()
+
+
 
 
 

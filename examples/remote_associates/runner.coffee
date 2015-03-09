@@ -2,11 +2,13 @@
 design_recog = Psy.loadTable("design/RAT_RecList1.txt", separator=",")
 design_gen = Psy.loadTable("design/RAT_GenList1.txt", separator=",")
 
-@trialsPart1 = Psy.TrialList.fromBlock(design_recog)
-@trialsPart2 = Psy.TrialList.fromBlock(design_gen)
+trialsPart1 = Psy.TrialList.fromBlock(design_recog)
+trialsPart2 = Psy.TrialList.fromBlock(design_gen)
 
 dummyTrials = new Psy.TrialList(1)
 dummyTrials.add(0, {})
+
+console.log("dummyTrials", dummyTrials)
 
 console.log("design_recog", trialsPart1)
 console.log("design_gen", trialsPart2)
@@ -33,6 +35,14 @@ console.log("design_gen", trialsPart2)
             url: "./instructions_page3.md"
           Next: AnyKey: {}
 
+    Coda:
+      Text:
+        content: "Thanks for playing!"
+        position: "center"
+        origin: "center"
+      Next:
+        AnyKey: {}
+
     Part1:
 
       Start:
@@ -57,8 +67,11 @@ console.log("design_gen", trialsPart2)
         Group:
           1:
             Question:
-              x: "20%"
-              y: "45%"
+              x: @screen.center.x
+              y: @screen.center.y
+              headerSize: "small"
+              #position: "center"
+              origin: "center"
               width: "66%"
               question: @trial.ProblemStim.toUpperCase()
               id: "question"
@@ -72,18 +85,17 @@ console.log("design_gen", trialsPart2)
           2:
             HtmlButton:
               id: "nextbutton"
+              origin: "center"
               disabled: true
               label: "Next"
-              x: "20%"
-              y: "45%"
+              x: "18.5%"
+              y: "42%"
         Next:
           Receiver:
             id: "nextbutton"
             signal: "clicked"
 
         Feedback: ->
-          console.log("feedback response", @response)
-          console.log("trial", @trial)
           correct = @context.get("choice") is @trial.solution
           Events:
             1:
@@ -120,6 +132,7 @@ console.log("design_gen", trialsPart2)
               x: "5%"
               #y: (i*8).toString() + "%"
               width: "50%"
+              headerSize: "small"
               question: record.Stimulus.toUpperCase()
               id: "question" + (i+1)
               type: "textfield"
@@ -127,28 +140,23 @@ console.log("design_gen", trialsPart2)
               react:
                 change: (el) ->
                   #$("#nextbutton").removeClass("disabled")
-        console.log(questions)
-
         Group:
           questions
         Next:
           Timeout:
             duration: 60000
-#        Group:
-#          1:
-#            Question:
-#              x: "20%"
-#              y: "45%"
-#              width: "66%"
-#              question: @trial.Stimulus.toUpperCase()
-#              type: "textfield"
-#
-#        Next:
-#          Receiver:
-#            id: "nextbutton"
-#            signal: "clicked"
 
-
+    Save: ->
+      Action:
+        execute: (context) ->
+          if context.get("active_brain")
+            logdat= context.get("resultObject")
+            $.ajax({
+              type: "POST"
+              url: "/results"
+              data: JSON.stringify(logdat)
+              contentType: "application/json"
+            })
 
 
   Flow: (routines) ->
@@ -163,8 +171,9 @@ console.log("design_gen", trialsPart2)
         trialList: dummyTrials
         trial: routines.Part2.Trial
         end: routines.Part2.End
+    4: routines.Coda
 
-@RAT.start = =>
+@RAT.start = (subjectNumber, sessionNumber) =>
   context = Psy.createContext()
   pres = new Psy.Presentation({}, @RAT.experiment, context)
   pres.start()

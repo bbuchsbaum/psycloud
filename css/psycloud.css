@@ -1,22 +1,29 @@
 #container {
     width: 960px;
-    min-height: 960px;
+    height: 960px;
     background-color: white;
     position: relative;
-    /*margin: 0 auto;*/
-    padding: 20px;
+    margin: 0 auto;
+    padding: 0;
+    /*border: 0;*/
+    /*border-style: solid;
+    border-width: 2px;
+    border-color: green;*/
 
 }
 
 #htmlcontainer {
     width: 960px;
-    min-height: 960px;
+    height: 960px;
     position: absolute;
     /*margin: 0 auto;*/
+    margin: 0px;
     z-index: 999;
-    /*background-color: lightgray;*/
-    border: 0;
-    padding: 20px;
+    /*background-color: lightgray;
+    border-style: solid;
+    border-width: 2px;
+    border-color: red;*/
+    padding: 0px;
 }
 
 div:focus{

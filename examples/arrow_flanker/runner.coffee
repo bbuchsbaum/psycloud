@@ -141,6 +141,18 @@ window.ArrowFlanker = {}
           Next:
             Timeout: duration: 5000
 
+    Save: ->
+      Action:
+        execute: (context) ->
+          if context.get("active_brain")
+            logdat= context.get("resultObject")
+            $.ajax({
+              type: "POST"
+              url: "/results"
+              data: JSON.stringify(logdat)
+              contentType: "application/json"
+            })
+
 
   Flow: (routines) ->
     1: routines.Prelude
@@ -175,8 +187,8 @@ trials = trials.bind (record) ->
 
 trials.shuffle()
 
-@ArrowFlanker.start =  ->
-  context = new Psy.createContext()
+@ArrowFlanker.start =  (subjectNumber, sessionNumber) =>
+  @context = new Psy.createContext()
   pres = new Psy.Presentation(trials, window.ArrowFlanker.experiment, context)
   pres.start()
 

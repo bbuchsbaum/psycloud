@@ -12,9 +12,6 @@ class HtmlButton extends html.HtmlStimulus
 
   constructor: (spec = {}) ->
     super(spec)
-
-  initialize: ->
-    super()
     @el = @div()
     @el.addClass("ui button")
     if @spec.disabled
@@ -23,8 +20,10 @@ class HtmlButton extends html.HtmlStimulus
     @el.addClass(@spec.class)
     @el.append(@spec.label)
     @el.attr("id", @id)
-    #@positionElement(@el)
 
+  initialize: ->
+    super()
+    #@positionElement(@el)
     outer = this
     @el.on("click", =>
       outer.emit("clicked", {

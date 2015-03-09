@@ -7517,7 +7517,7 @@ require.define('73', function(module, exports, __dirname, __filename, undefined)
 });
 require.define('67', function(module, exports, __dirname, __filename, undefined){
 (function () {
-    var Background, Bacon, Cont, DataTable, DefaultComponentFactory, Done, DynamicTrialEnumerator, Error, EventData, EventDataLog, ExperimentContext, Flow, Input, Iteratee, KineticContext, MockStimFactory, Presentation, Presenter, Q, Response, ResponseData, RunnableNode, STRIP_COMMENTS, StaticTrialEnumerator, StimFactory, Stimulus, TAFFY, TrialEnumerator, buildTrial, createContext, getParamNames, makeBlockSeq, props, utils, _, __dummySpec, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+    var Background, Bacon, DataTable, DefaultComponentFactory, DynamicTrialEnumerator, EventData, EventDataLog, ExperimentContext, Flow, KineticContext, MockStimFactory, Presentation, Presenter, Q, Response, ResponseData, RunnableNode, STRIP_COMMENTS, StaticTrialEnumerator, StimFactory, Stimulus, TAFFY, TrialEnumerator, buildTrial, createContext, getParamNames, makeBlockSeq, props, utils, _, __dummySpec, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
             for (var key in parent) {
                 if (__hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -7554,41 +7554,6 @@ require.define('67', function(module, exports, __dirname, __filename, undefined)
         }
         return result;
     };
-    Input = function () {
-        function Input() {
-        }
-        Input.EOF = new Input();
-        Input.EMPTY = new Input();
-        return Input;
-    }();
-    Iteratee = function () {
-        function Iteratee() {
-        }
-        return Iteratee;
-    }();
-    Done = function (_super) {
-        __extends(Done, _super);
-        function Done(a, remaining) {
-            this.a = a;
-            this.remaining = remaining;
-        }
-        return Done;
-    }(Iteratee);
-    Error = function (_super) {
-        __extends(Error, _super);
-        function Error(msg, input) {
-            this.msg = msg;
-            this.input = input;
-        }
-        return Error;
-    }(Iteratee);
-    Cont = function (_super) {
-        __extends(Cont, _super);
-        function Cont(cont) {
-            this.cont = cont;
-        }
-        return Cont;
-    }(Iteratee);
     exports.EventData = EventData = function () {
         function EventData(name, id, data) {
             this.name = name;
@@ -7779,6 +7744,7 @@ require.define('67', function(module, exports, __dirname, __filename, undefined)
             record.trialNumber = this.get('State.trialNumber');
             record.blockNumber = this.get('State.blockNumber');
             record.eventNumber = this.get('State.eventNumber');
+            record.taskName = this.get('State.taskName');
             return this.userData.insert(record);
         };
         ExperimentContext.prototype.handleResponse = function (arg) {
@@ -7893,22 +7859,7 @@ require.define('67', function(module, exports, __dirname, __filename, undefined)
             var p;
             p = stimulus.render(this);
             p.present(this);
-            console.log('show Stimulus, drawing');
             return this.draw();
-        };
-        ExperimentContext.prototype.start = function (blockList) {
-            var error, farray;
-            try {
-                farray = Flow.functionList(Flow.lift(function () {
-                }), Flow.lift(function () {
-                }), blockList, this, function (block) {
-                    return console.log('block callback', block);
-                });
-                return Flow.chainFunctions(farray);
-            } catch (_error) {
-                error = _error;
-                return console.log('caught error:', error);
-            }
         };
         ExperimentContext.prototype.clearContent = function () {
         };
@@ -7934,7 +7885,8 @@ require.define('67', function(module, exports, __dirname, __filename, undefined)
                 position: 'absolute',
                 'z-index': 999,
                 outline: 'none',
-                padding: '5px'
+                padding: 0,
+                margin: 0
             });
             $('#container').attr('tabindex', 0);
             return $('#container').css('outline', 'none');
@@ -8079,15 +8031,13 @@ require.define('67', function(module, exports, __dirname, __filename, undefined)
         }
     };
     makeBlockSeq = function (spec, context) {
-        var args, block, record, trialNum, trialSpec, trials;
-        console.log('making block seq from', spec);
-        return new Flow.BlockSeq(function () {
+        var args, block, blockSeq, record, trialNum, trialSpec, trials;
+        blockSeq = function () {
             var _i, _len, _ref, _results;
             _ref = spec.trialList.blocks;
             _results = [];
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
                 block = _ref[_i];
-                console.log('building block', block);
                 trials = function () {
                     var _j, _ref1, _results1;
                     _results1 = [];
@@ -8105,7 +8055,8 @@ require.define('67', function(module, exports, __dirname, __filename, undefined)
                 _results.push(new Flow.Block(trials, spec.start, spec.end));
             }
             return _results;
-        }());
+        }();
+        return new Flow.BlockSeq(blockSeq, spec.name);
     };
     exports.Presentation = Presentation = function () {
         function Presentation(trialList, display, context) {
@@ -8125,16 +8076,15 @@ require.define('67', function(module, exports, __dirname, __filename, undefined)
                     if (_.keys(val)[0] === 'BlockSequence') {
                         _results.push(makeBlockSeq(val.BlockSequence, this.context));
                     } else if (_.isFunction(val)) {
-                        body = val.apply(this.context);
-                        _results.push(new Flow.EventSequence(context.stimFactory.buildEventSeq(body), body.Background));
+                        body = val.apply({ context: this.context });
+                        _results.push(new Flow.EventSequence(this.context.stimFactory.buildEventSeq(body), body.Background));
                     } else {
-                        es = context.stimFactory.buildEventSeq(val);
+                        es = this.context.stimFactory.buildEventSeq(val);
                         _results.push(new Flow.EventSequence(es, val.Background));
                     }
                 }
                 return _results;
             }.call(this);
-            console.log('@evseq', this.evseq);
         }
         Presentation.prototype.start = function () {
             return new Flow.RunnableNode(this.evseq).start(this.context);
@@ -8301,7 +8251,6 @@ require.define('72', function(module, exports, __dirname, __filename, undefined)
         };
         Stimulus.prototype.addReaction = function (name, fun, selector) {
             var child, _i, _len, _ref, _results;
-            console.log('adding reaction', name, fun, selector);
             if (selector == null) {
                 return this.on(name, fun);
             } else {
@@ -8779,6 +8728,8 @@ require.define('72', function(module, exports, __dirname, __filename, undefined)
         function Response() {
             return Response.__super__.constructor.apply(this, arguments);
         }
+        Response.resolveOnTimeout = function () {
+        };
         Response.prototype.start = function (context, stimulus) {
             return this.activate(context, stimulus);
         };
@@ -9823,6 +9774,7 @@ require.define('77', function(module, exports, __dirname, __filename, undefined)
     exports.Nothing = require('90', module).Nothing;
     exports.Receiver = require('120', module).Receiver;
     exports.Consent = require('129', module).Consent;
+    exports.Action = require('140', module).Action;
 }.call(this));
 });
 require.define('90', function(module, exports, __dirname, __filename, undefined){
@@ -9942,6 +9894,7 @@ require.define('88', function(module, exports, __dirname, __filename, undefined)
                     resp.id = _this.id;
                     resp.timeElapsed = diff;
                     resp.timeRequested = _this.spec.duration;
+                    console.log('timeout!');
                     return deferred.resolve(new ResponseData(resp));
                 };
             }(this));
@@ -10683,6 +10636,8 @@ require.define('76', function(module, exports, __dirname, __filename, undefined)
             return $('<div>').append(this.element()).html();
         };
         HtmlStimulus.prototype.presentable = function (element) {
+            var outer;
+            outer = this;
             return new (function (_super1) {
                 __extends(_Class, _super1);
                 function _Class(element) {
@@ -10701,15 +10656,16 @@ require.define('76', function(module, exports, __dirname, __filename, undefined)
                     return this.element.height();
                 };
                 _Class.prototype.present = function (context) {
-                    console.log('presenting html');
-                    return this.element.show();
+                    this.element.show();
+                    return outer.onload(context);
                 };
                 return _Class;
             }(Drawable))(element);
         };
+        HtmlStimulus.prototype.onload = function (context) {
+        };
         HtmlStimulus.prototype.render = function (context) {
             var coords;
-            console.log('rendering html');
             HtmlStimulus.__super__.render.call(this, context);
             this.el.hide();
             this.initReactions();
@@ -11133,10 +11089,6 @@ require.define('91', function(module, exports, __dirname, __filename, undefined)
                 spec = {};
             }
             HtmlButton.__super__.constructor.call(this, spec);
-        }
-        HtmlButton.prototype.initialize = function () {
-            var outer;
-            HtmlButton.__super__.initialize.call(this);
             this.el = this.div();
             this.el.addClass('ui button');
             if (this.spec.disabled) {
@@ -11145,6 +11097,10 @@ require.define('91', function(module, exports, __dirname, __filename, undefined)
             this.el.addClass(this.spec['class']);
             this.el.append(this.spec.label);
             this.el.attr('id', this.id);
+        }
+        HtmlButton.prototype.initialize = function () {
+            var outer;
+            HtmlButton.__super__.initialize.call(this);
             outer = this;
             return this.el.on('click', function (_this) {
                 return function () {
@@ -14052,12 +14008,31 @@ require.define('120', function(module, exports, __dirname, __filename, undefined
         Receiver.prototype.defaults = {
             id: null,
             signal: '',
-            delay: 0
+            delay: 0,
+            timeout: false
+        };
+        Receiver.prototype.resolveOnTimeout = function (deferred, timeout, stimulus, startTime) {
+            return utils.doTimer(timeout, function (_this) {
+                return function (diff) {
+                    var resp, timeStamp;
+                    if (!deferred.isResolved) {
+                        timeStamp = utils.getTimestamp();
+                        resp = _this.baseResponse(stimulus);
+                        resp.name = 'Receiver';
+                        resp.signal = _this.spec.signal;
+                        resp.id = _this.id;
+                        resp.event = 'timeout';
+                        resp.RT = timeStamp - startTime;
+                        return deferred.resolve(new ResponseData(resp));
+                    }
+                };
+            }(this));
         };
         Receiver.prototype.activate = function (context, stimulus) {
-            var callback, deferred;
+            var callback, deferred, startTime;
             Receiver.__super__.activate.call(this, context, stimulus);
             deferred = Q.defer();
+            startTime = utils.getTimestamp();
             callback = function (_this) {
                 return function (args) {
                     var resp;
@@ -14066,6 +14041,7 @@ require.define('120', function(module, exports, __dirname, __filename, undefined
                     resp.signal = _this.spec.signal;
                     resp.id = _this.id;
                     resp.event = args;
+                    resp.RT = utils.getTimestamp() - startTime;
                     if (_this.spec.delay > 0) {
                         return utils.doTimer(_this.spec.delay, function () {
                             return deferred.resolve(new ResponseData(resp));
@@ -14079,8 +14055,10 @@ require.define('120', function(module, exports, __dirname, __filename, undefined
                 stimulus.addReaction(this.spec.signal, callback, { id: this.spec.id });
             } else {
                 this.spec.id = stimulus.id;
-                console.log('adding reaction for ', this.spec.signal);
                 stimulus.addReaction(this.spec.signal, callback);
+            }
+            if (this.spec.timeout) {
+                this.resolveOnTimeout(deferred, this.spec.timeout, stimulus, startTime);
             }
             return deferred.promise;
         };
@@ -19976,14 +19954,6 @@ require.define('132', function(module, exports, __dirname, __filename, undefined
                 });
             });
         };
-        TextField.prototype.render = function (context) {
-            var p;
-            console.log('rendering textfield');
-            p = TextField.__super__.render.call(this, context);
-            console.log('setting input focus');
-            this.input.focus();
-            return p;
-        };
         return TextField;
     }(html.HtmlStimulus);
     exports.TextField = TextField;
@@ -20174,6 +20144,7 @@ require.define('135', function(module, exports, __dirname, __filename, undefined
         Question.prototype.defaults = {
             question: 'What is your name?',
             type: 'dropdown',
+            headerTag: 'h1',
             block: false,
             paddingBottom: 15,
             headerSize: 'huge',
@@ -20183,7 +20154,8 @@ require.define('135', function(module, exports, __dirname, __filename, undefined
             dividing: true,
             inline: false,
             x: 10,
-            y: 10
+            y: 10,
+            focus: true
         };
         Question.prototype.inputElement = function () {
             switch (this.spec.type) {
@@ -20220,14 +20192,14 @@ require.define('135', function(module, exports, __dirname, __filename, undefined
             }
         };
         Question.prototype.initialize = function (context) {
-            var content, hclass, headerClass;
+            var content, hclass, headerClass, stub;
             Question.__super__.initialize.call(this, context);
             this.el = this.div();
             this.question.initialize(context);
             headerClass = function (_this) {
                 return function () {
                     var header;
-                    header = 'ui header ' + _this.spec.headerSize + ' top attached ' + _this.spec.headerFontColor;
+                    header = 'ui ' + _this.spec.headerSize + ' top attached ' + _this.spec.headerFontColor;
                     if (_this.spec.headerInverted) {
                         header = header + ' inverted';
                     }
@@ -20235,13 +20207,15 @@ require.define('135', function(module, exports, __dirname, __filename, undefined
                         header = header + ' block';
                     }
                     if (_this.spec.dividing) {
-                        header = header + ' dividing';
+                        header = header + ' dividing' + ' header';
                     }
                     return header;
                 };
             }(this);
             hclass = headerClass();
-            this.title = $('<h4 class="' + hclass + '">').text(this.spec.question);
+            stub = ('<h4 class="' + hclass + '"></h4>').replace(/h4/g, this.spec.headerTag);
+            console.log('stub is', stub);
+            this.title = $(stub).text(this.spec.question);
             this.segment = $('<div class="ui segment attached">');
             content = this.question.el;
             this.segment.append(content);
@@ -20250,6 +20224,16 @@ require.define('135', function(module, exports, __dirname, __filename, undefined
             this.el.attr('id', this.id);
             this.el.css('width', this.toPixels(this.spec.width, context.width()));
             return this.el.css('padding-bottom', this.spec.paddingBottom + 'px');
+        };
+        Question.prototype.onload = function (context) {
+            Question.__super__.onload.call(this, context);
+            if (this.spec.focus) {
+                return setTimeout(function (_this) {
+                    return function () {
+                        return _this.question.input.focus();
+                    };
+                }(this), 0);
+            }
         };
         return Question;
     }(html.HtmlStimulus);
@@ -24242,6 +24226,7 @@ require.define('139', function(module, exports, __dirname, __filename, undefined
             return Flow.lift(function (_this) {
                 return function () {
                     context.clearBackground();
+                    context.clearContent();
                     if (_this.background != null) {
                         context.setBackground(_this.background);
                         return context.drawBackground();
@@ -24371,15 +24356,13 @@ require.define('139', function(module, exports, __dirname, __filename, undefined
             }
         };
         Block.prototype.after = function (context) {
-            return Flow.lift(function (_this) {
-                return function () {
-                    if (_this.endBlock) {
-                        return _this.prepBlock(_this.endBlock, context);
-                    } else {
-                        return 0;
-                    }
-                };
-            }(this));
+            if (this.endBlock != null) {
+                return this.prepBlock(this.endBlock, context);
+            } else {
+                return Flow.lift(function () {
+                    return 0;
+                });
+            }
         };
         return Block;
     }(RunnableNode);
@@ -24390,9 +24373,14 @@ require.define('139', function(module, exports, __dirname, __filename, undefined
     }();
     BlockSeq = function (_super) {
         __extends(BlockSeq, _super);
-        function BlockSeq(children) {
+        function BlockSeq(children, taskName) {
+            this.taskName = taskName;
             BlockSeq.__super__.constructor.call(this, children);
+            if (!this.taskName) {
+                this.taskName = 'task';
+            }
             this.state.blockNumber = 0;
+            this.state.taskName = this.taskName;
         }
         BlockSeq.prototype.updateState = function (node, context) {
             this.state.blockNumber += 1;
@@ -24418,6 +24406,41 @@ require.define('139', function(module, exports, __dirname, __filename, undefined
     exports.BlockSeq = BlockSeq;
     exports.Prelude = Prelude;
     exports.Coda = Coda;
+}.call(this));
+});
+require.define('140', function(module, exports, __dirname, __filename, undefined){
+(function () {
+    var Action, Q, _, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+            for (var key in parent) {
+                if (__hasProp.call(parent, key))
+                    child[key] = parent[key];
+            }
+            function ctor() {
+                this.constructor = child;
+            }
+            ctor.prototype = parent.prototype;
+            child.prototype = new ctor();
+            child.__super__ = parent.prototype;
+            return child;
+        };
+    _ = require('138', module);
+    Q = require('17', module);
+    Action = function (_super) {
+        __extends(Action, _super);
+        Action.prototype.defaults = {
+            execute: function (context) {
+            }
+        };
+        function Action(spec) {
+            Action.__super__.constructor.call(this, spec);
+        }
+        Action.prototype.activate = function (context, stimulus) {
+            console.log('calling action code!', this.spec.execute);
+            return this.spec.execute(context);
+        };
+        return Action;
+    }(require('72', module).Response);
+    exports.Action = Action;
 }.call(this));
 });
 return require('65');

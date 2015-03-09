@@ -62,6 +62,21 @@ $(document).ready =>
 
   )
 
+  $("#trailsB").click( (ev) ->
+    setActiveElement($(this))
+    code = $(this).data("code")
+    window.TrailsB.start()
+
+  )
+
+  $("#arithmetic_span").click( (ev) ->
+    setActiveElement($(this))
+    code = $(this).data("code")
+    window.ArithmeticSpan.start()
+
+  )
+
+
 
   $("#codetab").click( (ev) ->
 

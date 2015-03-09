@@ -6,4 +6,4 @@ Select the correct words from the set of choices.
 
 You will receive as many problems as you can complete in 1 minute. Try to answer as quickly as you can.
 
-When you are ready to begin Part 1, press any key.
+When you are ready to begin Part 1, **press any key**.

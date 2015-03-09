@@ -159,6 +159,7 @@ class EventSequence extends RunnableNode
 
     Flow.lift ( =>
       context.clearBackground()
+      context.clearContent()
 
       if @background?
         context.setBackground(@background)
@@ -265,27 +266,22 @@ class Block extends RunnableNode
 
 
   after: (context) =>
-    Flow.lift ( =>
-      if @endBlock
-        #blockData = context.blockData()
-        #ids = _.unique(blockData.select("id"))
-        #out = {}
-        #for curid in ids
-        #  out[curid] = DataTable.fromRecords(blockData.filter(id: curid).get())
-
-        #args = _.extend({}, context: context, out)
-        @prepBlock(@endBlock, context)
-      else
-        0
-    )
+    if @endBlock?
+      @prepBlock(@endBlock, context)
+    else
+      Flow.lift(-> 0)
 
 
 class Prelude
 
 class BlockSeq extends RunnableNode
-  constructor: (children) ->
+  constructor: (children, @taskName) ->
     super(children)
+    if not @taskName
+      @taskName = "task"
+
     @state.blockNumber = 0
+    @state.taskName = @taskName
 
   updateState: (node, context) ->
     @state.blockNumber += 1

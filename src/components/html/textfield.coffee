@@ -34,13 +34,6 @@ class TextField extends html.HtmlStimulus
           name: outer.name
 
 
-    render: (context) ->
-      console.log("rendering textfield")
-      p = super(context)
-      console.log("setting input focus")
-      @input.focus()
-      p
-
 
 
 exports.TextField = TextField

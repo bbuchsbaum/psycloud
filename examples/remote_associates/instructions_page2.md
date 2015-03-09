@@ -16,4 +16,4 @@ Here are two completed examples.
 
 **Solution**: Fried *chicken* / *Chicken* dumpling / *Chicken* out)
 
-
+**Press any key to continue**

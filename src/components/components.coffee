@@ -19,5 +19,5 @@ exports.Click = require("./click").Click
 exports.Nothing = require("./nothing").Nothing
 exports.Receiver = require("./receiver").Receiver
 exports.Consent = require("./consent").Consent
-
+exports.Action = require("./action").Action
 #console.log("ZZZ exports.DefaultComponentFactory", require("./factory").DefaultComponentFactory)
